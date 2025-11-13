@@ -24,7 +24,7 @@ export default function AnimatedText() {
     // Navigate after S character triggers with extra time (delay = 0.5 + 0.1 + 0.1 = 0.7s)
     const sCharDelay = 0.5 + triggerDuration + 0.1; // Added 0.1s extra time
     const navigationTimer = setTimeout(() => {
-      router.push('/home'); // Change '/home' to your desired route
+      router.push('/login/sec');
     }, sCharDelay * 1000);
     
     return () => {
