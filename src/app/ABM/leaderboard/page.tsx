@@ -121,7 +121,7 @@ export default function LeaderboardPage() {
       {/* Header with buttons */}
       <div className="flex justify-between items-center mb-8">
         <a
-          href="/ZSE"
+          href="/ASE"
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors text-sm"
         >
           <svg

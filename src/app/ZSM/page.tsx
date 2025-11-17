@@ -1,16 +1,16 @@
 import Link from 'next/link';
 
-export default function ZSEPage() {
+export default function ZSMPage() {
   return (
     <div className="flex-1 relative overflow-hidden bg-gray-900">
       {/* background glow */}
       <div className="pointer-events-none absolute left-40 top-24 h-72 w-[1051px] opacity-10 bg-gradient-to-r from-red-500 to-orange-200 blur-[32px]" />
 
-      {/* Top greeting */}
+      {/* Top greeting with Logout */}
       <div className="flex justify-between items-center px-10 pt-6">
         <div>
           <p className="text-neutral-50 text-3xl font-semibold leading-[48px]">
-            Hello John Doe,
+            Hello ZSM,
           </p>
           <p className="text-white text-lg leading-7">
             Welcome! Choose your action below
@@ -75,7 +75,7 @@ export default function ZSEPage() {
       <section className="mt-12 px-10 pb-10">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 max-w-4xl">
           {/* Incentive Wallet card */}
-          <Link href="/ZSE/wallet" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
+          <Link href="/ZSM/wallet" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
             {/* Arrow button - top right */}
             <div className="absolute top-6 right-6 h-10 w-10 rounded-full bg-emerald-600 shadow-[0_2px_8px_rgba(5,150,105,0.3)] flex items-center justify-center">
               <span className="text-white text-lg font-semibold">{">"}</span>
@@ -137,7 +137,7 @@ export default function ZSEPage() {
           </Link>
 
           {/* View Reports card */}
-          <Link href="/ZSE/report" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
+          <Link href="/ZSM/report" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
             {/* Arrow button - top right */}
             <div className="absolute top-6 right-6 h-10 w-10 rounded-full bg-[#4318D1] shadow-[0_2px_8px_rgba(67,24,209,0.3)] flex items-center justify-center">
               <span className="text-white text-lg font-semibold">{">"}</span>
@@ -175,7 +175,7 @@ export default function ZSEPage() {
           </Link>
 
           {/* Store Settings card */}
-          <Link href="/ZSE/profile" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
+          <Link href="/ZSM/profile" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
             {/* Arrow button - top right */}
             <div className="absolute top-6 right-6 h-10 w-10 rounded-full bg-amber-600 shadow-[0_2px_8px_rgba(217,119,6,0.3)] flex items-center justify-center">
               <span className="text-white text-lg font-semibold">{">"}</span>
