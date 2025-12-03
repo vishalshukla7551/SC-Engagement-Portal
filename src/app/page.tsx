@@ -4,7 +4,9 @@ import { getHomePathForRole } from '@/lib/roleHomePath';
 import { redirect } from 'next/navigation';
 
 export default async function Home() {
-  const authUser = await getAuthenticatedUserFromCookies();
+  // In page components we must not mutate cookies; pass mutateCookies: false so
+  // getAuthenticatedUserFromCookies only reads tokens and does not rotate them.
+  const authUser = await getAuthenticatedUserFromCookies(undefined, { mutateCookies: false });
 
   if (authUser) {
     const target = getHomePathForRole(authUser.role);

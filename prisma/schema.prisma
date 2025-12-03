@@ -33,6 +33,21 @@ model Store {
   updatedAt DateTime @updatedAt
 }
 
+model SamsungPlanPrice {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  category  String
+  modelName String
+  planLabel String
+  planKey   String
+  price     Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([planKey])
+  @@index([category, modelName])
+}
+
 model User {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   username String @unique

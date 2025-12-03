@@ -71,7 +71,9 @@ type CookieReader = {
 // 5) If anything fails, clear auth cookies and return null.
 export async function getAuthenticatedUserFromCookies(
   cookiesParam?: CookieReader,
+  options?: { mutateCookies?: boolean },
 ): Promise<AuthenticatedUser | null> {
+  const allowCookieMutation = options?.mutateCookies ?? true;
   // Prefer the explicit reader passed from route handlers; otherwise fall back to next/headers.
   // In Next.js 16, `cookies()` is async and returns a Promise, so we must await it
   // before accessing `.get`, `.set`, `.delete`, etc.
@@ -110,7 +112,7 @@ export async function getAuthenticatedUserFromCookies(
 
   // No valid tokens at all – clear cookies if we can and bail out
   if (!payload) {
-    if (cookieStore) {
+    if (cookieStore && allowCookieMutation) {
       if (accessToken) cookieStore.delete(ACCESS_TOKEN_COOKIE);
       if (refreshToken) cookieStore.delete(REFRESH_TOKEN_COOKIE);
     }
@@ -124,7 +126,7 @@ export async function getAuthenticatedUserFromCookies(
   if (payload.role === 'SEC') {
     const secId = payload.secId;
     if (!secId) {
-      if (cookieStore) {
+      if (cookieStore && allowCookieMutation) {
         cookieStore.delete(ACCESS_TOKEN_COOKIE);
         cookieStore.delete(REFRESH_TOKEN_COOKIE);
       }
@@ -133,7 +135,7 @@ export async function getAuthenticatedUserFromCookies(
 
     // If we authenticated using the refresh token, rotate SEC tokens as well so
     // a missing/expired access token gets recreated from a valid refresh token.
-    if (authenticatedViaRefresh && cookieStore) {
+    if (authenticatedViaRefresh && cookieStore && allowCookieMutation) {
       const newPayload: AuthTokenPayload = {
         secId,
         role: 'SEC' as Role,
@@ -181,7 +183,7 @@ export async function getAuthenticatedUserFromCookies(
   } as any);
 
   if (!user || user.validation !== 'APPROVED') {
-    if (cookieStore) {
+    if (cookieStore && allowCookieMutation) {
       cookieStore.delete(ACCESS_TOKEN_COOKIE);
       cookieStore.delete(REFRESH_TOKEN_COOKIE);
     }
@@ -190,7 +192,7 @@ export async function getAuthenticatedUserFromCookies(
 
   // If we authenticated using the refresh token, rotate tokens so the client
   // gets a fresh access token (and optionally a new refresh token).
-  if (authenticatedViaRefresh && cookieStore) {
+  if (authenticatedViaRefresh && cookieStore && allowCookieMutation) {
     const newPayload: AuthTokenPayload = {
       userId: user.id,
       role: user.role,
