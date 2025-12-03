@@ -8,6 +8,18 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const [secId, setSecId] = useState(initialSecId);
   const [dateOfSale, setDateOfSale] = useState('');
   const [storeName, setStoreName] = useState('');
+  const [stores, setStores] = useState([]);
+  const [isLoadingStores, setIsLoadingStores] = useState(false);
+  const [storeError, setStoreError] = useState('');
+
+  const [devices, setDevices] = useState([]);
+  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [deviceError, setDeviceError] = useState('');
+
+  const [plans, setPlans] = useState([]);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false);
+  const [planError, setPlanError] = useState('');
+
   const [deviceName, setDeviceName] = useState('');
   const [planType, setPlanType] = useState('');
   const [imeiNumber, setImeiNumber] = useState('');
@@ -31,6 +43,70 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       setShowSecAlert(true);
     }
   }, [initialSecId]);
+
+  // Load stores list from backend
+  useEffect(() => {
+    const loadStores = async () => {
+      try {
+        setIsLoadingStores(true);
+        setStoreError('');
+        const res = await fetch('/api/stores');
+        if (!res.ok) {
+          throw new Error('Failed to load stores');
+        }
+        const data = await res.json();
+        setStores(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Error loading stores', err);
+        setStoreError('Unable to load stores. Please try again later.');
+      } finally {
+        setIsLoadingStores(false);
+      }
+    };
+
+    loadStores();
+  }, []);
+
+  // Load Samsung devices and plan types from backend
+  useEffect(() => {
+    const loadSamsungData = async () => {
+      try {
+        setIsLoadingDevices(true);
+        setIsLoadingPlans(true);
+        setDeviceError('');
+        setPlanError('');
+
+        const [deviceRes, planRes] = await Promise.all([
+          fetch('/api/samsung-devices'),
+          fetch('/api/samsung-plans'),
+        ]);
+
+        if (!deviceRes.ok) {
+          throw new Error('Failed to load Samsung devices');
+        }
+        if (!planRes.ok) {
+          throw new Error('Failed to load Samsung plans');
+        }
+
+        const [deviceData, planData] = await Promise.all([
+          deviceRes.json(),
+          planRes.json(),
+        ]);
+
+        setDevices(Array.isArray(deviceData) ? deviceData : []);
+        setPlans(Array.isArray(planData) ? planData : []);
+      } catch (err) {
+        console.error('Error loading Samsung SKU data', err);
+        setDeviceError('Unable to load Samsung devices. Please try again later.');
+        setPlanError('Unable to load plan types. Please try again later.');
+      } finally {
+        setIsLoadingDevices(false);
+        setIsLoadingPlans(false);
+      }
+    };
+
+    loadSamsungData();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -311,11 +387,18 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   backgroundSize: '1.25rem',
                 }}
               >
-                <option value="">Select Store</option>
-                <option value="store1">Store 1</option>
-                <option value="store2">Store 2</option>
-                <option value="store3">Store 3</option>
+                <option value="">
+                  {isLoadingStores ? 'Loading stores...' : 'Select Store'}
+                </option>
+                {stores.map((store) => (
+                  <option key={store.id} value={store.id}>
+                    {store.label || store.name}
+                  </option>
+                ))}
               </select>
+              {storeError && (
+                <p className="mt-1 text-xs text-red-600 font-medium">{storeError}</p>
+              )}
             </div>
 
             {/* Device Name */}
@@ -329,17 +412,24 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 onChange={(e) => setDeviceName(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                 style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundImage: `url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")`,
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'right 1rem center',
                   backgroundSize: '1.25rem',
                 }}
               >
-                <option value="">Select Device</option>
-                <option value="iphone">iPhone</option>
-                <option value="samsung">Samsung</option>
-                <option value="oneplus">OnePlus</option>
+                <option value="">
+                  {isLoadingDevices ? 'Loading devices...' : 'Search or select device'}
+                </option>
+                {devices.map((device) => (
+                  <option key={device.id} value={device.id}>
+                    {device.label || `${device.category} - ${device.modelName}`}
+                  </option>
+                ))}
               </select>
+              {deviceError && (
+                <p className="mt-1 text-xs text-red-600 font-medium">{deviceError}</p>
+              )}
             </div>
 
             {/* Plan Type */}
@@ -353,17 +443,24 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 onChange={(e) => setPlanType(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                 style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundImage: `url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")`,
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'right 1rem center',
                   backgroundSize: '1.25rem',
                 }}
               >
-                <option value="">Select Plan</option>
-                <option value="basic">Basic Plan</option>
-                <option value="premium">Premium Plan</option>
-                <option value="unlimited">Unlimited Plan</option>
+                <option value="">
+                  {isLoadingPlans ? 'Loading plans...' : 'Search or select plan'}
+                </option>
+                {plans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.label}
+                  </option>
+                ))}
               </select>
+              {planError && (
+                <p className="mt-1 text-xs text-red-600 font-medium">{planError}</p>
+              )}
             </div>
 
             {/* IMEI Number */}

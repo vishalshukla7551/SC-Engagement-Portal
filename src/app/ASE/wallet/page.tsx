@@ -49,9 +49,6 @@ export default function WalletPage() {
           <p className="text-emerald-100 text-sm font-medium mb-2">Total Available Balance</p>
           <h2 className="text-white text-5xl font-bold mb-6">₹12,450</h2>
           <div className="flex gap-4">
-            <button className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-semibold hover:bg-emerald-50 transition">
-              Withdraw
-            </button>
             <button className="bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-800 transition">
               View History
             </button>
