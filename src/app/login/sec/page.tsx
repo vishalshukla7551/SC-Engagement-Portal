@@ -133,9 +133,6 @@ export default function SECLogin() {
       // Store SEC auth info in localStorage, same as role login does.
       if (typeof window !== 'undefined' && data?.user) {
         window.localStorage.setItem('authUser', JSON.stringify(data.user));
-        if (data.user.phone) {
-          window.localStorage.setItem('secId', data.user.phone);
-        }
       }
 
       // If this SEC user has not yet provided their name, send them to the

@@ -61,11 +61,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      profile: {
-        id: secRecord.id,
-        phone: secRecord.phone,
-        fullName: secRecord.fullName,
-      },
+      id: secRecord.id,
+      phone: secRecord.phone,
+      fullName: secRecord.fullName,
     });
   } catch (error) {
     console.error('Error in POST /api/sec/profile/name', error);

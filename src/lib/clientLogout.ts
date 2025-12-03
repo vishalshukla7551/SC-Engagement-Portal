@@ -10,7 +10,8 @@ export async function clientLogout(redirectTo: string = '/login/role') {
       window.localStorage.removeItem('authUser');
       // Keep these for backward compatibility if you decide to still use them:
       window.localStorage.removeItem('secUserName');
-      window.localStorage.removeItem('secId');
+      window.localStorage.removeItem('firstName');
+      window.localStorage.removeItem('lastName');
     } catch {
       // ignore storage errors
     }

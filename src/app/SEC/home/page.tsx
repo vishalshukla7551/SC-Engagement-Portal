@@ -16,9 +16,7 @@ export default function SECHomePage() {
       const raw = window.localStorage.getItem('authUser');
       if (raw) {
         const auth = JSON.parse(raw) as any;
-        const fromProfile = auth?.profile?.fullName || auth?.profile?.phone;
-        const fromRoot = auth?.fullName || auth?.username || auth?.phone;
-        finalName = (fromProfile || fromRoot || '').trim();
+        finalName = (auth?.fullName || auth?.phone || '').trim();
       }
     } catch {
       // ignore JSON parse errors and fall back to older keys
@@ -32,10 +30,17 @@ export default function SECHomePage() {
       finalName = (storedFull || `${storedFirst} ${storedLast}`).trim();
     }
 
-    // 3) Final fallback: SEC ID if present
+    // 3) Final fallback: use phone as display name
     if (!finalName) {
-      const secId = window.localStorage.getItem('secId');
-      if (secId) finalName = secId;
+      try {
+        const raw = window.localStorage.getItem('authUser');
+        if (raw) {
+          const auth = JSON.parse(raw) as any;
+          if (auth?.phone) finalName = auth.phone;
+        }
+      } catch {
+        // ignore
+      }
     }
 
     if (finalName) {

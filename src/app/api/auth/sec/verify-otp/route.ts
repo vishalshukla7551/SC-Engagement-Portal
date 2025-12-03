@@ -79,13 +79,9 @@ export async function POST(req: NextRequest) {
       needsName,
       user: {
         role: 'SEC',
+        id: secRecord.id,
         phone: normalized,
-        profile: {
-          id: secRecord.id,
-          phone: secRecord.phone,
-          fullName: secRecord.fullName ?? null,
-          storeId: secRecord.storeId ?? null,
-        },
+        fullName: secRecord.fullName ?? null,
       },
     });
 

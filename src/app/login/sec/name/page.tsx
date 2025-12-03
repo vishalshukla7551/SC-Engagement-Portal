@@ -69,10 +69,7 @@ export default function SECNameCapturePage() {
             const parsed = JSON.parse(raw) as any;
             const updated = {
               ...parsed,
-              profile: {
-                ...(parsed.profile || {}),
-                fullName,
-              },
+              fullName,
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
           }

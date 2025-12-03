@@ -45,14 +45,23 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const [secInput, setSecInput] = useState('');
   const [secError, setSecError] = useState('');
 
-  // Load SEC ID from localStorage on mount
+  // Load SEC ID from authUser in localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem('secId');
-    if (stored) {
-      setSecId(stored);
-      setShowSecAlert(false);
-    } else if (!initialSecId) {
+    try {
+      const raw = window.localStorage.getItem('authUser');
+      if (raw) {
+        const auth = JSON.parse(raw);
+        if (auth?.phone) {
+          setSecId(auth.phone);
+          setShowSecAlert(false);
+          return;
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    if (!initialSecId) {
       setShowSecAlert(true);
     }
   }, [initialSecId]);
@@ -170,9 +179,6 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
     const cleaned = secInput.trim().toUpperCase();
     setSecId(cleaned);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('secId', cleaned);
-    }
     setShowSecAlert(false);
     setShowSecModal(false);
     setSecError('');

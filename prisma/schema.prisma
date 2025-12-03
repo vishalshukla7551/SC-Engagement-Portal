@@ -138,7 +138,6 @@ model SEC {
 
   fullName    String?
   phone       String   @unique
-  storeId     String?
   lastLoginAt DateTime?
 
   createdAt   DateTime @default(now())
