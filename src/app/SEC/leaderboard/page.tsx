@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import SECHeader from '@/components/sec/SECHeader';
-import SECFooter from '@/components/sec/SECFooter';
+import SECHeader from '../SECHeader.jsx';
+import SECFooter from '../SECFooter.jsx';
 
 const MONTHS = [
   'January',

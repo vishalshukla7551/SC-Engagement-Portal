@@ -138,7 +138,7 @@ export default function SECLogin() {
       // If this SEC user has not yet provided their name, send them to the
       // one-time name capture screen before landing on the home dashboard.
       if (data.needsName) {
-        router.push('/login/sec/name');
+        router.push('/SEC/name');
         return;
       }
 

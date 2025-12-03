@@ -13,12 +13,21 @@ export default function SECNameCapturePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Pre-fill from any existing values
-    const storedFirst = window.localStorage.getItem('firstName') || '';
-    const storedLast = window.localStorage.getItem('lastName') || '';
+    // Optional: pre-fill from authUser.fullName if present
+    try {
+      const raw = window.localStorage.getItem('authUser');
+      if (!raw) return;
 
-    if (storedFirst) setFirstName(storedFirst);
-    if (storedLast) setLastName(storedLast);
+      const auth = JSON.parse(raw) as any;
+      const fullName = (auth?.fullName || '').trim();
+      if (!fullName) return;
+
+      const [first, ...rest] = fullName.split(' ');
+      setFirstName(first || '');
+      setLastName(rest.join(' '));
+    } catch {
+      // ignore parse / storage errors
+    }
   }, []);
 
   const handleBack = () => {
@@ -56,13 +65,8 @@ export default function SECNameCapturePage() {
 
       if (typeof window !== 'undefined') {
         const fullName = `${trimmedFirst} ${trimmedLast}`.trim();
-        window.localStorage.setItem('firstName', trimmedFirst);
-        window.localStorage.setItem('lastName', trimmedLast);
-        if (fullName) {
-          window.localStorage.setItem('secUserName', fullName);
-        }
 
-        // Also update authUser in storage if present so greeting uses the name.
+        // Update authUser in storage so the rest of the SEC UI can read fullName
         try {
           const raw = window.localStorage.getItem('authUser');
           if (raw) {

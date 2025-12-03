@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import SECHeader from '@/components/sec/SECHeader';
-import SECFooter from '@/components/sec/SECFooter';
+import SECHeader from '../SECHeader.jsx';
+import SECFooter from '../SECFooter.jsx';
 
 export default function ProfilePage() {
   const [fullName, setFullName] = useState('');
@@ -23,12 +23,23 @@ export default function ProfilePage() {
   const [chequeFile, setChequeFile] = useState<File | null>(null);
 
   useEffect(() => {
-    // Load user data from localStorage
-    const firstName = localStorage.getItem('firstName') || '';
-    const lastName = localStorage.getItem('lastName') || '';
-    setFullName(`${firstName} ${lastName}`.trim());
-    setPhoneNumber('+91 98765 43210');
-    setEmail('rajesh.kumar@techdotzd.com');
+    if (typeof window === 'undefined') return;
+
+    try {
+      const raw = window.localStorage.getItem('authUser');
+      if (!raw) return;
+
+      const auth = JSON.parse(raw) as any;
+      const fullNameFromAuth = (auth?.fullName || '').trim();
+      const phoneFromAuth = (auth?.phone || '').trim();
+      const emailFromAuth = (auth?.email || '').trim();
+
+      if (fullNameFromAuth) setFullName(fullNameFromAuth);
+      if (phoneFromAuth) setPhoneNumber(phoneFromAuth);
+      if (emailFromAuth) setEmail(emailFromAuth);
+    } catch {
+      // ignore parse/storage errors
+    }
   }, []);
 
   const handlePersonalInfoSubmit = (e: React.FormEvent) => {

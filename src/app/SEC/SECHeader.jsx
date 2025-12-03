@@ -26,6 +26,32 @@ export default function SECHeader() {
     };
   }, []);
 
+  // Redirect SEC users without a full name to the name capture screen
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const pathname = window.location.pathname || '';
+
+    // Only apply on SEC routes, and avoid redirect loop on the name page itself
+    if (!pathname.startsWith('/SEC') || pathname === '/SEC/name') {
+      return;
+    }
+
+    try {
+      const raw = window.localStorage.getItem('authUser');
+      if (!raw) return;
+
+      const auth = JSON.parse(raw);
+      const fullName = (auth?.fullName || '').trim();
+
+      if (!fullName) {
+        window.location.href = '/SEC/name';
+      }
+    } catch {
+      // ignore JSON parse errors
+    }
+  }, []);
+
   return (
     <header className="bg-black text-white px-4 sm:px-6 md:px-8 lg:px-12 py-3 sm:py-3.5 md:py-4 flex justify-end items-center sticky top-0 z-50 shadow-lg">
       <div className="flex items-center gap-3 sm:gap-4">

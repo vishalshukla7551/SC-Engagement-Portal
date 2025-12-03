@@ -30,7 +30,7 @@ xl:  1280px  /* Extra large devices and up */
 
 ### 1. SECHeader Component
 
-**File:** `src/components/sec/SECHeader.jsx`
+**File:** `src/app/SEC/SECHeader.jsx`
 
 **Responsive Features:**
 - Padding scales from mobile to desktop: `px-4 → px-6 → px-8 → px-12`
@@ -46,7 +46,7 @@ Desktop (1024px+):   Large padding, prominent icon
 
 ### 2. SECFooter Component
 
-**File:** `src/components/sec/SECFooter.jsx`
+**File:** `src/app/SEC/SECFooter.jsx`
 
 **Responsive Features:**
 - **Hidden on desktop (768px+)** using `md:hidden` class
@@ -62,7 +62,7 @@ Tablet/Desktop:      Hidden (replaced by sidebar navigation)
 
 ### 3. Landing Page
 
-**File:** `src/app/login/sec/LandingPage.jsx`
+**File:** `src/app/SEC/home/component/LandingPage.jsx`
 
 #### Greeting Section
 ```jsx

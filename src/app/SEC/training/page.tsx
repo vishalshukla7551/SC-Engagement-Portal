@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Play, FileText, Download, CheckCircle2, Clock } from 'lucide-react';
-import SECHeader from '@/components/sec/SECHeader';
-import SECFooter from '@/components/sec/SECFooter';
+import SECHeader from '../SECHeader.jsx';
+import SECFooter from '../SECFooter.jsx';
 
 const MONTHS = [
   'January',

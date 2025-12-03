@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import SECHeader from '@/components/sec/SECHeader';
-import SECFooter from '@/components/sec/SECFooter';
+import SECHeader from '../../SECHeader.jsx';
+import SECFooter from '../../SECFooter.jsx';
 
 export default function LandingPage({ userName = '' }) {
   const [activeSlide, setActiveSlide] = useState(0);

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import SECHeader from '@/components/sec/SECHeader';
-import SECFooter from '@/components/sec/SECFooter';
+import SECHeader from '../SECHeader.jsx';
+import SECFooter from '../SECFooter.jsx';
 
 export default function SecIncentiveForm({ initialSecId = '' }) {
   const [secId, setSecId] = useState(initialSecId);
