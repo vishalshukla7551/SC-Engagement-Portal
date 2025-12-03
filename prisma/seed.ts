@@ -1,6 +1,4 @@
 import { PrismaClient, Role, Validation } from '@prisma/client';
-import * as XLSX from 'xlsx';
-import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -9,57 +7,25 @@ function buildStoreId(n: number): string {
 }
 
 async function main() {
-  // ----- STORES FROM EXCEL -----
-  // Place your Excel file at: prisma/stores.xlsx
-  // Accepted header names (case-insensitive):
-  // - id:        "id", "store_id", "Store ID"
-  // - name:      "name", "store_name", "Store Name"
-  // - city:      "city", "City"
-  // - state:     "state", "State"
-  try {
-    const workbookPath = path.join(process.cwd(), 'prisma', 'stores.xlsx');
-    const workbook = XLSX.readFile(workbookPath);
-    const sheetName = workbook.SheetNames[0];
-    const rows = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName], {
-      defval: '',
+  // ----- STORES -----
+  const stores = [
+    { id: buildStoreId(1), name: 'Croma - Mumbai Oberoi Mall', city: 'Mumbai', state: 'Maharashtra' },
+    { id: buildStoreId(2), name: 'Croma - Noida Mall of India', city: 'Noida', state: 'Uttar Pradesh' },
+    { id: buildStoreId(3), name: 'Vijay Sales - Pune Chinchwad', city: 'Pune', state: 'Maharashtra' },
+    { id: buildStoreId(4), name: 'Croma - Bengaluru Indiranagar', city: 'Bengaluru', state: 'Karnataka' },
+    { id: buildStoreId(5), name: 'Croma - Delhi Rohini', city: 'Delhi', state: 'Delhi' },
+  ];
+
+  for (const store of stores) {
+    await prisma.store.upsert({
+      where: { id: store.id },
+      update: {
+        name: store.name,
+        city: store.city,
+        state: store.state,
+      },
+      create: store,
     });
-
-    // Remove any existing dummy data first so only Excel stores remain
-    await prisma.store.deleteMany({});
-
-    let index = 1;
-    for (const row of rows) {
-      const lower: Record<string, any> = {};
-      for (const [key, value] of Object.entries(row)) {
-        lower[key.toLowerCase()] = value;
-      }
-
-      const idFromExcel =
-        lower['id'] || lower['store_id'] || lower['store id'] || lower['storeid'];
-      const nameFromExcel =
-        lower['name'] || lower['store_name'] || lower['store name'] || lower['storename'];
-      const cityFromExcel = lower['city'];
-      const stateFromExcel = lower['state'];
-
-      // Fallback to generated ID if "id" column is missing
-      const id: string = (idFromExcel as string) || buildStoreId(index++);
-      const name: string = (nameFromExcel as string) || '';
-      const city: string | null = cityFromExcel ? String(cityFromExcel) : null;
-      const state: string | null = stateFromExcel ? String(stateFromExcel) : null;
-
-      if (!name) continue; // skip empty rows
-
-      await prisma.store.create({
-        data: {
-          id,
-          name,
-          city,
-          state,
-        },
-      });
-    }
-  } catch (err) {
-    console.warn('Store seeding from prisma/stores.xlsx skipped:', err);
   }
 
   // ----- HELPERS FOR ZBM / ZSE -----

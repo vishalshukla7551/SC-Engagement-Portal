@@ -8,33 +8,8 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const [secId, setSecId] = useState(initialSecId);
   const [dateOfSale, setDateOfSale] = useState('');
   const [storeName, setStoreName] = useState('');
-  const [storeSearch, setStoreSearch] = useState('');
-  const [showStoreDropdown, setShowStoreDropdown] = useState(false);
-  const [stores, setStores] = useState([]);
-  const [isLoadingStores, setIsLoadingStores] = useState(false);
-  const [storeError, setStoreError] = useState('');
-
-  const [devices, setDevices] = useState([]);
-  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
-  const [deviceError, setDeviceError] = useState('');
-
-  const [plans, setPlans] = useState([]);
-  const [isLoadingPlans, setIsLoadingPlans] = useState(false);
-  const [planError, setPlanError] = useState('');
-
   const [deviceName, setDeviceName] = useState('');
-  const [deviceSearch, setDeviceSearch] = useState('');
-  const [showDeviceDropdown, setShowDeviceDropdown] = useState(false);
   const [planType, setPlanType] = useState('');
-
-  // Filtered data for search
-  const filteredStores = stores.filter((store) =>
-    (store.label || store.name || '').toLowerCase().includes(storeSearch.toLowerCase())
-  );
-
-  const filteredDevices = devices.filter((device) =>
-    (device.label || device.name || '').toLowerCase().includes(deviceSearch.toLowerCase())
-  );
   const [imeiNumber, setImeiNumber] = useState('');
   const [imeiError, setImeiError] = useState('');
   const [duplicateError, setDuplicateError] = useState('');
@@ -65,70 +40,6 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       setShowSecAlert(true);
     }
   }, [initialSecId]);
-
-  // Load stores list from backend
-  useEffect(() => {
-    const loadStores = async () => {
-      try {
-        setIsLoadingStores(true);
-        setStoreError('');
-        const res = await fetch('/api/stores');
-        if (!res.ok) {
-          throw new Error('Failed to load stores');
-        }
-        const data = await res.json();
-        setStores(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error('Error loading stores', err);
-        setStoreError('Unable to load stores. Please try again later.');
-      } finally {
-        setIsLoadingStores(false);
-      }
-    };
-
-    loadStores();
-  }, []);
-
-  // Load Samsung devices and plan types from backend
-  useEffect(() => {
-    const loadSamsungData = async () => {
-      try {
-        setIsLoadingDevices(true);
-        setIsLoadingPlans(true);
-        setDeviceError('');
-        setPlanError('');
-
-        const [deviceRes, planRes] = await Promise.all([
-          fetch('/api/samsung-devices'),
-          fetch('/api/samsung-plans'),
-        ]);
-
-        if (!deviceRes.ok) {
-          throw new Error('Failed to load Samsung devices');
-        }
-        if (!planRes.ok) {
-          throw new Error('Failed to load Samsung plans');
-        }
-
-        const [deviceData, planData] = await Promise.all([
-          deviceRes.json(),
-          planRes.json(),
-        ]);
-
-        setDevices(Array.isArray(deviceData) ? deviceData : []);
-        setPlans(Array.isArray(planData) ? planData : []);
-      } catch (err) {
-        console.error('Error loading Samsung SKU data', err);
-        setDeviceError('Unable to load Samsung devices. Please try again later.');
-        setPlanError('Unable to load plan types. Please try again later.');
-      } finally {
-        setIsLoadingDevices(false);
-        setIsLoadingPlans(false);
-      }
-    };
-
-    loadSamsungData();
-  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -394,64 +305,23 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               <label htmlFor="storeName" className="block text-sm font-medium text-gray-700 mb-2">
                 Store Name
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="storeName"
-                  value={storeSearch || (storeName ? stores.find(s => s.id === storeName)?.label || stores.find(s => s.id === storeName)?.name || '' : '')}
-                  onChange={(e) => {
-                    setStoreSearch(e.target.value);
-                    setStoreName('');
-                    setShowStoreDropdown(true);
-                  }}
-                  onFocus={() => setShowStoreDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowStoreDropdown(false), 200)}
-                  placeholder={isLoadingStores ? 'Loading stores...' : 'Search or select store'}
-                  className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <svg
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-
-                {/* Dropdown */}
-                {showStoreDropdown && filteredStores.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
-                    {filteredStores.map((store) => (
-                      <div
-                        key={store.id}
-                        onClick={() => {
-                          setStoreName(store.id);
-                          setStoreSearch(store.label || store.name);
-                          setShowStoreDropdown(false);
-                        }}
-                        className="px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                      >
-                        {store.label || store.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* No results */}
-                {showStoreDropdown && storeSearch && filteredStores.length === 0 && !isLoadingStores && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg p-4 text-center">
-                    <p className="text-sm text-gray-500">No stores found</p>
-                  </div>
-                )}
-              </div>
-              {storeError && (
-                <p className="mt-1 text-xs text-red-600 font-medium">{storeError}</p>
-              )}
+              <select
+                id="storeName"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  backgroundSize: '1.25rem',
+                }}
+              >
+                <option value="">Select Store</option>
+                <option value="store1">Store 1</option>
+                <option value="store2">Store 2</option>
+                <option value="store3">Store 3</option>
+              </select>
             </div>
 
             {/* Device Name */}
@@ -459,64 +329,23 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               <label htmlFor="deviceName" className="block text-sm font-medium text-gray-700 mb-2">
                 Device Name
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="deviceName"
-                  value={deviceSearch || (deviceName ? devices.find(d => d.id === deviceName)?.label || `${devices.find(d => d.id === deviceName)?.category} - ${devices.find(d => d.id === deviceName)?.modelName}` || '' : '')}
-                  onChange={(e) => {
-                    setDeviceSearch(e.target.value);
-                    setDeviceName('');
-                    setShowDeviceDropdown(true);
-                  }}
-                  onFocus={() => setShowDeviceDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowDeviceDropdown(false), 200)}
-                  placeholder={isLoadingDevices ? 'Loading devices...' : 'Search or select device'}
-                  className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <svg
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-
-                {/* Dropdown */}
-                {showDeviceDropdown && filteredDevices.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
-                    {filteredDevices.map((device) => (
-                      <div
-                        key={device.id}
-                        onClick={() => {
-                          setDeviceName(device.id);
-                          setDeviceSearch(device.label || `${device.category} - ${device.modelName}`);
-                          setShowDeviceDropdown(false);
-                        }}
-                        className="px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                      >
-                        {device.label || `${device.category} - ${device.modelName}`}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* No results */}
-                {showDeviceDropdown && deviceSearch && filteredDevices.length === 0 && !isLoadingDevices && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg p-4 text-center">
-                    <p className="text-sm text-gray-500">No devices found</p>
-                  </div>
-                )}
-              </div>
-              {deviceError && (
-                <p className="mt-1 text-xs text-red-600 font-medium">{deviceError}</p>
-              )}
+              <select
+                id="deviceName"
+                value={deviceName}
+                onChange={(e) => setDeviceName(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  backgroundSize: '1.25rem',
+                }}
+              >
+                <option value="">Select Device</option>
+                <option value="iphone">iPhone</option>
+                <option value="samsung">Samsung</option>
+                <option value="oneplus">OnePlus</option>
+              </select>
             </div>
 
             {/* Plan Type */}
@@ -530,24 +359,17 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 onChange={(e) => setPlanType(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                 style={{
-                  backgroundImage: `url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")`,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'right 1rem center',
                   backgroundSize: '1.25rem',
                 }}
               >
-                <option value="">
-                  {isLoadingPlans ? 'Loading plans...' : 'Search or select plan'}
-                </option>
-                {plans.map((plan) => (
-                  <option key={plan.id} value={plan.id}>
-                    {plan.label}
-                  </option>
-                ))}
+                <option value="">Select Plan</option>
+                <option value="basic">Basic Plan</option>
+                <option value="premium">Premium Plan</option>
+                <option value="unlimited">Unlimited Plan</option>
               </select>
-              {planError && (
-                <p className="mt-1 text-xs text-red-600 font-medium">{planError}</p>
-              )}
             </div>
 
             {/* IMEI Number */}

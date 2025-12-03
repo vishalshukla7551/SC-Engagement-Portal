@@ -9,7 +9,6 @@ export default function ProfilePage() {
     phoneNumber: '',
     email: '',
     dateOfBirth: '',
-    baseLocation: '',
     
     // Store Details
     storeName: '',
@@ -164,19 +163,6 @@ export default function ProfilePage() {
                   value={formData.dateOfBirth}
                   onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Base Location
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter your base location"
-                  value={formData.baseLocation}
-                  onChange={(e) => setFormData({ ...formData, baseLocation: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
             </div>
