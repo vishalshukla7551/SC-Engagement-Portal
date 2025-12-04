@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { hashPassword } from '@/lib/password';
 
 // GET /api/auth/signup
 // Returns options for signup form (stores, ZBM, ZSE)
@@ -67,12 +68,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // NOTE: In production you MUST hash the password before saving.
+    // Hash the password before saving
+    const hashedPassword = await hashPassword(password);
 
     const user = await prisma.user.create({
       data: {
         username,
-        password,
+        password: hashedPassword,
         role,
         validation: 'PENDING',
         // all other signup fields go into metadata

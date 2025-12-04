@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { clientLogout } from '@/lib/clientLogout';
 
 const quickStats = [
   {
@@ -45,8 +48,8 @@ export default function ZopperAdministratorPage() {
           </div>
 
           {/* Logout button */}
-          <Link
-            href="/login/role"
+          <button
+            onClick={() => clientLogout('/login/role')}
             className="flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/60 transition-transform transition-colors hover:-translate-y-0.5 hover:bg-red-700"
           >
             <svg
@@ -79,7 +82,7 @@ export default function ZopperAdministratorPage() {
               />
             </svg>
             <span>Logout</span>
-          </Link>
+          </button>
         </header>
 
         {/* Main Content */}

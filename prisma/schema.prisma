@@ -23,29 +23,71 @@ enum Validation {
   BLOCKED
 }
 
+enum PlanType {
+  SCREEN_PROTECT_1_YR
+  ADLD_1_YR
+  COMBO_2_YRS
+  EXTENDED_WARRANTY_1_YR
+  TEST_PLAN
+}
+
 model Store {
   id    String @id @map("_id")
   name  String
   city  String?
   state String?
 
+  salesReports SpotIncentiveSalesReport[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model SamsungPlanPrice {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  category  String
-  modelName String
-  planLabel String
-  planKey   String
-  price     Float
+model SamsungSKU {
+  id           String                     @id @default(auto()) @map("_id") @db.ObjectId
+  Category     String
+  ModelName    String
+  plans        Plan[]
+  salesReports SpotIncentiveSalesReport[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@map("SamsungSKU")
+}
 
-  @@index([planKey])
-  @@index([category, modelName])
+model Plan {
+  id           String                     @id @default(auto()) @map("_id") @db.ObjectId
+  planType     PlanType
+  price        Int
+  samsungSKU   SamsungSKU?                @relation(fields: [samsungSKUId], references: [id])
+  samsungSKUId String?                    @db.ObjectId
+  salesReports SpotIncentiveSalesReport[]
+
+  @@map("Plan")
+}
+
+model SpotIncentiveSalesReport {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  secId         String     @db.ObjectId
+  secUser       SEC     @relation(fields: [secId], references: [id])
+  storeId       String
+  store         Store      @relation(fields: [storeId], references: [id])
+  samsungSKUId  String     @db.ObjectId
+  samsungSKU    SamsungSKU @relation(fields: [samsungSKUId], references: [id])
+  planId        String     @db.ObjectId
+  plan          Plan       @relation(fields: [planId], references: [id])
+  imei          String
+  planPrice     Int
+  incentiveEarned Int      // Calculated incentive amount
+  voucherCode   String?    // Optional voucher code for incentive redemption
+  isPaid        Boolean    @default(false)
+  paidAt        DateTime?
+  submittedAt   DateTime   @default(now())
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([secId])
+  @@index([storeId])
+  @@index([submittedAt])
+  @@unique([imei])
 }
 
 model User {
@@ -139,6 +181,8 @@ model SEC {
   fullName    String?
   phone       String   @unique
   lastLoginAt DateTime?
+
+  salesReports SpotIncentiveSalesReport[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

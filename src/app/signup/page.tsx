@@ -80,7 +80,7 @@ export default function SignUpPage() {
       };
 
       if (name === 'role') {
-        if (value !== 'ABM' && value !== 'ASE' && value !== 'ZSE') {
+        if (value !== 'ABM' && value !== 'ASE') {
           updated.storeIds = [];
         }
         if (value !== 'ABM' && value !== 'ASE') {
@@ -245,8 +245,8 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          {/* Select Store - ABM, ASE, ZSE (search + multi-select) */}
-          {(formData.role === 'ABM' || formData.role === 'ASE' || formData.role === 'ZSE') && (
+          {/* Select Store - ABM, ASE (search + multi-select) */}
+          {(formData.role === 'ABM' || formData.role === 'ASE') && (
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-3">
                 Select Store(s)

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { clientLogout } from '@/lib/clientLogout';
 
 export default function SECNameCapturePage() {
   const router = useRouter();
@@ -30,8 +31,8 @@ export default function SECNameCapturePage() {
     }
   }, []);
 
-  const handleBack = () => {
-    router.back();
+  const handleBack = async () => {
+    await clientLogout('/login/sec');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

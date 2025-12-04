@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { FaDownload, FaSignOutAlt } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import Link from 'next/link';
+import { clientLogout } from '@/lib/clientLogout';
 
 // Mock data
 const mockData = [
@@ -161,13 +162,13 @@ export default function MonthlyIncentiveReport() {
             </div>
           </div>
 
-          <Link
-            href="/login/role"
+          <button
+            onClick={() => clientLogout('/login/role')}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg self-start"
           >
             <FaSignOutAlt size={12} />
             Logout
-          </Link>
+          </button>
         </header>
 
         {/* Key metrics */}

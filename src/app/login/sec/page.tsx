@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getHomePathForRole } from '@/lib/roleHomePath';
+import ButtonLoader from '@/components/ButtonLoader';
 
 export default function SECLogin() {
   const router = useRouter();
@@ -266,9 +267,17 @@ export default function SECLogin() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white font-semibold py-4 rounded-lg hover:bg-blue-700 transition-colors text-lg"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-semibold py-4 rounded-lg hover:bg-blue-700 transition-colors text-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {otpSent ? 'Verify & Continue' : 'Send OTP'}
+            {loading && <ButtonLoader variant="light" size="md" />}
+            {loading
+              ? otpSent
+                ? 'Verifying...'
+                : 'Sending...'
+              : otpSent
+                ? 'Verify & Continue'
+                : 'Send OTP'}
           </button>
         </form>
 
