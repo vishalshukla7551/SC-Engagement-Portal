@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Confetti from 'react-confetti';
 import SECHeader from '../SECHeader.jsx';
 import SECFooter from '../SECFooter.jsx';
 
@@ -15,8 +16,13 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const [duplicateError, setDuplicateError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
+  const [imeiExists, setImeiExists] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSecAlert, setShowSecAlert] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [earnedIncentive, setEarnedIncentive] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
   
   // Data from APIs
   const [stores, setStores] = useState([]);
@@ -140,8 +146,14 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       return;
     }
     
+    // Show confirmation modal instead of submitting directly
+    setShowConfirmModal(true);
+  };
+
+  const handleFinalSubmit = async () => {
     try {
       setIsSubmitting(true);
+      setShowConfirmModal(false);
       
       const res = await fetch('/api/sec/incentive-form/submit', {
         method: 'POST',
@@ -164,8 +176,15 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
         return;
       }
 
-      // Success
-      alert('Sales report submitted successfully! Incentive: ₹' + data.salesReport.incentiveEarned);
+      // Success - Show celebration modal
+      setEarnedIncentive(data.salesReport.incentiveEarned);
+      setShowConfetti(true);
+      setShowSuccessModal(true);
+      
+      // Stop confetti after 4 seconds
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 4000);
       
       // Reset form
       setDateOfSale('');
@@ -182,6 +201,15 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCloseSuccess = () => {
+    setShowSuccessModal(false);
+    setShowConfetti(false);
+  };
+
+  const handleCancelConfirm = () => {
+    setShowConfirmModal(false);
   };
 
 
@@ -201,15 +229,51 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   };
 
   const checkImeiDuplicate = async (imei) => {
-    if (!imei || imei.length !== 15) {
+    if (!imei || imei.length < 14) {
+      setImeiExists(false);
       setDuplicateError('');
       return;
     }
 
-    // Note: Duplicate check will happen on submit via the API
-    // For now, we'll just clear the error
-    setDuplicateError('');
+    try {
+      setIsCheckingDuplicate(true);
+      const res = await fetch(`/api/sec/incentive-form/check-imei?imei=${imei}`);
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.exists) {
+          setImeiExists(true);
+          setDuplicateError('This IMEI has already been submitted.');
+        } else {
+          setImeiExists(false);
+          setDuplicateError('');
+        }
+      } else {
+        // If API fails, don't block the user
+        setImeiExists(false);
+        setDuplicateError('');
+      }
+    } catch (error) {
+      console.error('Error checking IMEI:', error);
+      // If API fails, don't block the user
+      setImeiExists(false);
+      setDuplicateError('');
+    } finally {
+      setIsCheckingDuplicate(false);
+    }
   };
+
+  // Debounce function
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  // Create debounced version of checkImeiDuplicate
+  const debouncedCheckImei = debounce(checkImeiDuplicate, 400);
 
   const validateAndSetImei = (rawValue) => {
     const numeric = rawValue.replace(/\D/g, '').slice(0, 15);
@@ -218,23 +282,27 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
     if (!numeric) {
       setImeiError('');
       setDuplicateError('');
+      setImeiExists(false);
       return;
     }
 
     if (numeric.length !== 15) {
       setImeiError('Invalid IMEI. Please enter a valid 15-digit IMEI number.');
       setDuplicateError('');
+      setImeiExists(false);
       return;
     }
 
     if (!luhnCheck(numeric)) {
       setImeiError('Invalid IMEI. Please enter a valid 15-digit IMEI number.');
       setDuplicateError('');
+      setImeiExists(false);
       return;
     }
 
     setImeiError('');
-    checkImeiDuplicate(numeric);
+    // Use debounced check for duplicate IMEI
+    debouncedCheckImei(numeric);
   };
 
   const handleImeiChange = (e) => {
@@ -475,7 +543,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   inputMode="numeric"
                   maxLength="15"
                   className={`w-full pl-4 pr-24 py-3 bg-white border rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 placeholder:text-gray-400 ${
-                    imeiError || duplicateError
+                    imeiError || duplicateError || imeiExists
                       ? 'border-red-500 focus:ring-red-500'
                       : 'border-gray-300 focus:ring-blue-500'
                   }`}
@@ -502,12 +570,17 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   {isScanning ? 'Scanning...' : 'Scan'}
                 </button>
               </div>
-              {(imeiError || duplicateError) && (
+              {isCheckingDuplicate && !imeiError && (
+                <p className="mt-2 text-xs text-blue-600 font-medium">
+                  Checking IMEI...
+                </p>
+              )}
+              {(imeiError || duplicateError) && !isCheckingDuplicate && (
                 <p className="mt-2 text-xs text-red-600 font-medium">
                   {imeiError || duplicateError}
                 </p>
               )}
-              {!imeiError && !duplicateError && (
+              {!imeiError && !duplicateError && !isCheckingDuplicate && (
                 <p className="mt-2 text-xs text-gray-500">
                   Any incorrect sales reported will impact your future incentives.
                 </p>
@@ -518,7 +591,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
             <div className="pt-4 pb-6">
               <button
                 type="submit"
-                disabled={!!imeiError || !!duplicateError || !imeiNumber || imeiNumber.length !== 15 || isCheckingDuplicate || isSubmitting || !storeId || !deviceId || !planId}
+                disabled={!!imeiError || !!duplicateError || imeiExists || !imeiNumber || imeiNumber.length !== 15 || isCheckingDuplicate || isSubmitting || !storeId || !deviceId || !planId}
                 className="w-full bg-black text-white font-semibold py-4 rounded-2xl hover:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all text-base"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
@@ -531,6 +604,122 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
 
       <SECFooter />
+
+      {/* Success Celebration Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          {showConfetti && (
+            <Confetti
+              width={typeof window !== 'undefined' ? window.innerWidth : 300}
+              height={typeof window !== 'undefined' ? window.innerHeight : 200}
+              numberOfPieces={300}
+              recycle={false}
+            />
+          )}
+          <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full animate-[fadeIn_0.3s_ease-in]">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold text-blue-600 mb-3">
+              Congratulations!
+            </h2>
+            <p className="text-gray-700 text-base mb-2">
+              You've earned
+            </p>
+            <p className="text-3xl font-bold text-green-600 mb-6">
+              ₹{earnedIncentive}
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              incentive! 🎊
+            </p>
+            <button
+              onClick={handleCloseSuccess}
+              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              View My Report
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div 
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={handleCancelConfirm}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              Confirm Plan Sale
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              Review the details below before submitting.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">SEC ID</span>
+                <span className="text-sm text-gray-900 font-medium">{secPhone}</span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Date of Sale</span>
+                <span className="text-sm text-gray-900 font-medium">{dateOfSale || 'Not set'}</span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Store Name</span>
+                <span className="text-sm text-gray-900 font-medium text-right ml-4">
+                  {stores.find(s => s.id === storeId)?.name || storeId}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Device</span>
+                <span className="text-sm text-gray-900 font-medium text-right ml-4">
+                  {devices.find(d => d.id === deviceId)?.ModelName || deviceId}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Plan Type</span>
+                <span className="text-sm text-gray-900 font-medium text-right ml-4">
+                  {plans.find(p => p.id === planId)?.label || planId}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Plan Price</span>
+                <span className="text-sm text-gray-900 font-medium">
+                  ₹{plans.find(p => p.id === planId)?.price || '0'}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">IMEI</span>
+                <span className="text-sm text-gray-900 font-medium">{imeiNumber}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelConfirm}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFinalSubmit}
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors font-medium text-sm"
+              >
+                {isSubmitting ? 'Submitting...' : 'Confirm & Submit'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
