@@ -96,25 +96,20 @@ export default function SECFooter() {
         </Link>
 
         <Link href="/SEC/leaderboard" className={linkClasses('leaderboard')}>
-          <div className="relative flex flex-col items-center gap-0.5 min-w-[60px]">
-            <svg
-              className={iconClasses('leaderboard')}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] font-bold">
-              2
-            </span>
-            <span className={labelClasses('leaderboard')}>Leaderboard</span>
-          </div>
+          <svg
+            className={iconClasses('leaderboard')}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span className={labelClasses('leaderboard')}>Leaderboard</span>
         </Link>
 
         <Link href="/IncentiveCalculator" className={linkClasses('calculator')}>

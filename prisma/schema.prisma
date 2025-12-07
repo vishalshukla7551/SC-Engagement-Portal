@@ -32,62 +32,126 @@ enum PlanType {
 }
 
 model Store {
-  id    String @id @map("_id")
+  id    String  @id @map("_id")
   name  String
   city  String?
   state String?
 
-  salesReports SpotIncentiveSalesReport[]
+  salesReports           SalesReport[]
+  spotIncentiveCampaigns SpotIncentiveCampaign[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model SamsungSKU {
-  id           String                     @id @default(auto()) @map("_id") @db.ObjectId
-  Category     String
-  ModelName    String
-  plans        Plan[]
-  salesReports SpotIncentiveSalesReport[]
+  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
+  Category               String
+  ModelName              String
+  plans                  Plan[]
+  salesReports           SalesReport[]
+  spotIncentiveCampaigns SpotIncentiveCampaign[]
 
   @@map("SamsungSKU")
 }
 
 model Plan {
-  id           String                     @id @default(auto()) @map("_id") @db.ObjectId
-  planType     PlanType
-  price        Int
-  samsungSKU   SamsungSKU?                @relation(fields: [samsungSKUId], references: [id])
-  samsungSKUId String?                    @db.ObjectId
-  salesReports SpotIncentiveSalesReport[]
+  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
+  planType               PlanType
+  price                  Int
+  samsungSKU             SamsungSKU?             @relation(fields: [samsungSKUId], references: [id])
+  samsungSKUId           String?                 @db.ObjectId
+  salesReports           SalesReport[]
+  spotIncentiveCampaigns SpotIncentiveCampaign[]
 
   @@map("Plan")
 }
 
-model SpotIncentiveSalesReport {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  secId         String     @db.ObjectId
-  secUser       SEC     @relation(fields: [secId], references: [id])
-  storeId       String
-  store         Store      @relation(fields: [storeId], references: [id])
-  samsungSKUId  String     @db.ObjectId
-  samsungSKU    SamsungSKU @relation(fields: [samsungSKUId], references: [id])
-  planId        String     @db.ObjectId
-  plan          Plan       @relation(fields: [planId], references: [id])
-  imei          String
-  planPrice     Int
-  incentiveEarned Int      // Calculated incentive amount
-  voucherCode   String?    // Optional voucher code for incentive redemption
-  isPaid        Boolean    @default(false)
-  paidAt        DateTime?
-  submittedAt   DateTime   @default(now())
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+model SalesReport {
+  id                      String                 @id @default(auto()) @map("_id") @db.ObjectId
+  secId                   String                 @db.ObjectId
+  secUser                 SEC                    @relation(fields: [secId], references: [id])
+  storeId                 String
+  store                   Store                  @relation(fields: [storeId], references: [id])
+  samsungSKUId            String                 @db.ObjectId
+  samsungSKU              SamsungSKU             @relation(fields: [samsungSKUId], references: [id])
+  planId                  String                 @db.ObjectId
+  plan                    Plan                   @relation(fields: [planId], references: [id])
+  imei                    String
+  salesSummaryId          String?                @db.ObjectId
+  SalesSummary            SalesSummary?          @relation("SalesSummaryReports", fields: [salesSummaryId], references: [id])
+  spotIncentiveCampaignId String?                @db.ObjectId
+  spotIncentiveCampaign   SpotIncentiveCampaign? @relation(fields: [spotIncentiveCampaignId], references: [id])
+  spotincentiveEarned     Int // Calculated incentive amount
+  voucherCode             String? // Optional voucher code for incentive redemption
+  spotincentivepaidAt     DateTime? //paid for each sale
+  metadata                Json? // Additional data related to the sales report
+  submittedAt             DateTime               @default(now())
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
 
+  @@unique([imei])
   @@index([secId])
   @@index([storeId])
   @@index([submittedAt])
-  @@unique([imei])
+  @@index([spotIncentiveCampaignId])
+}
+
+model SalesSummary {
+  id                          String        @id @default(auto()) @map("_id") @db.ObjectId
+  secId                       String        @db.ObjectId
+  secUser                     SEC           @relation(fields: [secId], references: [id])
+  totalSpotIncentiveEarned    Int
+  totalSamsungIncentiveEarned Int? // Optional - decided at payment date
+  samsungincentivepaidAt      DateTime? //paid for  monthly sale
+  metadata                    Json? // Additional data related to the sales summary
+  salesReport                 SalesReport[] @relation("SalesSummaryReports")
+  month                       Int
+  year                        Int
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @updatedAt
+
+  @@index([secId])
+  @@index([month, year])
+}
+
+enum IncentiveType {
+  FIXED // fixed amount per sale, e.g., 200 (INR)
+  PERCENTAGE // percent of sale or plan price, e.g., 5 = 5%
+}
+
+model SpotIncentiveCampaign {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  // targeting (nullable -> if null that axis is "all")
+  store        Store      @relation(fields: [storeId], references: [id])
+  storeId      String // Store uses String IDs, not ObjectId
+  samsungSKU   SamsungSKU @relation(fields: [samsungSKUId], references: [id])
+  samsungSKUId String     @db.ObjectId
+  plan         Plan       @relation(fields: [planId], references: [id])
+  planId       String     @db.ObjectId
+
+  // incentive details
+  incentiveType  IncentiveType @default(FIXED)
+  incentiveValue Float // use Float or Decimal depending on your connector; stores amount or percent
+
+  // schedule + status
+  startDate DateTime
+  endDate   DateTime
+  active    Boolean  @default(true)
+
+  // relationships
+  salesReports SalesReport[] @relation
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Prevent duplicate exact campaigns for same triple and overlapping time (optional unique index is tricky with ranges).
+  @@index([storeId])
+  @@index([samsungSKUId])
+  @@index([planId])
+  @@map("Campaign")
 }
 
 model User {
@@ -121,7 +185,7 @@ model ABM {
   phone    String
 
   storeIds String[]
-  zbmId    String @db.ObjectId
+  zbmId    String   @db.ObjectId
 
   user User @relation("UserABM", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -137,7 +201,7 @@ model ASE {
   phone    String
 
   storeIds String[]
-  zseId    String @db.ObjectId
+  zseId    String   @db.ObjectId
 
   user User @relation("UserASE", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -176,16 +240,17 @@ model ZSE {
 }
 
 model SEC {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
   fullName    String?
-  phone       String   @unique
+  phone       String    @unique
   lastLoginAt DateTime?
 
-  salesReports SpotIncentiveSalesReport[]
+  salesReports   SalesReport[]
+  salesSummaries SalesSummary[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Otp {
@@ -231,7 +296,7 @@ model ClaimProcedurePDF {
   description String?
   fileName    String
   fileSize    Int
-  fileData    String   // Base64 encoded PDF data
+  fileData    String // Base64 encoded PDF data
   category    String   @default("GENERAL")
   isActive    Boolean  @default(true)
   uploadedAt  DateTime @default(now())

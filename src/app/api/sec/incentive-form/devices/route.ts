@@ -1,43 +1,27 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/sec/incentive-form/devices
- * Returns list of all Samsung SKUs (devices) grouped by category
+ * Get all Samsung devices (SamsungSKU) for the incentive form dropdown
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const devices = await prisma.samsungSKU.findMany({
+      orderBy: [
+        { Category: 'asc' },
+        { ModelName: 'asc' },
+      ],
       select: {
         id: true,
         Category: true,
         ModelName: true,
       },
-      orderBy: [
-        { Category: 'asc' },
-        { ModelName: 'asc' },
-      ],
     });
 
-    // Group devices by category for easier frontend handling
-    const groupedByCategory = devices.reduce((acc, device) => {
-      if (!acc[device.Category]) {
-        acc[device.Category] = [];
-      }
-      acc[device.Category].push({
-        id: device.id,
-        modelName: device.ModelName,
-      });
-      return acc;
-    }, {} as Record<string, Array<{ id: string; modelName: string }>>);
-
-    return NextResponse.json(
-      {
-        devices,
-        groupedByCategory,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      devices,
+    });
   } catch (error) {
     console.error('Error fetching devices:', error);
     return NextResponse.json(
@@ -46,3 +30,4 @@ export async function GET() {
     );
   }
 }
+

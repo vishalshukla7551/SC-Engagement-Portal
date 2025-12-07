@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SECHeader from '../SECHeader.jsx';
 import SECFooter from '../SECFooter.jsx';
 import { downloadReport } from './downloadReport';
 
-// Mock data variables (can be replaced with API data)
+// Filter options
 const monthlyFilters = ['Today', 'Yesterday', 'All'] as const;
 
 type FilterType = (typeof monthlyFilters)[number];
@@ -33,64 +33,21 @@ type SpotVoucher = {
   voucherCode: string;
 };
 
-const monthlySalesData: MonthlySale[] = [
-  { date: '10-11-2025', adld: 'ADLD_1Yr', combo: 'Combo_2Yr', units: 12 },
-  { date: '09-11-2025', adld: 'ADLD_6Mo', combo: 'Combo_1Yr', units: 8 },
-  { date: '08-11-2025', adld: 'ADLD_1Yr', combo: 'Combo_3Yr', units: 15 },
-  { date: '07-11-2025', adld: 'ADLD_2Yr', combo: 'Combo_1Yr', units: 6 },
-  { date: '06-11-2025', adld: 'ADLD_1Yr', combo: 'Combo_2Yr', units: 10 },
-];
-
-const FY_STATS = {
-  'FY-25': {
-    units: '1,250',
-    totalEarned: '₹37,500',
-    paid: '₹32,000',
-    net: '₹5,500',
-  },
-  'FY-24': {
-    units: '980',
-    totalEarned: '₹28,400',
-    paid: '₹25,000',
-    net: '₹3,400',
-  },
-  'FY-23': {
-    units: '0',
-    totalEarned: '₹0',
-    paid: '₹0',
-    net: '₹0',
-  },
-  'FY-22': {
-    units: '0',
-    totalEarned: '₹0',
-    paid: '₹0',
-    net: '₹0',
-  },
-  'FY-21': {
-    units: '0',
-    totalEarned: '₹0',
-    paid: '₹0',
-    net: '₹0',
-  },
-} as const;
-
-const previousTransactionsData: MonthlyTxn[] = [
-  { month: 'Nov 25', units: 13, incentive: '₹2300', status: 'Accumulated', paymentDate: '' },
-  { month: 'Oct 25', units: 14, incentive: '₹2300', status: 'Due', paymentDate: '' },
-  { month: 'Sept 25', units: 15, incentive: '₹2300', status: 'Paid', paymentDate: '10 Oct 25' },
-  { month: 'Aug 25', units: 2, incentive: '₹2300', status: 'Paid', paymentDate: '10 Sept 25' },
-  { month: 'Jul 25', units: 8, incentive: '₹2300', status: 'Paid', paymentDate: '10 Aug 25' },
-];
-
-const spotVoucherData: SpotVoucher[] = [
-  {
-    date: '19-10-2025',
-    deviceName: 'A17',
-    planName: 'Combo 2Yrs',
-    incentive: '₹300',
-    voucherCode: 'dsfsdfdsfsdf',
-  },
-];
+type PassbookData = {
+  salesSummary: MonthlySale[];
+  monthlyIncentive: {
+    transactions: MonthlyTxn[];
+  };
+  spotIncentive: {
+    transactions: SpotVoucher[];
+  };
+  fyStats: Record<string, {
+    units: string;
+    totalEarned: string;
+    paid: string;
+    net: string;
+  }>;
+};
 
 const statsCardsConfig = [
   { id: 'units', label: 'Total Units Sold', key: 'units', gradient: 'from-[#176CF3] to-[#3056FF]' },
@@ -111,12 +68,6 @@ const formatMonthYear = (dateStr: string) => {
   return `${monthName} ${yearShort}`;
 };
 
-const allMonths = Array.from(
-  new Set(monthlySalesData.map((r) => formatMonthYear(r.date)))
-);
-
-const allFYs = Object.keys(FY_STATS);
-
 export default function IncentivePassbookPage() {
   const [activeTab, setActiveTab] = useState<'monthly' | 'spot'>('monthly');
   const [activeFilter, setActiveFilter] = useState<FilterType>('Today');
@@ -124,12 +75,63 @@ export default function IncentivePassbookPage() {
   const [selectedMonth, setSelectedMonth] = useState<string>('All');
   const [selectedFY, setSelectedFY] = useState<string>('FY-25');
   const [sortAsc, setSortAsc] = useState<boolean>(false);
+  
+  // API data state
+  const [passbookData, setPassbookData] = useState<PassbookData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch passbook data from API
+  useEffect(() => {
+    async function fetchPassbookData() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch('/api/sec/passbook');
+        
+        if (!res.ok) {
+          if (res.status === 401) {
+            setError('Unauthorized. Please login again.');
+            return;
+          }
+          const errorData = await res.json().catch(() => ({ error: 'Failed to fetch data' }));
+          setError(errorData.error || 'Failed to fetch passbook data');
+          return;
+        }
+
+        const result = await res.json();
+        if (result.success && result.data) {
+          setPassbookData(result.data);
+        } else {
+          setError('Invalid response from server');
+        }
+      } catch (err) {
+        console.error('Error fetching passbook data:', err);
+        setError('Failed to load passbook data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPassbookData();
+  }, []);
 
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
 
-  const filteredMonthlySales = monthlySalesData
+  // Get sales summary data or empty array
+  const salesSummaryData = passbookData?.salesSummary || [];
+  
+  // Get unique months from sales summary
+  const allMonths = Array.from(
+    new Set(salesSummaryData.map((r) => formatMonthYear(r.date)))
+  );
+
+  // Get available FYs from API data or default
+  const allFYs = passbookData?.fyStats ? Object.keys(passbookData.fyStats) : ['FY-25', 'FY-24', 'FY-23', 'FY-22', 'FY-21'];
+
+  const filteredMonthlySales = salesSummaryData
     .filter((row) => {
       const d = parseDate(row.date);
       if (activeFilter === 'Today') {
@@ -166,7 +168,54 @@ export default function IncentivePassbookPage() {
       return sortAsc ? da - db : db - da;
     });
 
-  const fyStats = FY_STATS[selectedFY as keyof typeof FY_STATS];
+  // Get FY stats from API data
+  const fyStats = passbookData?.fyStats?.[selectedFY] || {
+    units: '0',
+    totalEarned: '₹0',
+    paid: '₹0',
+    net: '₹0',
+  };
+
+  // Get monthly transactions
+  const monthlyTransactions = passbookData?.monthlyIncentive.transactions || [];
+
+  // Get spot incentive transactions
+  const spotTransactions = passbookData?.spotIncentive.transactions || [];
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-white flex flex-col overflow-hidden">
+        <SECHeader />
+        <main className="flex-1 overflow-y-auto pb-32 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading passbook data...</p>
+          </div>
+        </main>
+        <SECFooter />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen bg-white flex flex-col overflow-hidden">
+        <SECHeader />
+        <main className="flex-1 overflow-y-auto pb-32 flex items-center justify-center">
+          <div className="text-center px-4">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </div>
+        </main>
+        <SECFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
@@ -267,18 +316,24 @@ export default function IncentivePassbookPage() {
           {activeTab === 'monthly' ? (
             <MonthlyIncentiveSection
               rows={filteredMonthlySales}
+              transactions={monthlyTransactions}
+              allMonths={allMonths}
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
               selectedFY={selectedFY}
               setSelectedFY={setSelectedFY}
+              allFYs={allFYs}
             />
           ) : (
             <SpotIncentiveSection
               rows={filteredMonthlySales}
+              transactions={spotTransactions}
+              allMonths={allMonths}
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
               selectedFY={selectedFY}
               setSelectedFY={setSelectedFY}
+              allFYs={allFYs}
             />
           )}
 
@@ -304,16 +359,22 @@ export default function IncentivePassbookPage() {
 
 function MonthlyIncentiveSection({
   rows,
+  transactions,
+  allMonths,
   selectedMonth,
   setSelectedMonth,
   selectedFY,
   setSelectedFY,
+  allFYs,
 }: {
   rows: MonthlySale[];
+  transactions: MonthlyTxn[];
+  allMonths: string[];
   selectedMonth: string;
   setSelectedMonth: (m: string) => void;
   selectedFY: string;
   setSelectedFY: (fy: string) => void;
+  allFYs: string[];
 }) {
   return (
     <>
@@ -373,7 +434,12 @@ function MonthlyIncentiveSection({
             <span className="text-right">Incentive</span>
             <span className="text-right">Date of Payment</span>
           </div>
-          {previousTransactionsData.map((row) => (
+          {transactions.length === 0 ? (
+            <div className="px-3 py-4 text-center text-gray-500 text-xs">
+              No transactions found
+            </div>
+          ) : (
+            transactions.map((row) => (
             <div
               key={row.month}
               className="grid grid-cols-4 px-3 py-2 border-t border-gray-100 text-gray-800 items-center"
@@ -398,7 +464,8 @@ function MonthlyIncentiveSection({
                 {row.paymentDate || '--'}
               </span>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
@@ -427,16 +494,22 @@ function MonthlyIncentiveSection({
 
 function SpotIncentiveSection({
   rows,
+  transactions,
+  allMonths,
   selectedMonth,
   setSelectedMonth,
   selectedFY,
   setSelectedFY,
+  allFYs,
 }: {
   rows: MonthlySale[];
+  transactions: SpotVoucher[];
+  allMonths: string[];
   selectedMonth: string;
   setSelectedMonth: (m: string) => void;
   selectedFY: string;
   setSelectedFY: (fy: string) => void;
+  allFYs: string[];
 }) {
   return (
     <>
@@ -504,7 +577,12 @@ function SpotIncentiveSection({
             <span className="text-center">Incentive Earned</span>
             <span className="text-center">Voucher Code</span>
           </div>
-          {spotVoucherData.map((row, idx) => (
+          {transactions.length === 0 ? (
+            <div className="px-3 py-4 text-center text-gray-500 text-xs">
+              No spot incentive transactions found
+            </div>
+          ) : (
+            transactions.map((row, idx) => (
             <div
               key={row.date + idx}
               className="grid grid-cols-5 px-3 py-2 border-t border-gray-100 text-gray-800 items-center"
@@ -522,7 +600,8 @@ function SpotIncentiveSection({
                 </button>
               </span>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
@@ -536,7 +615,7 @@ function SpotIncentiveSection({
               value={selectedFY}
               onChange={(e) => setSelectedFY(e.target.value)}
             >
-              {allFYs.map((fy) => (
+              {allFYs.map((fy: string) => (
                 <option key={fy} value={fy}>
                   {fy}
                 </option>

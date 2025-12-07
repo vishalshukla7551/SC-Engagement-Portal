@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRequireAuth } from '@/lib/clientAuth';
 
 export default function ZopperAdministratorLayout({
   children,
@@ -9,6 +10,11 @@ export default function ZopperAdministratorLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { loading } = useRequireAuth(['ZOPPER_ADMINISTRATOR']);
+
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   const isActive = (path: string) => pathname === path;
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRequireAuth } from '@/lib/clientAuth';
 
 export default function ZSMLayout({
   children,
@@ -9,6 +10,11 @@ export default function ZSMLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { loading } = useRequireAuth(['ZBM']);
+
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   const isActive = (path: string) => pathname === path;
 

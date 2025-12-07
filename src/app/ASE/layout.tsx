@@ -3,9 +3,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { useRequireAuth } from '@/lib/clientAuth';
 
 export default function ASELayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { loading } = useRequireAuth(['ASE']);
+
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="min-h-screen w-full bg-gray-900 flex">
