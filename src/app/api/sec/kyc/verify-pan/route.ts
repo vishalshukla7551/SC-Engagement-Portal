@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
           verifiedAt: new Date().toISOString(),
           requestId: panData.requestId,
           statusCode: panData.statusCode,
+          rawPanData: panData, // store full mock PAN JSON as well
         };
 
         // Update SEC user's name and KYC info in database (mock mode)
@@ -208,6 +209,7 @@ export async function POST(req: NextRequest) {
         verifiedAt: new Date().toISOString(),
         requestId: panData.requestId,
         statusCode: panData.statusCode,
+        rawPanData: panData, // store full PAN JSON as well
       };
 
       // Update SEC user's name and KYC info in database
