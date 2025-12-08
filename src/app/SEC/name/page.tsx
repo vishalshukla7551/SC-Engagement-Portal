@@ -27,7 +27,8 @@ export default function SECNameCapturePage() {
 
       const auth = JSON.parse(raw) as any;
       const storedFullName = (auth?.fullName || '').trim();
-      const storedStoreId = (auth?.selectedStoreId || '').trim();
+      // Check both storeId and selectedStoreId for backward compatibility
+      const storedStoreId = (auth?.storeId || auth?.selectedStoreId || '').trim();
 
       if (storedFullName) setFullName(storedFullName);
       if (storedStoreId) setSelectedStoreId(storedStoreId);
@@ -217,8 +218,10 @@ export default function SECNameCapturePage() {
                     setStoreSearch(e.target.value);
                     setIsStoreDropdownOpen(true);
                   }}
-                  onFocus={() => {
+                  onFocus={(e) => {
                     if (!loadingStores && stores.length > 0) {
+                      // Clear search to show all stores when focusing
+                      setStoreSearch('');
                       setIsStoreDropdownOpen(true);
                     }
                   }}
@@ -238,6 +241,10 @@ export default function SECNameCapturePage() {
                   onClick={(e) => {
                     e.stopPropagation();
                     if (loadingStores || stores.length === 0) return;
+                    // Clear search to show all stores when clicking arrow
+                    if (!isStoreDropdownOpen) {
+                      setStoreSearch('');
+                    }
                     setIsStoreDropdownOpen((open) => !open);
                   }}
                   className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none"
