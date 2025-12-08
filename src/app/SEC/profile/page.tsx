@@ -8,8 +8,11 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
-  const [storeName, setStoreName] = useState('Croma-Motijheel');
+  const [storeName, setStoreName] = useState('');
   const [agencyName, setAgencyName] = useState('');
+  const [agentCode, setAgentCode] = useState('');
+  const [submittingPersonalInfo, setSubmittingPersonalInfo] = useState(false);
+  const [personalInfoError, setPersonalInfoError] = useState<string | null>(null);
   
   const [panNumber, setPanNumber] = useState('');
   const [panImage, setPanImage] = useState<File | null>(null);
@@ -31,21 +34,72 @@ export default function ProfilePage() {
 
       const auth = JSON.parse(raw) as any;
       const fullNameFromAuth = (auth?.fullName || '').trim();
-      const phoneFromAuth = (auth?.phone || '').trim();
+      const phoneFromAuth = (auth?.username || auth?.phone || '').trim();
       const emailFromAuth = (auth?.email || '').trim();
+      const storeNameFromAuth = auth?.store?.name || '';
+      const agencyNameFromAuth = (auth?.AgencyName || '').trim();
+      const agentCodeFromAuth = (auth?.AgentCode || '').trim();
 
       if (fullNameFromAuth) setFullName(fullNameFromAuth);
       if (phoneFromAuth) setPhoneNumber(phoneFromAuth);
       if (emailFromAuth) setEmail(emailFromAuth);
+      if (storeNameFromAuth) setStoreName(storeNameFromAuth);
+      if (agencyNameFromAuth) setAgencyName(agencyNameFromAuth);
+      if (agentCodeFromAuth) setAgentCode(agentCodeFromAuth);
     } catch {
       // ignore parse/storage errors
     }
   }, []);
 
-  const handlePersonalInfoSubmit = (e: React.FormEvent) => {
+  const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Personal Info submitted:', { storeName, agencyName });
-    alert('Personal info saved successfully!');
+    setPersonalInfoError(null);
+
+    try {
+      setSubmittingPersonalInfo(true);
+
+      const res = await fetch('/api/sec/profile/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agencyName: agencyName.trim() || null,
+          agentCode: agentCode.trim() || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to update profile');
+      }
+
+      const responseData = await res.json();
+
+      // Update localStorage with new data
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = window.localStorage.getItem('authUser');
+          if (raw) {
+            const parsed = JSON.parse(raw) as any;
+            const updated = {
+              ...parsed,
+              AgencyName: responseData.AgencyName,
+              AgentCode: responseData.AgentCode,
+            };
+            window.localStorage.setItem('authUser', JSON.stringify(updated));
+          }
+        } catch {
+          // ignore parse/storage errors
+        }
+      }
+
+      alert('Personal info saved successfully!');
+    } catch (err: any) {
+      setPersonalInfoError(err.message || 'Failed to update profile');
+    } finally {
+      setSubmittingPersonalInfo(false);
+    }
   };
 
   const handleKYCSubmit = (e: React.FormEvent) => {
@@ -152,7 +206,7 @@ export default function ProfilePage() {
                   </svg>
                   <span className="text-sm font-semibold text-gray-900">Agency</span>
                 </div>
-                <div>
+                <div className="mb-3">
                   <label htmlFor="agencyName" className="block text-xs text-gray-600 mb-1">Agency Name</label>
                   <input
                     type="text"
@@ -163,17 +217,36 @@ export default function ProfilePage() {
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+                <div>
+                  <label htmlFor="agentCode" className="block text-xs text-gray-600 mb-1">Agent Code</label>
+                  <input
+                    type="text"
+                    id="agentCode"
+                    value={agentCode}
+                    onChange={(e) => setAgentCode(e.target.value)}
+                    placeholder="Enter Agent Code"
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
+
+              {/* Error Message */}
+              {personalInfoError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-xs text-red-700">{personalInfoError}</p>
+                </div>
+              )}
 
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
+                disabled={submittingPersonalInfo}
+                className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-                Submit
+                {submittingPersonalInfo ? 'Saving...' : 'Submit'}
               </button>
             </form>
           </section>

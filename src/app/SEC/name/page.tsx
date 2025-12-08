@@ -105,13 +105,17 @@ export default function SECNameCapturePage() {
       setSubmitting(true);
 
       // Persist to backend SEC profile so this screen only appears once.
-      // The API expects firstName/lastName; we send the full name as firstName.
+      // The API expects firstName/lastName/storeId; we send the full name as firstName.
       const res = await fetch('/api/sec/profile/name', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ firstName: trimmedFullName, lastName: '' }),
+        body: JSON.stringify({ 
+          firstName: trimmedFullName, 
+          lastName: '',
+          storeId: selectedStoreId 
+        }),
       });
 
       if (!res.ok) {
@@ -119,17 +123,22 @@ export default function SECNameCapturePage() {
         throw new Error(data?.error || 'Failed to save your name');
       }
 
+      const responseData = await res.json();
+
       if (typeof window !== 'undefined') {
-        // Update authUser in storage so the rest of the SEC UI can read
-        // fullName + selected store
+        // Update authUser in storage with the response from API
+        // This ensures localStorage has the latest data from database
         try {
           const raw = window.localStorage.getItem('authUser');
           if (raw) {
             const parsed = JSON.parse(raw) as any;
             const updated = {
               ...parsed,
-              fullName: trimmedFullName,
-              selectedStoreId,
+              fullName: responseData.fullName || trimmedFullName,
+              selectedStoreId: responseData.storeId || selectedStoreId,
+              storeId: responseData.storeId,
+              store: responseData.store,
+              secId: responseData.id,
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
           }

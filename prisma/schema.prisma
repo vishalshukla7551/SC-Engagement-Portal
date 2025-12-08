@@ -39,6 +39,7 @@ model Store {
 
   salesReports           SalesReport[]
   spotIncentiveCampaigns SpotIncentiveCampaign[]
+  secUsers              SEC[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -244,8 +245,12 @@ model SEC {
 
   fullName    String?
   phone       String    @unique
+  email       String?   @unique
   lastLoginAt DateTime?
-
+  storeId   String?
+  store     Store?    @relation(fields: [storeId], references: [id])
+  AgencyName   String?
+  AgentCode String?
   salesReports   SalesReport[]
   salesSummaries SalesSummary[]
 
