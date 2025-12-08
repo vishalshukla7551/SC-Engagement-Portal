@@ -70,7 +70,7 @@ const formatMonthYear = (dateStr: string) => {
 
 export default function IncentivePassbookPage() {
   const [activeTab, setActiveTab] = useState<'monthly' | 'spot'>('monthly');
-  const [activeFilter, setActiveFilter] = useState<FilterType>('Today');
+  const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [search, setSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string>('All');
   const [selectedFY, setSelectedFY] = useState<string>('FY-25');
