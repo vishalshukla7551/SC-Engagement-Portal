@@ -92,7 +92,7 @@ export async function POST(
             fullName,
             phone,
             storeIds,
-            ...(validManagerId ? { zbmId: validManagerId } : {}),
+            zbmId: validManagerId!,
           },
         });
       } else if (user.role === 'ASE') {
@@ -102,7 +102,7 @@ export async function POST(
             fullName,
             phone,
             storeIds,
-            ...(validManagerId ? { zseId: validManagerId } : {}),
+            zseId: validManagerId!,
           },
         });
       } else if (user.role === 'ZBM') {
