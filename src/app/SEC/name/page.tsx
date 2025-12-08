@@ -141,14 +141,19 @@ export default function SECNameCapturePage() {
               secId: responseData.id,
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
+            
+            // Force a full page reload to ensure layout picks up the new data
+            window.location.href = '/SEC/home';
           }
         } catch {
           // ignore parse/storage errors
+          // Fallback to router if localStorage fails
+          router.replace('/SEC/home');
         }
+      } else {
+        // Fallback for SSR
+        router.replace('/SEC/home');
       }
-
-      // After capturing the name & store, send SEC to their home screen.
-      router.replace('/SEC/home');
     } catch (err: any) {
       setError(err.message || 'Failed to save your name');
     } finally {
