@@ -106,45 +106,29 @@ export async function GET(req: NextRequest) {
     };
 
     // Sales Summary (common for both tabs)
-    // Group by date and aggregate units
+    // Show each sale as a separate row
     // Include all sales reports (both with and without campaigns)
-    const salesSummaryMap = new Map<string, {
-      date: string;
-      adld: string;
-      combo: string;
-      units: number;
-    }>();
-
-    salesReports.forEach((report: any) => {
-      const date = formatDate(report.Date_of_sale);
+    const salesSummary = salesReports.map((report: any) => {
+      const date = formatDate(report.Date_of_sale || report.createdAt);
       const planType = report.plan.planType;
       
       // Determine ADLD and Combo from planType
-      let adld = '';
-      let combo = '';
+      let adld = '-';
+      let combo = '-';
       
       if (planType.includes('ADLD')) {
         adld = planType;
-      }
-      if (planType.includes('COMBO')) {
+      } else if (planType.includes('COMBO')) {
         combo = planType;
       }
 
-      const key = `${date}_${adld}_${combo}`;
-      if (salesSummaryMap.has(key)) {
-        const existing = salesSummaryMap.get(key)!;
-        existing.units += 1;
-      } else {
-        salesSummaryMap.set(key, {
-          date,
-          adld: adld || '-',
-          combo: combo || '-',
-          units: 1,
-        });
-      }
-    });
-
-    const salesSummary = Array.from(salesSummaryMap.values()).sort((a, b) => {
+      return {
+        date,
+        adld,
+        combo,
+        units: 1,
+      };
+    }).sort((a, b) => {
       const dateA = a.date.split('-').reverse().join('-');
       const dateB = b.date.split('-').reverse().join('-');
       return dateB.localeCompare(dateA);

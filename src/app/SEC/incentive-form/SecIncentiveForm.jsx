@@ -434,14 +434,18 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   id="dateOfSale"
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
-                  className="w-full pl-4 pr-12 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0"
+                  max={(() => {
+                    // Get current date in IST
+                    const now = new Date();
+                    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+                    const istDate = new Date(now.getTime() + istOffset);
+                    return istDate.toISOString().split('T')[0];
+                  })()}
+                  onClick={(e) => e.target.showPicker?.()}
+                  className="w-full pl-4 pr-12 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   placeholder="dd/mm/yyyy"
                 />
-                <button
-                  type="button"
-                  onClick={() => document.getElementById('dateOfSale').showPicker()}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer"
-                >
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                   <svg
                     className="w-5 h-5 text-gray-400"
                     fill="none"
@@ -455,7 +459,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                </button>
+                </div>
               </div>
             </div>
 
