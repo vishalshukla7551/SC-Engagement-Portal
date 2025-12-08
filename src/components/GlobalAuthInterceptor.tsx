@@ -18,9 +18,31 @@ export function GlobalAuthInterceptor() {
       const response = await originalFetch(...args);
 
       if (response.status === 401) {
-        // Tokens missing/expired or user unauthorized – force a clean logout
-        // Fire-and-forget; we still return the original response to callers
-        void clientLogout();
+        // Get the request URL to check if it's a login endpoint
+        let url = '';
+        if (typeof args[0] === 'string') {
+          url = args[0];
+        } else if (args[0] instanceof Request) {
+          url = args[0].url;
+        } else if (args[0] && typeof args[0] === 'object' && 'url' in args[0]) {
+          url = String(args[0].url);
+        }
+        
+        // Exclude login/authentication endpoints from automatic logout
+        // These endpoints are expected to return 401 for invalid credentials
+        const isLoginEndpoint = 
+          url.includes('/api/auth/login') || 
+          url.includes('/api/auth/sec/verify-otp') ||
+          url.includes('/api/auth/signup');
+
+        // Debug log (remove after testing)
+        console.log('401 Response - URL:', url, 'Is Login Endpoint:', isLoginEndpoint);
+
+        if (!isLoginEndpoint) {
+          // Tokens missing/expired or user unauthorized – force a clean logout
+          // Fire-and-forget; we still return the original response to callers
+          void clientLogout();
+        }
       }
 
       return response;

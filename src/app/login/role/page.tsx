@@ -44,8 +44,9 @@ export default function RoleLogin() {
       return;
     }
 
+    setLoading(true);
+
     try {
-      setLoading(true);
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -57,7 +58,8 @@ export default function RoleLogin() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data?.error || 'Login failed');
+        setLoading(false);
+        setError(data?.error || 'Invalid username or password');
         return;
       }
 
@@ -73,9 +75,8 @@ export default function RoleLogin() {
       router.push(target);
     } catch (err) {
       console.error('Error logging in', err);
-      setError('Something went wrong. Please try again.');
-    } finally {
       setLoading(false);
+      setError('Something went wrong. Please try again.');
     }
   };
 
