@@ -10,7 +10,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import * as XLSX from "xlsx/xlsx.mjs";
+import * as XLSX from "xlsx";
 import * as fs from "fs";
 import path from "path";
 
