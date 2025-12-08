@@ -7,7 +7,6 @@ import SECFooter from '../SECFooter.jsx';
 export default function ProfilePage() {
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
   const [storeName, setStoreName] = useState('');
   const [agencyName, setAgencyName] = useState('');
   const [agentCode, setAgentCode] = useState('');
@@ -35,14 +34,12 @@ export default function ProfilePage() {
       const auth = JSON.parse(raw) as any;
       const fullNameFromAuth = (auth?.fullName || '').trim();
       const phoneFromAuth = (auth?.username || auth?.phone || '').trim();
-      const emailFromAuth = (auth?.email || '').trim();
       const storeNameFromAuth = auth?.store?.name || '';
       const agencyNameFromAuth = (auth?.AgencyName || '').trim();
       const agentCodeFromAuth = (auth?.AgentCode || '').trim();
 
       if (fullNameFromAuth) setFullName(fullNameFromAuth);
       if (phoneFromAuth) setPhoneNumber(phoneFromAuth);
-      if (emailFromAuth) setEmail(emailFromAuth);
       if (storeNameFromAuth) setStoreName(storeNameFromAuth);
       if (agencyNameFromAuth) setAgencyName(agencyNameFromAuth);
       if (agentCodeFromAuth) setAgentCode(agentCodeFromAuth);
@@ -169,12 +166,6 @@ export default function ProfilePage() {
               <div className="mb-3">
                 <label className="block text-xs text-gray-600 mb-1">Phone Number</label>
                 <div className="text-sm font-medium text-gray-900">{phoneNumber}</div>
-              </div>
-
-              {/* Email */}
-              <div className="mb-4">
-                <label className="block text-xs text-gray-600 mb-1">Email</label>
-                <div className="text-sm font-medium text-gray-900">{email}</div>
               </div>
 
               {/* Store Details */}
