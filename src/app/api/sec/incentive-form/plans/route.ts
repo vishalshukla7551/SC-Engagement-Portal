@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 
     // Format plan labels for display
     const formattedPlans = plans.map((plan) => {
-      let label = plan.planType;
+      let label: string = plan.planType;
       // Format plan type for display
       if (label.includes('_')) {
         label = label.replace(/_/g, ' ');

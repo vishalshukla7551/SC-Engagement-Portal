@@ -9,42 +9,6 @@ import { prisma } from '@/lib/prisma';
  * - limit query: number (default: 10)
  */
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const period = searchParams.get('period') || 'month';
-    const limit = parseInt(searchParams.get('limit') || '10');
-
-    // Calculate date range based on period
-    const now = new Date();
-    let startDate: Date;
-
-    switch (period) {
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'all':
-      default:
-        startDate = new Date(0); // Beginning of time
-        break;
-    }
-
-    // Get all active campaigns
-    const activeCampaigns = await prisma.spotIncentiveCampaign.findMany({
-      where: {
-        active: true,
-        startDate: { lte: now },
-        endDate: { gte: now },
-      },
-      select: {
-        id: true,
-        storeId: true,
-        samsungSKUId: true,
-        planId: true,
-      },
-    });
 
     if (activeCampaigns.length === 0) {
       return NextResponse.json({
@@ -64,32 +28,15 @@ export async function GET(req: NextRequest) {
     // Get sales reports for active campaigns within the period
     const salesReports = await prisma.salesReport.findMany({
       where: {
-        spotIncentiveCampaignId: { in: campaignIds },
+        planId: { in: activeCampaigns.map(c => c.planId) },
+        storeId: { in: activeCampaigns.map(c => c.storeId) },
+        samsungSKUId: { in: activeCampaigns.map(c => c.samsungSKUId) },
         submittedAt: { gte: startDate },
       },
       include: {
-        store: {
-          select: {
-            id: true,
-            name: true,
-            city: true,
-            state: true,
-          },
-        },
-        samsungSKU: {
-          select: {
-            id: true,
-            ModelName: true,
-            Category: true,
-          },
-        },
-        plan: {
-          select: {
-            id: true,
-            planType: true,
-            price: true,
-          },
-        },
+        store: true,
+        samsungSKU: true,
+        plan: true,
       },
     });
 
