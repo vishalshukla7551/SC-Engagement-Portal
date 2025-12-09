@@ -273,7 +273,7 @@ export default function ZopperUserValidationPage() {
           const res = await fetch(`/api/zopper-administrator/user-validate/ase/${editingUser.roleProfileId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ storeIds: editStoreIds, zseId: editManagerId || undefined }),
+            body: JSON.stringify({ storeIds: editStoreIds, zsmId: editManagerId || undefined }),
           });
           if (!res.ok) {
             const data = await res.json().catch(() => ({}));
