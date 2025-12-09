@@ -152,7 +152,8 @@ export default function MonthlyIncentiveReport() {
       const response = await fetch(`/api/zopper-admin/monthly-incentive-report?${params}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.details || errorData.error || `Failed to fetch data (${response.status})`);
       }
 
       const result: ApiResponse = await response.json();
