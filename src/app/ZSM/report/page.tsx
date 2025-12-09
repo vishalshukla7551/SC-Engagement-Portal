@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { clientLogout } from '@/lib/clientLogout';
 
 export default function ReportPage() {
   const [planSearch, setPlanSearch] = useState("");
@@ -52,8 +53,8 @@ export default function ReportPage() {
 
           {/* Utilities */}
           <div className="flex items-center gap-3">
-            <a
-              href="/login/role"
+            <button
+              onClick={() => clientLogout('/login/role')}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
             >
               <svg
@@ -86,7 +87,7 @@ export default function ReportPage() {
                 />
               </svg>
               <span>Logout</span>
-            </a>
+            </button>
           </div>
         </div>
 

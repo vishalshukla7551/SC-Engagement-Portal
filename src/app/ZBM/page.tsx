@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { clientLogout } from '@/lib/clientLogout';
 
 export default function ZBMPage() {
   return (
@@ -18,8 +19,8 @@ export default function ZBMPage() {
         </div>
         
         {/* Logout button */}
-        <Link 
-          href="/login/role"
+        <button 
+          onClick={() => clientLogout('/login/role')}
           className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
         >
           <svg
@@ -52,7 +53,7 @@ export default function ZBMPage() {
             />
           </svg>
           <span>Logout</span>
-        </Link>
+        </button>
       </div>
 
       {/* Hero text */}

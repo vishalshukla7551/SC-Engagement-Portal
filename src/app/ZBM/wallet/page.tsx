@@ -1,3 +1,7 @@
+'use client';
+
+import { clientLogout } from '@/lib/clientLogout';
+
 export default function WalletPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-10">
@@ -6,8 +10,8 @@ export default function WalletPage() {
           <h1 className="text-4xl font-bold text-white mb-2">Incentive Wallet</h1>
           <p className="text-neutral-300">Track your earnings and transaction history</p>
         </div>
-        <a
-          href="/login/role"
+        <button
+          onClick={() => clientLogout('/login/role')}
           className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
         >
           <svg
@@ -40,7 +44,7 @@ export default function WalletPage() {
             />
           </svg>
           <span>Logout</span>
-        </a>
+        </button>
       </header>
 
       {/* Balance Card */}
