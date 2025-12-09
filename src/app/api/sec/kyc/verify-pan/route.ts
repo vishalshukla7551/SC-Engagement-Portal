@@ -41,115 +41,67 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if PAN is already verified by another SEC user
     try {
-      // Log the request details for debugging
-      console.log('Making Karza API request:', {
-        url: process.env.KARZA_API_URL || 'https://api.karza.in/v3/pan-profile',
-        pan: pan,
-        hasApiKey: !!(process.env.KARZA_API_KEY || 'AujA2Y0w0N4HdUw'),
-        mockMode: process.env.KARZA_MOCK_MODE === 'true'
+      console.log(`Checking for duplicate PAN: ${pan}, Current phone: ${phone}`);
+      
+      // Find all SEC users with KYC info
+      const allSecsWithKyc = await prisma.sEC.findMany({
+        where: {
+          phone: {
+            not: phone // Exclude current user
+          },
+          kycInfo: {
+            not: null
+          }
+        },
+        select: {
+          phone: true,
+          fullName: true,
+          kycInfo: true
+        }
       });
 
-      // Check if we're in mock mode for development/testing
-      if (process.env.KARZA_MOCK_MODE === 'true') {
-        console.log('Using mock Karza API response for development');
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock successful response
-        const mockResponse = {
-          requestId: "mock-request-id-" + Date.now(),
-          result: {
-            pan: pan,
-            name: "MOCK USER NAME",
-            firstName: "MOCK",
-            middleName: "USER",
-            lastName: "NAME",
-            gender: "male",
-            dob: "1990-01-01",
-            address: {
-              buildingName: "",
-              locality: "",
-              streetName: "",
-              pinCode: "",
-              city: "",
-              state: "",
-              country: ""
-            },
-            aadhaarLinked: true,
-            profileMatch: [],
-            aadhaarMatch: null
-          },
-          statusCode: 101
-        };
-        
-        const panData = mockResponse;
-        console.log('Mock Karza API response:', panData);
-        
-        // Continue with the rest of the logic using mock data
-        const fullName = panData.result.name;
-        const cleanedFullName = fullName.trim().replace(/\s+/g, ' ');
-        const kycInfo = {
-          ...panData.result,
-          verifiedAt: new Date().toISOString(),
-          requestId: panData.requestId,
-          statusCode: panData.statusCode,
-          rawPanData: panData, // store full mock PAN JSON as well
-        };
-
-        // Update SEC user's name and KYC info in database (mock mode)
-        const result = await (prisma as any).$runCommandRaw({
-          update: "SEC",
-          updates: [
-            {
-              q: { phone: phone },
-              u: {
-                $set: {
-                  fullName: cleanedFullName,
-                  kycInfo: kycInfo,
-                  updatedAt: new Date()
-                },
-                $setOnInsert: {
-                  phone: phone,
-                  lastLoginAt: new Date(),
-                  createdAt: new Date()
-                }
-              },
-              upsert: true
-            }
-          ]
-        });
-
-        const updatedSec = await prisma.sEC.findUnique({
-          where: { phone },
-          select: {
-            id: true,
-            phone: true,
-            fullName: true,
-          }
-        });
-
-        if (!updatedSec) {
-          throw new Error('Failed to create or update SEC record in mock mode');
+      // Check if any user has the same PAN in their kycInfo
+      const duplicateUser = allSecsWithKyc.find((sec: any) => {
+        if (sec.kycInfo && typeof sec.kycInfo === 'object') {
+          const kycData = sec.kycInfo as any;
+          return kycData.pan === pan;
         }
+        return false;
+      });
 
-        return NextResponse.json({
-          success: true,
-          message: 'PAN verified and KYC information saved successfully (MOCK MODE)',
-          panVerified: true,
-          fullName: updatedSec.fullName,
-          kycInfo: kycInfo,
-          secUser: {
-            id: updatedSec.id,
-            phone: updatedSec.phone,
-            fullName: updatedSec.fullName,
+      if (duplicateUser) {
+        console.log('Duplicate PAN found for user:', duplicateUser.phone);
+        return NextResponse.json(
+          { 
+            success: false,
+            error: 'This PAN is already verified and in use by another user. Please contact support if you believe this is an error.',
+            code: 'DUPLICATE_PAN'
           },
-          mockMode: true
-        });
+          { status: 409 }
+        );
       }
+      
+      console.log('No duplicate PAN found - proceeding with verification');
+    } catch (checkError) {
+      console.error('PAN duplicate check error:', checkError);
+      // If the duplicate check fails, we should NOT continue - it's a critical security check
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Unable to verify PAN uniqueness. Please try again later.',
+          code: 'CHECK_FAILED'
+        },
+        { status: 500 }
+      );
+    }
 
-      // Call Karza PAN API
+    try {
+      // Log the request details for debugging
+      console.log('PAN verification request:', { pan, phone });
+
+      // Call Karza API for PAN verification
       const karzaResponse = await fetch(process.env.KARZA_API_URL || 'https://api.karza.in/v3/pan-profile', {
         method: 'POST',
         headers: {
@@ -181,7 +133,6 @@ export async function POST(req: NextRequest) {
       const panData = await karzaResponse.json();
       console.log('Karza API success response:', panData);
 
-      // Check if the API response is successful
       if (!panData.result) {
         console.error('No result in Karza API response:', panData);
         return NextResponse.json(
@@ -213,11 +164,8 @@ export async function POST(req: NextRequest) {
       };
 
       // Update SEC user's name and KYC info in database
-      // Use MongoDB native operations to bypass Prisma type issues
-      const collection = prisma.$extends({}).sEC;
-      
       // Use MongoDB's updateOne with upsert to safely update/create
-      const result = await (prisma as any).$runCommandRaw({
+      await (prisma as any).$runCommandRaw({
         update: "SEC",
         updates: [
           {
