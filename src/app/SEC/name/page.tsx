@@ -136,7 +136,6 @@ export default function SECNameCapturePage() {
             const updated = {
               ...parsed,
               fullName: responseData.fullName || trimmedFullName,
-              selectedStoreId: responseData.storeId || selectedStoreId,
               storeId: responseData.storeId,
               store: responseData.store,
               secId: responseData.id,

@@ -30,11 +30,11 @@ const STORE_OPTIONS_STATIC: StoreOption[] = [
 ];
 
 const MANAGER_OPTIONS_STATIC: ManagerOption[] = [
-  { id: "zse-north", label: "ZSE - North Region" },
-  { id: "zse-south", label: "ZSE - South Region" },
-  { id: "zse-east", label: "ZSE - East Region" },
-  { id: "zse-west", label: "ZSE - West Region" },
-  { id: "zse-central", label: "ZSE - Central Region" },
+  { id: "zsm-north", label: "ZSM - North Region" },
+  { id: "zsm-south", label: "ZSM - South Region" },
+  { id: "zsm-east", label: "ZSM - East Region" },
+  { id: "zsm-west", label: "ZSM - West Region" },
+  { id: "zsm-central", label: "ZSM - Central Region" },
 ];
 
 interface AdminUser {
@@ -109,7 +109,7 @@ export default function ZopperUserValidationPage() {
 
   const [storeOptions, setStoreOptions] = useState<StoreOption[]>(STORE_OPTIONS_STATIC);
   const [zbmOptions, setZbmOptions] = useState<ManagerOption[]>([]);
-  const [zseOptions, setZseOptions] = useState<ManagerOption[]>([]);
+  const [zsmOptions, setzsmOptions] = useState<ManagerOption[]>([]);
   const [pendingUsers, setPendingUsers] = useState<AdminUser[]>([]);
   const [approvedUsers, setApprovedUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -158,14 +158,14 @@ export default function ZopperUserValidationPage() {
           label: `${z.fullName} (${z.region || "N/A"})`,
         }));
 
-        const zses: ManagerOption[] = (data.zses || []).map((z: any) => ({
+        const zsms: ManagerOption[] = (data.zsms || []).map((z: any) => ({
           id: z.id,
           label: `${z.fullName} (${z.region || "N/A"})`,
         }));
 
         setStoreOptions(stores.length ? stores : STORE_OPTIONS_STATIC);
         setZbmOptions(zbms);
-        setZseOptions(zses);
+        setzsmOptions(zsms);
       } catch (e) {
         console.error("Failed to load master options", e);
       }
@@ -306,7 +306,7 @@ export default function ZopperUserValidationPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">User Validation</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Manage SalesDost ABM / ASE / ZBM / ZSE users. Pending and approved users are
+            Manage SalesDost ABM / ASE / ZBM / ZSM users. Pending and approved users are
             separated into tabs. Blocking a user will delete them using the delete API.
           </p>
         </div>
@@ -385,7 +385,7 @@ export default function ZopperUserValidationPage() {
               {users.map((user) => {
                 const storeCount = user.storeIds?.length || 0;
                 const isExpanded = expandedStoreUserId === user.id;
-                const managerLabel = (user.role === "ABM" ? zbmOptions : zseOptions).find(
+                const managerLabel = (user.role === "ABM" ? zbmOptions : zsmOptions).find(
                   (m) => m.id === user.managerId,
                 )?.label;
 
@@ -439,7 +439,7 @@ export default function ZopperUserValidationPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
-                      {user.role !== "ZBM" && user.role !== "ZSE" && (
+                      {user.role !== "ZBM" && user.role !== "ZSM" && (
                         <button
                           onClick={() => startEdit(user)}
                         disabled={actionLoadingId === user.id}
@@ -534,17 +534,17 @@ export default function ZopperUserValidationPage() {
           {(editingUser.role === "ABM" || editingUser.role === "ASE") && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-900">
-                  {editingUser.role === "ABM" ? "Select ZBM" : "Select ZSE"}
+                  {editingUser.role === "ABM" ? "Select ZBM" : "Select ZSM"}
                 </label>
                 <input
                   type="text"
                   value={editManagerSearch}
                   onChange={(e) => setEditManagerSearch(e.target.value)}
-                  placeholder={editingUser.role === "ABM" ? "Search ZBM..." : "Search ZSE..."}
+                  placeholder={editingUser.role === "ABM" ? "Search ZBM..." : "Search ZSM..."}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
-                  {(editingUser.role === "ABM" ? zbmOptions : zseOptions)
+                  {(editingUser.role === "ABM" ? zbmOptions : zsmOptions)
                     .filter((manager) =>
                       manager.label.toLowerCase().includes(editManagerSearch.toLowerCase()),
                     )
@@ -595,3 +595,4 @@ export default function ZopperUserValidationPage() {
     </div>
   );
 }
+

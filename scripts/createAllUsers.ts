@@ -8,7 +8,7 @@
  * 1. Update the user configurations below
  * 2. Run: npx tsx scripts/createAllUsers.ts
  * 
- * Note: ABM requires ZBM to exist first, ASE requires ZSE to exist first
+ * Note: ABM requires ZBM to exist first, ASE requires ZSM to exist first
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -55,16 +55,16 @@ const USERS_CONFIG = {
     storeIds: [], // Add store IDs if needed
   },
 
-  // ZSE (Zonal Sales Executive) - Create first as ASE depends on it
-  zse: {
-    username: 'ZSE001',
-    password: 'ZSE@123',
-    fullName: 'Zonal Sales Executive',
+  // ZSM (Zonal Sales Manager) - Create first as ASE depends on it
+  zsm: {
+    username: 'ZSM001',
+    password: 'ZSM@123',
+    fullName: 'Zonal Sales Manager',
     phone: '5555555555',
     region: 'South Region',
   },
 
-  // ASE (Area Sales Executive) - Requires zseId
+  // ASE (Area Sales Executive) - Requires zsmId
   ase: {
     username: 'ASE001',
     password: 'ASE@123',
@@ -255,60 +255,60 @@ async function main() {
       }
     }
 
-    // 5. Create ZSE (must be created before ASE)
-    console.log('📝 Creating ZSE...');
-    let zseId: string | null = null;
+    // 5. Create ZSM (must be created before ASE)
+    console.log('📝 Creating ZSM...');
+    let zsmId: string | null = null;
     try {
-      const zsePassword = await bcrypt.hash(USERS_CONFIG.zse.password, 10);
-      const zseUser = await prisma.user.create({
+      const zsmPassword = await bcrypt.hash(USERS_CONFIG.zsm.password, 10);
+      const zsmUser = await prisma.user.create({
         data: {
-          username: USERS_CONFIG.zse.username,
-          password: zsePassword,
-          role: 'ZSE',
+          username: USERS_CONFIG.zsm.username,
+          password: zsmPassword,
+          role: 'ZSM',
           validation: 'APPROVED',
         },
       });
 
-      const zseProfile = await prisma.zSE.create({
+      const zsmProfile = await prisma.zSM.create({
         data: {
-          userId: zseUser.id,
-          fullName: USERS_CONFIG.zse.fullName,
-          phone: USERS_CONFIG.zse.phone,
-          region: USERS_CONFIG.zse.region,
+          userId: zsmUser.id,
+          fullName: USERS_CONFIG.zsm.fullName,
+          phone: USERS_CONFIG.zsm.phone,
+          region: USERS_CONFIG.zsm.region,
         },
       });
 
-      zseId = zseProfile.id;
+      zsmId = zsmProfile.id;
 
       createdUsers.push({
-        role: 'ZSE',
-        username: USERS_CONFIG.zse.username,
-        password: USERS_CONFIG.zse.password,
-        userId: zseUser.id,
+        role: 'ZSM',
+        username: USERS_CONFIG.zsm.username,
+        password: USERS_CONFIG.zsm.password,
+        userId: zsmUser.id,
       });
-      console.log('✅ ZSE created\n');
+      console.log('✅ ZSM created\n');
     } catch (error: any) {
       if (error.code === 'P2002') {
-        console.log('⏭️  ZSE already exists, fetching existing...\n');
-        // Fetch existing ZSE ID
-        const existingZseUser = await prisma.user.findUnique({
-          where: { username: USERS_CONFIG.zse.username },
+        console.log('⏭️  ZSM already exists, fetching existing...\n');
+        // Fetch existing ZSM ID
+        const existingZsmUser = await prisma.user.findUnique({
+          where: { username: USERS_CONFIG.zsm.username },
         });
-        if (existingZseUser) {
-          const existingZse = await prisma.zSE.findUnique({
-            where: { userId: existingZseUser.id },
+        if (existingZsmUser) {
+          const existingZsm = await prisma.zSM.findUnique({
+            where: { userId: existingZsmUser.id },
           });
-          if (existingZse) zseId = existingZse.id;
+          if (existingZsm) zsmId = existingZsm.id;
         }
       } else {
         throw error;
       }
     }
 
-    // 6. Create ASE (requires zseId)
+    // 6. Create ASE (requires zsmId)
     console.log('📝 Creating ASE...');
-    if (!zseId) {
-      console.log('⚠️  Cannot create ASE: ZSE ID not found. Please create ZSE first.\n');
+    if (!zsmId) {
+      console.log('⚠️  Cannot create ASE: ZSM ID not found. Please create ZSM first.\n');
     } else {
       try {
         const asePassword = await bcrypt.hash(USERS_CONFIG.ase.password, 10);
@@ -327,7 +327,7 @@ async function main() {
             fullName: USERS_CONFIG.ase.fullName,
             phone: USERS_CONFIG.ase.phone,
             storeIds: USERS_CONFIG.ase.storeIds,
-            zseId: zseId,
+            zsmId: zsmId,
           },
         });
 

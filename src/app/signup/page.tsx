@@ -20,7 +20,7 @@ export default function SignUpPage() {
 
   const [storeOptions, setStoreOptions] = useState<StoreOption[]>([]);
   const [zbmOptions, setZbmOptions] = useState<ManagerOption[]>([]);
-  const [zseOptions, setZseOptions] = useState<ManagerOption[]>([]);
+  const [zsmOptions, setZsmOptions] = useState<ManagerOption[]>([]);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -53,14 +53,14 @@ export default function SignUpPage() {
           label: `${z.fullName} (${z.region || 'N/A'})`,
         }));
 
-        const zses: ManagerOption[] = (data.zses || []).map((z: any) => ({
+        const zsms: ManagerOption[] = (data.zsms || []).map((z: any) => ({
           id: z.id,
           label: `${z.fullName} (${z.region || 'N/A'})`,
         }));
 
         setStoreOptions(stores);
         setZbmOptions(zbms);
-        setZseOptions(zses);
+        setZsmOptions(zsms);
       } catch (err) {
         console.error('Failed to load signup options', err);
       }
@@ -240,7 +240,7 @@ export default function SignUpPage() {
                 <option value="ABM">ABM</option>
                 <option value="ASE">ASE</option>
                 <option value="ZBM">ZBM</option>
-                <option value="ZSE">ZSE</option>
+                <option value="ZSM">ZSM</option>
               </select>
             </div>
           </div>
@@ -318,11 +318,11 @@ export default function SignUpPage() {
             </div>
           )}
 
-          {/* Select reporting manager - ZBM for ABM, ZSE for ASE (searchable) */}
+          {/* Select reporting manager - ZBM for ABM, ZSM for ASE (searchable) */}
           {(formData.role === 'ABM' || formData.role === 'ASE') && (
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-3">
-                {formData.role === 'ABM' ? 'Select ZBM' : 'Select ZSE'}
+                {formData.role === 'ABM' ? 'Select ZBM' : 'Select ZSM'}
               </label>
               <div className="relative mb-2">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -342,13 +342,13 @@ export default function SignUpPage() {
                   placeholder={
                     formData.role === 'ABM'
                       ? 'Search ZBM...'
-                      : 'Search ZSE...'
+                      : 'Search ZSM...'
                   }
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-900 placeholder:text-gray-500"
                 />
               </div>
               <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
-                {(formData.role === 'ABM' ? zbmOptions : zseOptions)
+                {(formData.role === 'ABM' ? zbmOptions : zsmOptions)
                   .filter((manager) =>
                     manager.label.toLowerCase().includes(managerSearch.toLowerCase())
                   )
@@ -370,7 +370,7 @@ export default function SignUpPage() {
                     <span className="text-gray-800">{manager.label}</span>
                   </label>
                 ))}
-                {(formData.role === 'ABM' ? zbmOptions : zseOptions)
+                {(formData.role === 'ABM' ? zbmOptions : zsmOptions)
                   .filter((manager) =>
                     manager.label.toLowerCase().includes(managerSearch.toLowerCase())
                   ).length === 0 && (
@@ -382,7 +382,7 @@ export default function SignUpPage() {
                   <span className="font-medium">Selected:</span>{' '}
                   <span>
                     {
-                      (formData.role === 'ABM' ? zbmOptions : zseOptions).find(
+                      (formData.role === 'ABM' ? zbmOptions : zsmOptions).find(
                         (m) => m.id === formData.managerId,
                       )?.label
                     }

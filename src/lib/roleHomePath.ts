@@ -5,10 +5,9 @@ export function getHomePathForRole(role: string): string {
     case 'ASE':
       return '/ASE';
     case 'ZBM':
-      // ZBM home is implemented under /ZSM in this app
+      return '/ZBM';
+    case 'ZSM':
       return '/ZSM';
-    case 'ZSE':
-      return '/ZSE';
     case 'SEC':
       return '/SEC/home';
     case 'SAMSUNG_ADMINISTRATOR':

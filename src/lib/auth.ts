@@ -176,7 +176,7 @@ export async function getAuthenticatedUserFromCookies(
       abmProfile: true,
       aseProfile: true,
       zbmProfile: true,
-      zseProfile: true,
+      zsmProfile: true,
       samsungAdminProfile: true,
       zopperAdminProfile: true,
     },
@@ -219,7 +219,7 @@ export async function getAuthenticatedUserFromCookies(
     anyUser.abmProfile ||
     anyUser.aseProfile ||
     anyUser.zbmProfile ||
-    anyUser.zseProfile ||
+    anyUser.zsmProfile ||
     anyUser.samsungAdminProfile ||
     anyUser.zopperAdminProfile ||
     null;

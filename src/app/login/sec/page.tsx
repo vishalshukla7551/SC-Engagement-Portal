@@ -144,13 +144,15 @@ export default function SECLogin() {
       // If this SEC user has not yet provided their name, send them to the
       // one-time name capture screen before landing on the home dashboard.
       if (data.needsName) {
-        router.push('/SEC/name');
+        // Use window.location.href to ensure localStorage is fully written before redirect
+        window.location.href = '/SEC/name';
         return;
       }
 
       // OTP verified successfully; redirect to SEC landing page (via shared helper).
       const target = getHomePathForRole(data.user.role || 'SEC');
-      router.push(target);
+      // Use window.location.href to ensure localStorage is fully written before redirect
+      window.location.href = target;
     } catch (err) {
       console.error('Error verifying OTP', err);
       setError('Failed to verify OTP. Please try again.');

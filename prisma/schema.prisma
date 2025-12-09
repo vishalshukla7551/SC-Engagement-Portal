@@ -11,7 +11,7 @@ enum Role {
   ABM
   ASE
   ZBM
-  ZSE
+  ZSM
   SAMSUNG_ADMINISTRATOR
   ZOPPER_ADMINISTRATOR
 }
@@ -51,7 +51,6 @@ model SamsungSKU {
   plans                  Plan[]
   salesReports           SalesReport[]
   spotIncentiveCampaigns SpotIncentiveCampaign[]
-
   @@map("SamsungSKU")
 }
 
@@ -163,7 +162,7 @@ model User {
   abmProfile          ABM?          @relation("UserABM")
   aseProfile          ASE?          @relation("UserASE")
   zbmProfile          ZBM?          @relation("UserZBM")
-  zseProfile          ZSE?          @relation("UserZSE")
+  zsmProfile          ZSM?          @relation("UserZSM")
   samsungAdminProfile SamsungAdmin? @relation("UserSamsungAdmin")
   zopperAdminProfile  ZopperAdmin?  @relation("UserZopperAdmin")
 
@@ -195,7 +194,7 @@ model ASE {
   phone    String
 
   storeIds String[]
-  zseId    String   @db.ObjectId
+  zsmId    String   @db.ObjectId
 
   user User @relation("UserASE", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -218,7 +217,7 @@ model ZBM {
   updatedAt DateTime @updatedAt
 }
 
-model ZSE {
+model ZSM {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @unique @db.ObjectId
 
@@ -227,7 +226,7 @@ model ZSE {
 
   region String?
 
-  user User @relation("UserZSE", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserZSM", fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

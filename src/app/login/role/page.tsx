@@ -71,8 +71,9 @@ export default function RoleLogin() {
       }
 
       // Redirect by role using shared helper
+      // Use window.location.href to ensure localStorage is fully written before redirect
       const target = getHomePathForRole(data.user.role);
-      router.push(target);
+      window.location.href = target;
     } catch (err) {
       console.error('Error logging in', err);
       setLoading(false);

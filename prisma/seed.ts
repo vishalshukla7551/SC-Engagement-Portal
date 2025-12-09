@@ -28,7 +28,7 @@ async function main() {
     });
   }
 
-  // ----- HELPERS FOR ZBM / ZSE -----
+  // ----- HELPERS FOR ZBM / ZSM -----
   async function ensureZbm(
     username: string,
     fullName: string,
@@ -65,7 +65,7 @@ async function main() {
     });
   }
 
-  async function ensureZse(
+  async function ensureZsm(
     username: string,
     fullName: string,
     phone: string,
@@ -78,14 +78,14 @@ async function main() {
         data: {
           username,
           password: 'Password@123', // demo only
-          role: Role.ZSE,
+          role: Role.ZSM,
           validation: Validation.APPROVED,
           metadata: {},
         },
       });
     }
 
-    await prisma.zSE.upsert({
+    await prisma.zSM.upsert({
       where: { userId: user.id },
       update: {
         fullName,
@@ -110,13 +110,13 @@ async function main() {
     ensureZbm('zbm.kolkata', 'Anirban Ghosh', '9876534567', 'Kolkata'),
   ]);
 
-  // ----- 5 ZSEs (Indian names) -----
+  // ----- 5 ZSMs (Indian names) -----
   await Promise.all([
-    ensureZse('zse.mumbai', 'Neha Gupta', '9867543210', 'Mumbai'),
-    ensureZse('zse.delhi', 'Pooja Singh', '9867501234', 'Delhi NCR'),
-    ensureZse('zse.pune', 'Kiran Patil', '9867512345', 'Pune'),
-    ensureZse('zse.bengaluru', 'Smita Rao', '9867523456', 'Bengaluru'),
-    ensureZse('zse.kolkata', 'Soumya Banerjee', '9867534567', 'Kolkata'),
+    ensureZsm('zsm.mumbai', 'Neha Gupta', '9867543210', 'Mumbai'),
+    ensureZsm('zsm.delhi', 'Pooja Singh', '9867501234', 'Delhi NCR'),
+    ensureZsm('zsm.pune', 'Kiran Patil', '9867512345', 'Pune'),
+    ensureZsm('zsm.bengaluru', 'Smita Rao', '9867523456', 'Bengaluru'),
+    ensureZsm('zsm.kolkata', 'Soumya Banerjee', '9867534567', 'Kolkata'),
   ]);
 }
 
