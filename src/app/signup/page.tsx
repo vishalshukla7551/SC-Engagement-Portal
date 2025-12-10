@@ -446,14 +446,24 @@ export default function SignUpPage() {
               </div>
               {formData.managerId && (
                 <div className="mt-2 text-xs text-gray-700">
-                  <span className="font-medium">Selected:</span>{' '}
-                  <span>
-                    {
-                      (formData.role === 'ABM' ? zbmOptions : zsmOptions).find(
-                        (m) => m.id === formData.managerId,
-                      )?.label
-                    }
+                  <span className="font-medium">
+                    Selected {formData.role === 'ABM' ? 'ZBM' : 'ZSM'}:
                   </span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {(() => {
+                      const selectedLabel = (formData.role === 'ABM' ? zbmOptions : zsmOptions).find(
+                        (m) => m.id === formData.managerId,
+                      )?.label;
+                      if (!selectedLabel) return null;
+                      return (
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100"
+                        >
+                          {selectedLabel}
+                        </span>
+                      );
+                    })()}
+                  </div>
                 </div>
               )}
             </div>

@@ -314,7 +314,7 @@ export default function ProfilePage() {
         // Update the full name in the UI
         setFullName(data.fullName);
         
-        // Update localStorage with new data
+        // Update localStorage with new data (DO NOT store kycInfo in localStorage for security)
         if (typeof window !== 'undefined') {
           try {
             const raw = window.localStorage.getItem('authUser');
@@ -324,7 +324,6 @@ export default function ProfilePage() {
                 ...parsed,
                 fullName: data.fullName,
                 secId: data.secUser.id,
-                kycInfo: data.kycInfo,
               };
               window.localStorage.setItem('authUser', JSON.stringify(updated));
             }
@@ -335,7 +334,14 @@ export default function ProfilePage() {
 
         alert('PAN verified successfully! Your KYC information has been saved.');
       } else {
-        setPanError(data.error || 'PAN verification failed');
+        // Handle specific error codes
+        if (data.code === 'DUPLICATE_PAN') {
+          setPanError('⚠️ This PAN is already registered with another account. Each PAN can only be used once. Please contact support if you believe this is an error.');
+        } else if (data.code === 'CHECK_FAILED') {
+          setPanError('Unable to verify PAN at this time. Please try again later.');
+        } else {
+          setPanError(data.error || 'PAN verification failed');
+        }
       }
     } catch (error) {
       setPanError('Failed to verify PAN. Please try again.');
@@ -571,31 +577,23 @@ export default function ProfilePage() {
             </div>
 
             <form onSubmit={handleKYCSubmit}>
-              {/* PAN Number */}
-              <div className="mb-4">
-                <label htmlFor="panNumber" className="block text-xs text-gray-600 mb-1">PAN Number</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    id="panNumber"
-                    value={panNumber}
-                    onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
-                    placeholder="Enter PAN Number"
-                    maxLength={10}
-                    disabled={panVerified}
-                    className={`flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      panVerified ? 'bg-gray-50 text-gray-500' : ''
-                    }`}
-                  />
-                  {panVerified && (
-                    <div className="flex items-center px-3 py-3 bg-green-50 border border-green-300 rounded-xl">
-                      <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
+              {/* PAN Number - Only show if not verified */}
+              {!panVerified && (
+                <div className="mb-4">
+                  <label htmlFor="panNumber" className="block text-xs text-gray-600 mb-1">PAN Number</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="panNumber"
+                      value={panNumber}
+                      onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
+                      placeholder="Enter PAN Number"
+                      maxLength={10}
+                      className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Error Message */}
               {panError && (
@@ -670,36 +668,31 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={verifyingPan || panVerified}
-                className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {verifyingPan ? (
-                  <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Verifying PAN...
-                  </>
-                ) : panVerified ? (
-                  <>
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Verified
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Verify PAN
-                  </>
-                )}
-              </button>
+              {/* Submit Button - Only show if not verified */}
+              {!panVerified && (
+                <button
+                  type="submit"
+                  disabled={verifyingPan}
+                  className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {verifyingPan ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Verifying PAN...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Verify PAN
+                    </>
+                  )}
+                </button>
+              )}
             </form>
           </section>
 
