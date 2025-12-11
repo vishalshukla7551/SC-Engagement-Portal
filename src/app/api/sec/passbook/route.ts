@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
+import { IncentiveService } from '@/lib/services/IncentiveService';
 
 /**
  * GET /api/sec/passbook
@@ -88,6 +89,75 @@ export async function GET(req: NextRequest) {
       ],
     });
 
+    // Calculate incentives for months that don't have estimatedIncenetiveEarned
+    // Wait for calculations to complete before returning data
+    console.log(`[Passbook] Found ${salesSummaries.length} sales summaries for SEC ${secUser.id}`);
+    
+    const calculationPromises = [];
+    
+    for (const summary of salesSummaries) {
+      const summaryAny = summary as any;
+      console.log(`[Passbook] Summary ${summary.month}/${summary.year}:`, {
+        estimatedIncenetiveEarned: summaryAny.estimatedIncenetiveEarned,
+        totalSamsungIncentiveEarned: summary.totalSamsungIncentiveEarned,
+        salesReportCount: summary.salesReport.length
+      });
+      
+      // Always recalculate if not paid by Samsung (totalSamsungIncentiveEarned is null)
+      // This ensures we always use the latest calculation logic
+      const needsCalculation = summary.totalSamsungIncentiveEarned == null && summary.salesReport.length > 0;
+      
+      if (needsCalculation) {
+        console.log(`[Passbook] Triggering (re)calculation for ${summary.month}/${summary.year} (current estimated: ${summaryAny.estimatedIncenetiveEarned})`);
+        try {
+          // Calculate incentive and wait for it
+          const promise = IncentiveService.calculateMonthlyIncentive(
+            secUser.id,
+            summary.month,
+            summary.year
+          ).catch((err) => {
+            console.error(`Failed to calculate incentive for ${summary.month}/${summary.year}:`, err);
+            return null;
+          });
+          calculationPromises.push(promise);
+        } catch (error) {
+          console.error(`Error triggering incentive calculation for ${summary.month}/${summary.year}:`, error);
+        }
+      } else {
+        console.log(`[Passbook] Skipping calculation for ${summary.month}/${summary.year} - already paid by Samsung`);
+      }
+    }
+
+    // Wait for all calculations to complete
+    if (calculationPromises.length > 0) {
+      console.log(`[Passbook] Waiting for ${calculationPromises.length} calculations to complete...`);
+      await Promise.all(calculationPromises);
+      console.log(`[Passbook] All calculations completed`);
+      
+      // Re-fetch sales summaries to get updated values
+      const updatedSalesSummaries = await prisma.salesSummary.findMany({
+        where: {
+          secId: secUser.id,
+        },
+        include: {
+          salesReport: {
+            select: {
+              id: true,
+              Date_of_sale: true,
+            },
+          },
+        },
+        orderBy: [
+          { year: 'desc' },
+          { month: 'desc' },
+        ],
+      });
+      
+      // Use updated summaries for the rest of the response
+      salesSummaries.length = 0;
+      salesSummaries.push(...updatedSalesSummaries);
+    }
+
     // Format date helper
     const formatDate = (date: Date) => {
       const d = new Date(date);
@@ -157,11 +227,24 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // Use totalSamsungIncentiveEarned if not null, otherwise use estimatedIncenetiveEarned
+      const incentiveAmount = summary.totalSamsungIncentiveEarned != null
+        ? summary.totalSamsungIncentiveEarned
+        : summary.estimatedIncenetiveEarned;
+
+      console.log(`[Passbook] Monthly transaction for ${summary.month}/${summary.year}:`, {
+        units,
+        totalSamsungIncentiveEarned: summary.totalSamsungIncentiveEarned,
+        estimatedIncenetiveEarned: summary.estimatedIncenetiveEarned,
+        incentiveAmount,
+        status
+      });
+
       return {
         month: formatMonthYear(summary.month, summary.year),
         units,
-        incentive: summary.totalSamsungIncentiveEarned 
-          ? `₹${summary.totalSamsungIncentiveEarned.toLocaleString('en-IN')}`
+        incentive: incentiveAmount != null
+          ? `₹${incentiveAmount.toLocaleString('en-IN')}`
           : 'Not calculated',
         status,
         paymentDate: summary.samsungincentivepaidAt 
@@ -240,11 +323,16 @@ export async function GET(req: NextRequest) {
 
       fySummaries.forEach((summary: any) => {
         totalUnits += summary.salesReport.length;
-        // Add totalSamsungIncentiveEarned if set
-        if (summary.totalSamsungIncentiveEarned != null) {
-          totalEarned += summary.totalSamsungIncentiveEarned;
+        
+        // Use totalSamsungIncentiveEarned if set, otherwise use estimatedIncenetiveEarned
+        const incentiveAmount = summary.totalSamsungIncentiveEarned != null
+          ? summary.totalSamsungIncentiveEarned
+          : summary.estimatedIncenetiveEarned;
+        
+        if (incentiveAmount != null) {
+          totalEarned += incentiveAmount;
           if (summary.samsungincentivepaidAt) {
-            totalPaid += summary.totalSamsungIncentiveEarned;
+            totalPaid += incentiveAmount;
           }
         }
       });

@@ -36,7 +36,7 @@ model Store {
   name  String
   city  String?
   state String?
-
+  numberOfSec            Int?
   salesReports           SalesReport[]
   spotIncentiveCampaigns SpotIncentiveCampaign[]
   secUsers              SEC[]
@@ -49,6 +49,7 @@ model SamsungSKU {
   id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
   Category               String
   ModelName              String
+  ModelPrice             Int?
   plans                  Plan[]
   salesReports           SalesReport[]
   spotIncentiveCampaigns SpotIncentiveCampaign[]
@@ -94,12 +95,14 @@ model SalesReport {
   @@index([storeId])
   @@index([Date_of_sale])
 }
+
 model SalesSummary {
   id                          String        @id @default(auto()) @map("_id") @db.ObjectId
   secId                       String        @db.ObjectId
   secUser                     SEC           @relation(fields: [secId], references: [id])
   totalSpotIncentiveEarned    Int
   totalSamsungIncentiveEarned Int? // Optional - decided at payment date
+  estimatedIncenetiveEarned   Int? // Optional - estimated incentive at summary creatio
   samsungincentivepaidAt      DateTime? //paid for  monthly sale
   metadata                    Json? // Additional data related to the sales summary
   salesReport                 SalesReport[] @relation("SalesSummaryReports")
@@ -108,6 +111,7 @@ model SalesSummary {
   createdAt                   DateTime      @default(now())
   updatedAt                   DateTime      @updatedAt
 
+  @@unique([secId, month, year], name: "secId_month_year")
   @@index([secId])
   @@index([month, year])
 }
@@ -306,3 +310,35 @@ model ClaimProcedurePDF {
   @@index([category])
   @@index([isActive])
 }
+
+model PriceIncentiveSlab {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Dealer price range for which this incentive applies
+  minPrice        Int?     // Minimum price (inclusive)
+  maxPrice        Int?     // Maximum price (exclusive or inclusive based on business logic)
+
+  // Base incentive amount for each device in this price range
+  incentiveAmount Int      // Example: 500, 438, etc.
+
+  // Threshold logic (per SEC):
+  // - gate: Number of units after which incentives start applying.
+  // - volumeKicker: Number of units after which 120% incentive applies.
+  //
+  // Final thresholds are calculated per store:
+  // finalGate = gate * store.numberOfSec
+  // finalVolumeKicker = volumeKicker * store.numberOfSec
+  //
+  // Incentive rules (applied to ALL units):
+  // 1. Units <= finalGate → No incentive (0%)
+  // 2. Units > finalGate and <= finalVolumeKicker → 100% incentive on ALL units
+  // 3. Units > finalVolumeKicker → 120% incentive on ALL units
+  gate            Int      // Threshold units per SEC before incentives apply
+  volumeKicker    Int      // Units per SEC after which 120% incentive applies
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([minPrice, maxPrice])
+}
+
