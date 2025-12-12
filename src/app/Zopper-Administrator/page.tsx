@@ -182,14 +182,14 @@ export default function ZopperAdministratorPage() {
                     <span className="text-lg">→</span>
                   </Link>
                   <Link
-                    href="/Zopper-Administrator/referrals"
+                    href="/Zopper-Administrator/referral/referrals"
                     className="flex items-center justify-between rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm shadow-emerald-900/60 transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <span>View Referrals</span>
                     <span className="text-lg">→</span>
                   </Link>
                   <Link
-                    href="/Zopper-Administrator/process-referral-vouchers"
+                    href="/Zopper-Administrator/referral/vouchers"
                     className="flex items-center justify-between rounded-full bg-gradient-to-r from-teal-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm shadow-teal-900/60 transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <span>Process Vouchers</span>
@@ -211,21 +211,21 @@ export default function ZopperAdministratorPage() {
                 </p>
                 <div className="space-y-3">
                   <Link
-                    href="/Zopper-Administrator/test-results"
+                    href="/Zopper-Administrator/test/results"
                     className="flex items-center justify-between rounded-full bg-gradient-to-r from-indigo-500 to-sky-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm shadow-indigo-900/60 transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <span>View Test Results</span>
                     <span className="text-lg">→</span>
                   </Link>
                   <Link
-                    href="/Zopper-Administrator/send-test-invites"
+                    href="/Zopper-Administrator/test/invites"
                     className="flex items-center justify-between rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm shadow-violet-900/60 transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <span>Send Test Invites</span>
                     <span className="text-lg">→</span>
                   </Link>
                   <Link
-                    href="/Zopper-Administrator/insert-questions"
+                    href="/Zopper-Administrator/test/questions"
                     className="flex items-center justify-between rounded-full bg-gradient-to-r from-purple-500 to-pink-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm shadow-purple-900/60 transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <span>Insert Questions</span>
