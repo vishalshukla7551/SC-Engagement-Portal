@@ -37,6 +37,7 @@ model Store {
   city  String?
   state String?
   numberOfSec            Int?
+  attachPercentage       Float? // percentage of sales attach rate     
   salesReports           SalesReport[]
   spotIncentiveCampaigns SpotIncentiveCampaign[]
   secUsers              SEC[]
