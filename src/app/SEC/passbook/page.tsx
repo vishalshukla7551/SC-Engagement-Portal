@@ -12,8 +12,10 @@ type FilterType = (typeof monthlyFilters)[number];
 
 type MonthlySale = {
   date: string;
-  adld: string;
-  combo: string;
+  adld1Year: number;
+  combo2Year: number;
+  adld: number;
+  combo: number;
   units: number;
 };
 
@@ -33,20 +35,23 @@ type SpotVoucher = {
   voucherCode: string;
 };
 
+type FYStats = Record<string, {
+  units: string;
+  totalEarned: string;
+  paid: string;
+  net: string;
+}>;
+
 type PassbookData = {
   salesSummary: MonthlySale[];
   monthlyIncentive: {
     transactions: MonthlyTxn[];
+    fyStats: FYStats;
   };
   spotIncentive: {
     transactions: SpotVoucher[];
+    fyStats: FYStats;
   };
-  fyStats: Record<string, {
-    units: string;
-    totalEarned: string;
-    paid: string;
-    net: string;
-  }>;
 };
 
 const statsCardsConfig = [
@@ -84,6 +89,7 @@ export default function IncentivePassbookPage() {
   // Modal state
   const [showIncentiveModal, setShowIncentiveModal] = useState(false);
   const [selectedIncentiveData, setSelectedIncentiveData] = useState<any>(null);
+  const [loadingIncentiveDetails, setLoadingIncentiveDetails] = useState(false);
 
   // Fetch passbook data from API
   useEffect(() => {
@@ -133,7 +139,9 @@ export default function IncentivePassbookPage() {
   );
 
   // Get available FYs from API data or default
-  const allFYs = passbookData?.fyStats ? Object.keys(passbookData.fyStats) : ['FY-25', 'FY-24', 'FY-23', 'FY-22', 'FY-21'];
+  const allFYs = passbookData?.monthlyIncentive?.fyStats 
+    ? Object.keys(passbookData.monthlyIncentive.fyStats) 
+    : ['FY-25', 'FY-24', 'FY-23', 'FY-22', 'FY-21'];
 
   const filteredMonthlySales = salesSummaryData
     .filter((row) => {
@@ -160,11 +168,7 @@ export default function IncentivePassbookPage() {
     .filter((row) => {
       if (!search.trim()) return true;
       const term = search.toLowerCase();
-      return (
-        row.date.toLowerCase().includes(term) ||
-        row.adld.toLowerCase().includes(term) ||
-        row.combo.toLowerCase().includes(term)
-      );
+      return row.date.toLowerCase().includes(term);
     })
     .sort((a, b) => {
       const da = parseDate(a.date).getTime();
@@ -172,8 +176,15 @@ export default function IncentivePassbookPage() {
       return sortAsc ? da - db : db - da;
     });
 
-  // Get FY stats from API data
-  const fyStats = passbookData?.fyStats?.[selectedFY] || {
+  // Get FY stats from API data based on active tab
+  const monthlyFyStats = passbookData?.monthlyIncentive?.fyStats?.[selectedFY] || {
+    units: '0',
+    totalEarned: '₹0',
+    paid: '₹0',
+    net: '₹0',
+  };
+
+  const spotFyStats = passbookData?.spotIncentive?.fyStats?.[selectedFY] || {
     units: '0',
     totalEarned: '₹0',
     paid: '₹0',
@@ -310,7 +321,12 @@ export default function IncentivePassbookPage() {
             </button>
             <button
               type="button"
-              onClick={() => downloadReport(filteredMonthlySales)}
+              onClick={() => downloadReport(filteredMonthlySales.map(row => ({
+                date: row.date,
+                adld: row.adld.toString(),
+                combo: row.combo.toString(),
+                units: row.units
+              })))}
               className="w-full bg-gradient-to-r from-[#0EA5E9] via-[#2563EB] to-[#4F46E5] text-white text-sm font-semibold py-2.5 rounded-xl shadow"
             >
               Download Report
@@ -329,6 +345,8 @@ export default function IncentivePassbookPage() {
               allFYs={allFYs}
               setSelectedIncentiveData={setSelectedIncentiveData}
               setShowIncentiveModal={setShowIncentiveModal}
+              loadingIncentiveDetails={loadingIncentiveDetails}
+              setLoadingIncentiveDetails={setLoadingIncentiveDetails}
             />
           ) : (
             <SpotIncentiveSection
@@ -345,15 +363,18 @@ export default function IncentivePassbookPage() {
 
           {/* Stats cards (common) */}
           <div className="mt-5 mb-4 space-y-3">
-            {statsCardsConfig.map((card) => (
-              <div
-                key={card.id}
-                className={`bg-gradient-to-r ${card.gradient} rounded-2xl px-4 py-4 text-white`}
-              >
-                <p className="text-xs mb-1">{card.label}</p>
-                <p className="text-xl font-semibold">{fyStats[card.key as keyof typeof fyStats]}</p>
-              </div>
-            ))}
+            {statsCardsConfig.map((card) => {
+              const currentFyStats = activeTab === 'monthly' ? monthlyFyStats : spotFyStats;
+              return (
+                <div
+                  key={card.id}
+                  className={`bg-gradient-to-r ${card.gradient} rounded-2xl px-4 py-4 text-white`}
+                >
+                  <p className="text-xs mb-1">{card.label}</p>
+                  <p className="text-xl font-semibold">{currentFyStats[card.key as keyof typeof currentFyStats]}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </main>
@@ -363,171 +384,165 @@ export default function IncentivePassbookPage() {
       {/* Incentive Details Modal */}
       {showIncentiveModal && selectedIncentiveData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Incentive Details</h3>
-              <button
-                onClick={() => setShowIncentiveModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 pt-4">
-              <div className="space-y-4">
-              <div className="bg-gray-50 rounded-xl p-4">
-                <h4 className="font-medium text-gray-900 mb-3">Incentive Breakdown - {selectedIncentiveData.month}</h4>
-                
-                {/* Detailed Table */}
-                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                  <table className="w-full text-xs">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="text-left p-2 font-semibold text-gray-700">Details</th>
-                        <th className="text-right p-2 font-semibold text-gray-700">Value</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      <tr>
-                        <td className="p-2 text-gray-600">Store Name</td>
-                        <td className="p-2 text-right font-medium">Croma - A284 Agra SRK Mall</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 text-gray-600">Number Of SECs</td>
-                        <td className="p-2 text-right font-medium">3</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 text-gray-600">Total Units Sold [25 Dec]</td>
-                        <td className="p-2 text-right font-medium">{selectedIncentiveData.units}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 text-gray-600">Fold 7 Sold</td>
-                        <td className="p-2 text-right font-medium">0</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 text-gray-600">S25 Series Sold</td>
-                        <td className="p-2 text-right font-medium">1</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 text-gray-600">Attachment Kicker Considered [25 Dec]</td>
-                        <td className="p-2 text-right font-medium">Yes</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 text-gray-600">Volume Kicker Applicable</td>
-                        <td className="p-2 text-right font-medium">8 x 3 = 24</td>
-                      </tr>
-                      <tr className="bg-blue-50">
-                        <td className="p-2 font-semibold text-blue-900">Total Incentive Earned</td>
-                        <td className="p-2 text-right font-bold text-blue-900">{selectedIncentiveData.incentive}</td>
-                      </tr>
-                      <tr className="bg-orange-50">
-                        <td className="p-2 font-semibold text-orange-800">Payment Status</td>
-                        <td className="p-2 text-right">
-                          <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
-                            {selectedIncentiveData.status}
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                
-                {/* Date-wise Breakdown Table */}
-                <div className="mt-4">
-                  <h5 className="font-medium text-gray-900 mb-3">Daily Sales Breakdown</h5>
-                  <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            <th className="text-left p-2 font-semibold text-gray-700 min-w-[60px]">Date</th>
-                            <th className="text-center p-2 font-semibold text-gray-700 min-w-[50px]">Units Sold</th>
-                            <th className="text-center p-2 font-semibold text-gray-700 min-w-[60px]">Base Incentive</th>
-                            <th className="text-center p-2 font-semibold text-gray-700 min-w-[60px]">Volume Incentive</th>
-                            <th className="text-center p-2 font-semibold text-gray-700 min-w-[50px]">Units Fold 7</th>
-                            <th className="text-center p-2 font-semibold text-gray-700 min-w-[50px]">Units S25</th>
-                            <th className="text-center p-2 font-semibold text-gray-700 min-w-[60px]">Attach Incentive</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                          <tr>
-                            <td className="p-2 text-gray-800 font-medium">1 Dec</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                          </tr>
-                          <tr>
-                            <td className="p-2 text-gray-800 font-medium">2 Dec</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                          </tr>
-                          <tr>
-                            <td className="p-2 text-gray-800 font-medium">3 Dec</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">0</td>
-                            <td className="p-2 text-center text-gray-800">₹0</td>
-                          </tr>
-                          <tr className="bg-green-50">
-                            <td className="p-2 text-gray-800 font-medium">25 Dec</td>
-                            <td className="p-2 text-center text-green-800 font-semibold">1</td>
-                            <td className="p-2 text-center text-green-800 font-semibold">₹2,200</td>
-                            <td className="p-2 text-center text-green-800 font-semibold">₹0</td>
-                            <td className="p-2 text-center text-green-800">0</td>
-                            <td className="p-2 text-center text-green-800 font-semibold">1</td>
-                            <td className="p-2 text-center text-green-800 font-semibold">₹550</td>
-                          </tr>
-                          <tr className="bg-blue-50 font-semibold">
-                            <td className="p-2 text-blue-900">Total</td>
-                            <td className="p-2 text-center text-blue-900">1</td>
-                            <td className="p-2 text-center text-blue-900">₹2,200</td>
-                            <td className="p-2 text-center text-blue-900">₹0</td>
-                            <td className="p-2 text-center text-blue-900">0</td>
-                            <td className="p-2 text-center text-blue-900">1</td>
-                            <td className="p-2 text-center text-blue-900">₹550</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <svg className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <p className="text-xs font-medium text-yellow-800">Note</p>
-                      <p className="text-xs text-yellow-700 mt-1">
-                        This is estimated data and final confirmation will be from Samsung.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                </div>
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="bg-gray-100 px-4 py-3 rounded-t-lg flex-shrink-0">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Incentive Breakdown - {selectedIncentiveData.month}
+                </h3>
+                <button
+                  onClick={() => setShowIncentiveModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
-            
-            <div className="border-t border-gray-200 p-6 pt-4">
-              <button
-                onClick={() => setShowIncentiveModal(false)}
-                className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors"
-              >
-                Close
-              </button>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Details Section */}
+              <div className="mb-6">
+                <div className="overflow-hidden rounded-xl border border-gray-200 shadow-lg bg-white">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="px-4 py-3 text-left font-medium text-gray-700 rounded-tl-xl">Details</th>
+                        <th className="px-4 py-3 text-right font-medium text-gray-700 rounded-tr-xl">Value</th>
+                      </tr>
+                    </thead>
+                  <tbody className="bg-white">
+                    <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">Store Name</td>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">Croma - A294 Agra SRK Mall</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">Number Of SECs</td>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">3</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">Total Units Sold [25 Dec]</td>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">{selectedIncentiveData.units}</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">Fold 7 Sold</td>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">0</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">S25 Series Sold</td>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">1</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">Attachment Kicker Considered [25 Dec]</td>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">Yes</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">Volume Kicker Applicable</td>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">8 x 3 = 24</td>
+                    </tr>
+                    <tr className="border-b border-gray-100 bg-blue-50">
+                      <td className="px-4 py-3 text-blue-700 font-semibold">Total Incentive Earned</td>
+                      <td className="px-4 py-3 font-bold text-right text-blue-700">{selectedIncentiveData.incentive}</td>
+                    </tr>
+                    <tr className="bg-orange-50">
+                      <td className="px-4 py-3 text-orange-700 font-semibold rounded-bl-xl">Payment Status</td>
+                      <td className="px-4 py-3 text-right rounded-br-xl">
+                        <span className="bg-orange-200 text-orange-800 px-3 py-1 rounded-full text-xs font-medium">
+                          Accumulated
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+
+              {/* Daily Sales Breakdown */}
+              <div className="mb-4">
+                <h4 className="text-md font-semibold text-gray-900 mb-3">Daily Sales Breakdown</h4>
+                <div className="border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white">
+                  <div className="bg-gray-50 px-3 py-2">
+                    <div className="grid grid-cols-7 gap-2 text-xs font-medium text-gray-700">
+                      <span>Date</span>
+                      <span className="text-center">Units Sold</span>
+                      <span className="text-center">Base Incentive</span>
+                      <span className="text-center">Volume Incentive</span>
+                      <span className="text-center">Units Fold 7</span>
+                      <span className="text-center">Units S25</span>
+                      <span className="text-center">Attachment Incentive</span>
+                    </div>
+                  </div>
+                  
+                  <div className="max-h-48 overflow-y-auto">
+                    <div className="grid grid-cols-7 gap-2 px-3 py-2 text-xs border-b border-gray-100">
+                      <span>1 Dec</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">₹0</span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 px-3 py-2 text-xs border-b border-gray-100">
+                      <span>2 Dec</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">₹0</span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 px-3 py-2 text-xs border-b border-gray-100">
+                      <span>3 Dec</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">₹0</span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 px-3 py-2 text-xs border-b border-gray-100">
+                      <span>25 Dec</span>
+                      <span className="text-center">1</span>
+                      <span className="text-center text-blue-600 font-medium">₹2,200</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">1</span>
+                      <span className="text-center">₹550</span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 px-3 py-2 text-xs bg-gray-50 font-medium">
+                      <span>Total</span>
+                      <span className="text-center">1</span>
+                      <span className="text-center text-blue-600">₹2,200</span>
+                      <span className="text-center">₹0</span>
+                      <span className="text-center">0</span>
+                      <span className="text-center">1</span>
+                      <span className="text-center">₹550</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Note Section */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="w-4 h-4 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-2">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Note:</strong><br />
+                      Incentive calculations are based on store-level performance.This is estimated data and final confirmation will be from Samsung.
+
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -547,6 +562,8 @@ function MonthlyIncentiveSection({
   allFYs,
   setSelectedIncentiveData,
   setShowIncentiveModal,
+  loadingIncentiveDetails,
+  setLoadingIncentiveDetails,
 }: {
   rows: MonthlySale[];
   transactions: MonthlyTxn[];
@@ -558,6 +575,8 @@ function MonthlyIncentiveSection({
   allFYs: string[];
   setSelectedIncentiveData: (data: any) => void;
   setShowIncentiveModal: (show: boolean) => void;
+  loadingIncentiveDetails: boolean;
+  setLoadingIncentiveDetails: (loading: boolean) => void;
 }) {
   return (
     <>
@@ -585,21 +604,21 @@ function MonthlyIncentiveSection({
         </div>
 
         <div className="border border-gray-200 rounded-xl overflow-hidden text-xs bg-white">
-          <div className="grid grid-cols-4 gap-2 bg-gray-50 px-3 py-3 font-semibold text-gray-700">
-            <span className="text-left">Date</span>
-            <span className="text-center">ADLD</span>
-            <span className="text-center">Combo</span>
-            <span className="text-center">Units</span>
+          <div className="grid grid-cols-4 bg-gray-50 px-3 py-2 font-semibold text-gray-700">
+            <span>Date</span>
+            <span>ADLD</span>
+            <span>Combo</span>
+            <span className="text-right">Units</span>
           </div>
           {rows.map((row, idx) => (
             <div
               key={row.date + idx}
-              className="grid grid-cols-4 gap-2 px-3 py-3 border-t border-gray-100 text-gray-800 items-center"
+              className="grid grid-cols-4 px-3 py-2 border-t border-gray-100 text-gray-800"
             >
-              <span className="text-left font-medium">{row.date}</span>
-              <span className="text-center">{row.adld}</span>
-              <span className="text-center">{row.combo}</span>
-              <span className="text-center font-semibold">{row.units}</span>
+              <span>{row.date}</span>
+              <span>{row.adld}</span>
+              <span>{row.combo}</span>
+              <span className="text-right">{row.units}</span>
             </div>
           ))}
         </div>
@@ -623,39 +642,84 @@ function MonthlyIncentiveSection({
             </div>
           ) : (
             transactions.map((row) => (
-            <div
-              key={row.month}
-              className="grid grid-cols-4 gap-2 px-3 py-3 border-t border-gray-100 text-gray-800 items-center"
-            >
-              <span className="text-left font-medium">{row.month}</span>
-              <div className="text-center flex items-center justify-center gap-1">
-                <span className="font-semibold text-gray-900">{row.incentive}</span>
-                <button
-                  type="button"
-                  className="w-4 h-4 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-bold hover:bg-blue-200 transition-colors"
-                  title="View incentive calculation details"
-                  onClick={() => {
-                    setSelectedIncentiveData({
-                      month: row.month,
-                      incentive: row.incentive,
-                      units: row.units,
-                      status: row.status
-                    });
-                    setShowIncentiveModal(true);
-                  }}
-                >
-                  i
-                </button>
-              </div>
-              <span className="text-center">
-                <span className="text-[10px] font-medium text-orange-500 bg-orange-50 px-2 py-1 rounded-full">
-                  Accumulated
+              <div
+                key={row.month}
+                className="grid grid-cols-4 gap-2 px-3 py-3 border-t border-gray-100 text-gray-800 items-center"
+              >
+                <span className="text-left font-medium">{row.month}</span>
+                <div className="text-center flex items-center justify-center gap-1">
+                  <span className="font-semibold text-gray-900">{row.incentive}</span>
+                  <button
+                    type="button"
+                    className="w-4 h-4 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-bold hover:bg-blue-200 transition-colors disabled:opacity-50"
+                    title="View incentive calculation details"
+                    disabled={loadingIncentiveDetails}
+                    onClick={async () => {
+                      try {
+                        setLoadingIncentiveDetails(true);
+                        
+                        // Call the incentive calculation API
+                        const response = await fetch('/api/sec/incentive/calculate', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            month: row.month,
+                            // Add any other required parameters
+                          }),
+                        });
+
+                        if (response.ok) {
+                          const result = await response.json();
+                          setSelectedIncentiveData({
+                            month: row.month,
+                            incentive: row.incentive,
+                            units: row.units,
+                            status: row.status,
+                            breakdown: result.data // Store the detailed breakdown from API
+                          });
+                        } else {
+                          // Fallback to basic data if API fails
+                          setSelectedIncentiveData({
+                            month: row.month,
+                            incentive: row.incentive,
+                            units: row.units,
+                            status: row.status
+                          });
+                        }
+                        setShowIncentiveModal(true);
+                      } catch (error) {
+                        console.error('Error fetching incentive details:', error);
+                        // Fallback to basic data if API fails
+                        setSelectedIncentiveData({
+                          month: row.month,
+                          incentive: row.incentive,
+                          units: row.units,
+                          status: row.status
+                        });
+                        setShowIncentiveModal(true);
+                      } finally {
+                        setLoadingIncentiveDetails(false);
+                      }
+                    }}
+                  >
+                    {loadingIncentiveDetails ? (
+                      <div className="animate-spin rounded-full h-2 w-2 border-b border-blue-600"></div>
+                    ) : (
+                      'i'
+                    )}
+                  </button>
+                </div>
+                <span className="text-center">
+                  <span className="text-[10px] font-medium text-orange-500 bg-orange-50 px-2 py-1 rounded-full">
+                    Accumulated
+                  </span>
                 </span>
-              </span>
-              <span className="text-center text-[11px] text-gray-600">
-                {row.paymentDate || '--'}
-              </span>
-            </div>
+                <span className="text-center text-[11px] text-gray-600">
+                  {row.paymentDate || '--'}
+                </span>
+              </div>
             ))
           )}
         </div>
@@ -729,21 +793,21 @@ function SpotIncentiveSection({
         </div>
 
         <div className="border border-gray-200 rounded-xl overflow-hidden text-xs bg-white">
-          <div className="grid grid-cols-4 gap-2 bg-gray-50 px-3 py-3 font-semibold text-gray-700">
-            <span className="text-left">Date</span>
-            <span className="text-center">ADLD</span>
-            <span className="text-center">Combo</span>
-            <span className="text-center">Units</span>
+          <div className="grid grid-cols-4 bg-gray-50 px-3 py-2 font-semibold text-gray-700">
+            <span>Date</span>
+            <span>ADLD</span>
+            <span>Combo</span>
+            <span className="text-right">Units</span>
           </div>
           {rows.map((row, idx) => (
             <div
               key={row.date + idx}
-              className="grid grid-cols-4 gap-2 px-3 py-3 border-t border-gray-100 text-gray-800 items-center"
+              className="grid grid-cols-4 px-3 py-2 border-t border-gray-100 text-gray-800"
             >
-              <span className="text-left font-medium">{row.date}</span>
-              <span className="text-center">{row.adld}</span>
-              <span className="text-center">{row.combo}</span>
-              <span className="text-center font-semibold">{row.units}</span>
+              <span>{row.date}</span>
+              <span>{row.adld}</span>
+              <span>{row.combo}</span>
+              <span className="text-right">{row.units}</span>
             </div>
           ))}
         </div>
@@ -775,23 +839,23 @@ function SpotIncentiveSection({
             </div>
           ) : (
             transactions.map((row, idx) => (
-            <div
-              key={row.date + idx}
-              className="grid grid-cols-5 px-3 py-2 border-t border-gray-100 text-gray-800 items-center"
-            >
-              <span>{row.date}</span>
-              <span className="text-center">{row.deviceName}</span>
-              <span className="text-center">{row.planName}</span>
-              <span className="text-center text-green-600 font-semibold">{row.incentive}</span>
-              <span className="text-center">
-                <button
-                  type="button"
-                  className="px-2 py-1 rounded-lg bg-blue-50 text-[11px] text-blue-700 border border-blue-200"
-                >
-                  {row.voucherCode}
-                </button>
-              </span>
-            </div>
+              <div
+                key={row.date + idx}
+                className="grid grid-cols-5 px-3 py-2 border-t border-gray-100 text-gray-800 items-center"
+              >
+                <span>{row.date}</span>
+                <span className="text-center">{row.deviceName}</span>
+                <span className="text-center">{row.planName}</span>
+                <span className="text-center text-green-600 font-semibold">{row.incentive}</span>
+                <span className="text-center">
+                  <button
+                    type="button"
+                    className="px-2 py-1 rounded-lg bg-blue-50 text-[11px] text-blue-700 border border-blue-200"
+                  >
+                    {row.voucherCode}
+                  </button>
+                </span>
+              </div>
             ))
           )}
         </div>
