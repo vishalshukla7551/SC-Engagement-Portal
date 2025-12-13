@@ -250,7 +250,6 @@ model SEC {
   storeId   String?
   store     Store?    @relation(fields: [storeId], references: [id])
   AgencyName   String?
-  AgentCode String?
   salesReports   SalesReport[]
   salesSummaries SalesSummary[]
 

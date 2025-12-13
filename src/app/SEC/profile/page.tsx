@@ -33,7 +33,6 @@ export default function ProfilePage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [storeName, setStoreName] = useState('');
   const [agencyName, setAgencyName] = useState('');
-  const [agentCode, setAgentCode] = useState('');
   const [submittingPersonalInfo, setSubmittingPersonalInfo] = useState(false);
   const [personalInfoError, setPersonalInfoError] = useState<string | null>(null);
   
@@ -73,13 +72,11 @@ export default function ProfilePage() {
       const phoneFromAuth = (auth?.username || auth?.phone || '').trim();
       const storeNameFromAuth = auth?.store?.name || '';
       const agencyNameFromAuth = (auth?.AgencyName || '').trim();
-      const agentCodeFromAuth = (auth?.AgentCode || '').trim();
 
       if (fullNameFromAuth) setFullName(fullNameFromAuth);
       if (phoneFromAuth) setPhoneNumber(phoneFromAuth);
       if (storeNameFromAuth) setStoreName(storeNameFromAuth);
       if (agencyNameFromAuth) setAgencyName(agencyNameFromAuth);
-      if (agentCodeFromAuth) setAgentCode(agentCodeFromAuth);
 
       // Load existing KYC info if available
       if (auth?.kycInfo) {
@@ -247,7 +244,6 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           agencyName: agencyName.trim() || null,
-          agentCode: agentCode.trim() || null,
         }),
       });
 
@@ -267,7 +263,6 @@ export default function ProfilePage() {
             const updated = {
               ...parsed,
               AgencyName: responseData.AgencyName,
-              AgentCode: responseData.AgentCode,
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
           }
@@ -522,27 +517,32 @@ export default function ProfilePage() {
                   </svg>
                   <span className="text-sm font-semibold text-gray-900">Agency</span>
                 </div>
-                <div className="mb-3">
+                <div>
                   <label htmlFor="agencyName" className="block text-xs text-gray-600 mb-1">Agency Name</label>
-                  <input
-                    type="text"
+                  <select
                     id="agencyName"
                     value={agencyName}
                     onChange={(e) => setAgencyName(e.target.value)}
-                    placeholder="Enter Agency Name"
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="agentCode" className="block text-xs text-gray-600 mb-1">Agent Code</label>
-                  <input
-                    type="text"
-                    id="agentCode"
-                    value={agentCode}
-                    onChange={(e) => setAgentCode(e.target.value)}
-                    placeholder="Enter Agent Code"
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '1.25rem',
+                    }}
+                  >
+                    <option value="">Select Agency</option>
+                    <option value="AGENCY001">AGENCY001</option>
+                    <option value="AGENCY002">AGENCY002</option>
+                    <option value="AGENCY003">AGENCY003</option>
+                    <option value="AGENCY004">AGENCY004</option>
+                    <option value="AGENCY005">AGENCY005</option>
+                    <option value="AGENCY006">AGENCY006</option>
+                    <option value="AGENCY007">AGENCY007</option>
+                    <option value="AGENCY008">AGENCY008</option>
+                    <option value="AGENCY009">AGENCY009</option>
+                    <option value="AGENCY010">AGENCY010</option>
+                  </select>
                 </div>
               </div>
 
@@ -705,6 +705,13 @@ export default function ProfilePage() {
               <h2 className="text-base font-semibold text-gray-900">Banking Info</h2>
             </div>
 
+            {/* Note */}
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <p className="text-xs text-gray-700">
+                <span className="font-semibold">Note:</span> These details will be used for incentive payout to your account.
+              </p>
+            </div>
+
             <form onSubmit={handleBankingSubmit}>
               {/* Bank Name */}
               <div className="mb-4">
@@ -804,13 +811,6 @@ export default function ProfilePage() {
                   onChange={(e) => setChequeFile(e.target.files?.[0] || null)}
                   className="hidden"
                 />
-              </div>
-
-              {/* Note */}
-              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-                <p className="text-xs text-gray-700">
-                  <span className="font-semibold">Note:</span> These details will be used for incentive payout to your account.
-                </p>
               </div>
 
               {/* Submit Button */}

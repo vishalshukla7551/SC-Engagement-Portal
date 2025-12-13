@@ -385,7 +385,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
           {/* Page Heading */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
-              Incentive Form
+              Spot Incentive Form
             </h1>
             <p className="text-sm text-gray-500">
               Submit your plan sales below
