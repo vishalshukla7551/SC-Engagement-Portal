@@ -56,6 +56,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Authorization check - SEC users can only view their own incentives
+    // `getAuthenticatedUserFromCookies` sets `id` to the SEC identifier for SEC users,
+    // so compare `authUser.id` here instead of a non-existent `secId` property.
     if (authUser.role === 'SEC' && authUser.id !== secId) {
       return NextResponse.json(
         { error: 'Forbidden: You can only view your own incentives' },

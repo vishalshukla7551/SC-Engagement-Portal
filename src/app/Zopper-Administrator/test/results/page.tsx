@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
-import { FaArrowLeft } from 'react-icons/fa';
 import { getTestSubmissions, getTestStatistics, TestSubmission } from '@/lib/testData';
 
-// Fallback mock data so the page isn't visually empty when API has no data
+// Fallback mock data
 const MOCK_SUBMISSIONS: TestSubmission[] = [
   {
     id: '1',
@@ -72,7 +71,7 @@ const MOCK_STATS = {
   ),
 };
 
-export default function TestResults() {
+export default function TestResultsPage() {
   const router = useRouter();
   const [submissions, setSubmissions] = useState<TestSubmission[]>([]);
   const [filteredSubmissions, setFilteredSubmissions] = useState<TestSubmission[]>([]);
@@ -116,14 +115,12 @@ export default function TestResults() {
   useEffect(() => {
     let filtered = [...submissions];
 
-    // Apply score filter
     if (filterScore === 'pass') {
       filtered = filtered.filter((sub) => sub.score >= 60);
     } else if (filterScore === 'fail') {
       filtered = filtered.filter((sub) => sub.score < 60);
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
 
@@ -162,7 +159,6 @@ export default function TestResults() {
     }
 
     const exportData = filteredSubmissions.map((submission) => {
-      // Check if responses have enriched data
       const hasEnrichedData = submission.responses.some((r) => r.isCorrect !== undefined);
 
       const correctCount = hasEnrichedData
@@ -204,7 +200,6 @@ export default function TestResults() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Test Results');
 
-    // Auto-size columns
     const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
       wch: Math.max(key.length, 15),
     }));
@@ -229,22 +224,12 @@ export default function TestResults() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/Zopper-Administrator')}
-            className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <FaArrowLeft size={16} />
-            Back
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">Test Results</h1>
-        </div>
+    <div className="space-y-6">
+      <div className="flex justify-end">
         <button
           onClick={exportToExcel}
           disabled={filteredSubmissions.length === 0}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
         >
           📊 Export to Excel
         </button>

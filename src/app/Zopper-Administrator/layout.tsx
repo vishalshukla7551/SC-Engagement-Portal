@@ -157,30 +157,17 @@ export default function ZopperAdministratorLayout({
               <span className="text-sm leading-normal">Store Change Requests</span>
             </Link>
 
-            {/* View Referrals */}
+            {/* Referral */}
             <Link
-              href="/Zopper-Administrator/referrals"
+              href="/Zopper-Administrator/referral"
               className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/referrals')
+                pathname?.startsWith('/Zopper-Administrator/referral')
                   ? 'bg-blue-600 text-white font-semibold'
                   : 'text-white hover:bg-white/5'
               }`}
             >
               <span className="text-lg shrink-0">📄</span>
-              <span className="text-sm leading-normal">View Referrals</span>
-            </Link>
-
-            {/* Process Referral Vouchers */}
-            <Link
-              href="/Zopper-Administrator/process-referral-vouchers"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/process-referral-vouchers')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">🎟️</span>
-              <span className="text-sm leading-normal">Process Referral Vouchers</span>
+              <span className="text-sm leading-normal">Referral</span>
             </Link>
 
             {/* Process Voucher Excel */}
@@ -209,30 +196,17 @@ export default function ZopperAdministratorLayout({
               <span className="text-sm leading-normal">Process Invalid IMEIs</span>
             </Link>
 
-            {/* View Test Results */}
+            {/* Test */}
             <Link
-              href="/Zopper-Administrator/test-results"
+              href="/Zopper-Administrator/test"
               className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/test-results')
+                pathname?.startsWith('/Zopper-Administrator/test')
                   ? 'bg-blue-600 text-white font-semibold'
                   : 'text-white hover:bg-white/5'
               }`}
             >
               <span className="text-lg shrink-0">📋</span>
-              <span className="text-sm leading-normal">View Test Results</span>
-            </Link>
-
-            {/* Send Test Invites */}
-            <Link
-              href="/Zopper-Administrator/send-test-invites"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/send-test-invites')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📧</span>
-              <span className="text-sm leading-normal">Send Test Invites</span>
+              <span className="text-sm leading-normal">Test</span>
             </Link>
 
             {/* Help Requests */}
@@ -246,19 +220,6 @@ export default function ZopperAdministratorLayout({
             >
               <span className="text-lg shrink-0">🆘</span>
               <span className="text-sm leading-normal">Help Requests</span>
-            </Link>
-
-            {/* Insert Questions */}
-            <Link
-              href="/Zopper-Administrator/insert-questions"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/insert-questions')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📝</span>
-              <span className="text-sm leading-normal">Insert Questions</span>
             </Link>
           </div>
         </nav>
