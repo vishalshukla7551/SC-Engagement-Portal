@@ -48,15 +48,13 @@ model Store {
 
 model periodicAttachRate {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  storeId   String   // Regular string to match Store.id (e.g., "store_00029")
+  storeId   String   @unique // Each store can have only one attach rate record
   store     Store    @relation(fields: [storeId], references: [id])
   start    String   // e.g., "01-01-2024", "dd-mm-yyyy". inclusive of this period
   end      String   // e.g., "31-03-2024", "dd-mm-yyyy". inclusive of this period
-  attachPercentage Float    // e.g., 0.25 for 25%
+  attachPercentage Float    // e.g., 25%
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@unique([storeId, start, end])
 }
 
 model SamsungSKU {
@@ -363,3 +361,81 @@ model PriceIncentiveSlab {
   @@index([minPrice, maxPrice])
 }
 
+model TestSubmission {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  secId                String
+  phone                String?
+  sessionToken         String
+  responses            Json     // Array of {questionId, selectedAnswer, answeredAt}
+  score                Int
+  totalQuestions       Int
+  completionTime       Int      // in seconds
+  isProctoringFlagged  Boolean  @default(false)
+  screenshotUrls       String[] @default([])  // Array of Cloudinary URLs
+  storeId              String?
+  storeName            String?
+  storeCity            String?
+  submittedAt          DateTime @default(now())
+  createdAt            DateTime @default(now())
+
+  @@index([secId])
+  @@index([phone])
+  @@index([submittedAt])
+//  @@unique([secId, sessionToken], name: "secId_sessionToken") // Temporarily commented out due to duplicate data
+  @@index([secId, sessionToken]) // Added non-unique index instead
+}    
+
+model QuestionBank {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  questionId    Int      @unique // Sequential question ID
+  question      String   // Question text
+  options       String[] // Array of options (e.g., ["A) Option1", "B) Option2", ...])
+  correctAnswer String   // Correct answer letter (e.g., "A", "B", "C", "D")
+  category      String?  // Optional category (e.g., "Section A", "Section B")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+} 
+enum ProctoringEventType {
+  tab_switch
+  window_blur
+  no_face
+  multi_face
+  loud_noise
+  mic_active
+  video_off
+  snapshot
+}
+
+model ProctoringEvent {
+  id            String               @id @default(auto()) @map("_id") @db.ObjectId
+  secId         String
+  phone         String?
+  sessionToken  String?
+  eventType     ProctoringEventType
+  details       String?
+  createdAt     DateTime             @default(now())
+
+  @@index([secId])
+  @@index([phone])
+  @@index([createdAt])
+}
+
+model TestAnswer {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  secId           String
+  phone           String?
+  testId          String
+  sessionToken    String
+  questionId      String
+  questionText    String
+  options         Json     // Array of {option, text}
+  selectedAnswer  String?
+  correctAnswer   String
+  isCorrect       Boolean
+  answeredAt      DateTime @default(now())
+
+  @@index([secId, testId])
+  @@index([sessionToken])
+}

@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if IMEI already exists
-    const existingReport = await prisma.salesReport.findUnique({
+    // Check if IMEI already exists in SpotIncentiveReport
+    const existingReport = await prisma.spotIncentiveReport.findUnique({
       where: { imei },
     });
 
@@ -150,33 +150,8 @@ export async function POST(req: NextRequest) {
     // Use provided dateOfSale or default to now
     const saleDate = dateOfSale ? new Date(dateOfSale) : now;
 
-    // Get month and year from sale date for SalesSummary
-    const month = saleDate.getMonth() + 1; // 1-12
-    const year = saleDate.getFullYear();
-
-    // Find or create SalesSummary for this month/year
-    let salesSummary = await prisma.salesSummary.findFirst({
-      where: {
-        secId: secUser.id,
-        month,
-        year,
-      },
-    });
-
-    if (!salesSummary) {
-      // Create new SalesSummary
-      salesSummary = await prisma.salesSummary.create({
-        data: {
-          secId: secUser.id,
-          month,
-          year,
-          totalSpotIncentiveEarned: 0,
-        },
-      });
-    }
-
-    // Create the sales report with isCampaignActive field
-    const salesReport = await prisma.salesReport.create({
+    // Create the spot incentive report
+    const salesReport = await prisma.spotIncentiveReport.create({
       data: {
         secId: secUser.id,
         storeId: store.id,
@@ -186,7 +161,6 @@ export async function POST(req: NextRequest) {
         spotincentiveEarned,
         isCompaignActive: isCampaignActive,
         Date_of_sale: saleDate,
-        salesSummaryid: salesSummary.id,
       },
       include: {
         secUser: {
@@ -221,27 +195,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Update SalesSummary totals
-    // Get all sales reports for this month/year to recalculate totals
-    const monthReports = await prisma.salesReport.findMany({
-      where: {
-        salesSummaryid: salesSummary.id,
-      },
-    });
-
-    // Calculate total spot incentive (from all reports in this month)
-    const totalSpotIncentive = monthReports.reduce(
-      (sum, report: any) => sum + (report.spotincentiveEarned || 0),
-      0
-    );
-
-    // Update SalesSummary with new totals
-    await prisma.salesSummary.update({
-      where: { id: salesSummary.id },
-      data: {
-        totalSpotIncentiveEarned: totalSpotIncentive,
-      },
-    });
+    // No need to update SalesSummary for spot incentives
+    // Spot incentives are tracked separately in SpotIncentiveReport
 
     return NextResponse.json(
       {

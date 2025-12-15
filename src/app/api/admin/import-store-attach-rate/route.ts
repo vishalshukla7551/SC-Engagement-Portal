@@ -176,30 +176,46 @@ export async function POST(req: NextRequest) {
         
         console.log(`[Import] Store found: ${store.name}`);
 
-        // Convert percentage to decimal (25.5% -> 0.255)
-        const attachRate = attachPercentage / 100;
+        // Store percentage as-is (25.5 for 25.5%)
+        const attachRate = attachPercentage;
 
-        // Create or update periodic attach rate using the validated date strings
+        // Create or update periodic attach rate using the unique storeId
         console.log(`[Import] Creating/updating attach rate for store ${storeId}, period ${validStartPeriod} to ${validEndPeriod}, rate ${attachRate}`);
-        const attachRateRecord = await prisma.periodicAttachRate.upsert({
+        
+        // First check if a record exists for this store
+        const existingRecord = await prisma.periodicAttachRate.findUnique({
           where: {
-            storeId_start_end: {
-              storeId: storeId,
-              start: validStartPeriod,
-              end: validEndPeriod
-            }
-          },
-          update: {
-            attachPercentage: attachRate,
-            updatedAt: new Date()
-          },
-          create: {
-            storeId: storeId,
-            start: validStartPeriod,
-            end: validEndPeriod,
-            attachPercentage: attachRate
+            storeId: storeId
           }
         });
+
+        let attachRateRecord;
+        if (existingRecord) {
+          // Update existing record
+          attachRateRecord = await prisma.periodicAttachRate.update({
+            where: {
+              storeId: storeId
+            },
+            data: {
+              start: validStartPeriod,
+              end: validEndPeriod,
+              attachPercentage: attachRate,
+              updatedAt: new Date()
+            }
+          });
+          console.log(`[Import] Updated existing record for store ${storeId}`);
+        } else {
+          // Create new record
+          attachRateRecord = await prisma.periodicAttachRate.create({
+            data: {
+              storeId: storeId,
+              start: validStartPeriod,
+              end: validEndPeriod,
+              attachPercentage: attachRate
+            }
+          });
+          console.log(`[Import] Created new record for store ${storeId}`);
+        }
 
         processedRecords.push({
           storeId,

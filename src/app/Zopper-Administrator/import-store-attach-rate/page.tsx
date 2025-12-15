@@ -48,12 +48,12 @@ export default function ImportStoreAttachRate() {
   const downloadTemplate = () => {
     // Create a comprehensive CSV template with examples using dd-mm-yyyy format and correct Store ID format
     const csvContent = `Store ID,Store Name,Start Period,End Period,Attach Percentage
-store_00001,Croma - A294 Agra SRK Mall,01-01-2024,31-03-2024,25.5
-store_00002,Croma - Phoenix Mall Mumbai,01-04-2024,30-06-2024,30.2
-store_00003,Reliance Digital - CP Delhi,01-07-2024,30-09-2024,22.8
-store_00029,Samsung Plaza - Bangalore,01-10-2024,31-12-2024,28.7
-store_00030,Vijay Sales - Pune,01-01-2024,31-01-2024,24.3
-store_00031,Poorvika - Chennai,01-02-2024,29-02-2024,31.9`;
+store_00001,Croma - A294 Agra SRK Mall,01-01-2024,31-03-2024,25
+store_00002,Croma - Phoenix Mall Mumbai,01-04-2024,30-06-2024,30
+store_00003,Reliance Digital - CP Delhi,01-07-2024,30-09-2024,22
+store_00029,Samsung Plaza - Bangalore,01-10-2024,31-12-2024,28
+store_00030,Vijay Sales - Pune,01-01-2024,31-01-2024,24
+store_00031,Poorvika - Chennai,01-02-2024,29-02-2024,32`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
@@ -92,7 +92,7 @@ store_00031,Poorvika - Chennai,01-02-2024,29-02-2024,31.9`;
                   <li><strong>Store Name:</strong> Display name of the store</li>
                   <li><strong>Start Period:</strong> Start date in dd-mm-yyyy format (e.g., "01-01-2024")</li>
                   <li><strong>End Period:</strong> End date in dd-mm-yyyy format (e.g., "31-03-2024")</li>
-                  <li><strong>Attach Percentage:</strong> Attachment rate as percentage (e.g., 25.5 for 25.5%)</li>
+                  <li><strong>Attach Percentage:</strong> Attachment rate as percentage (e.g., 25 for 25%, 30 for 30%)</li>
                 </ul>
               </li>
               <li>Save the file as CSV format</li>
@@ -109,9 +109,9 @@ store_00031,Poorvika - Chennai,01-02-2024,29-02-2024,31.9`;
             <h3 className="font-semibold text-yellow-900 mb-2">⚠️ Important Notes:</h3>
             <ul className="text-sm text-yellow-800 space-y-1 list-disc ml-4">
               <li>Store ID format should match existing store IDs (e.g., "store_00029")</li>
-              <li>Attach percentage should be a decimal number (e.g., 25.5 for 25.5%)</li>
+              <li>Attach percentage should be a number (e.g., 25 for 25%, 30 for 30%)</li>
               <li>Date format must be dd-mm-yyyy (e.g., "01-01-2024", "31-03-2024")</li>
-              <li>Duplicate entries for the same store and date range will be updated</li>
+              <li>Each store can have only one attach rate - importing will update existing records</li>
               <li>Invalid store IDs or date formats will be skipped with error messages</li>
             </ul>
           </div>

@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if IMEI exists in the database
-    // Using SalesReport model from schema
-    const existingSale = await prisma.salesReport.findUnique({
+    // Using SpotIncentiveReport model from schema
+    const existingSale = await prisma.spotIncentiveReport.findUnique({
       where: {
         imei: imei,
       },
