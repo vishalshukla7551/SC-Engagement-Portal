@@ -124,7 +124,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Check for active spot incentive campaign
-    // Only give spot incentive if an active campaign exists
     const now = new Date();
     const activeCampaign = await prisma.spotIncentiveCampaign.findFirst({
       where: {
@@ -137,7 +136,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Calculate spot incentive only if campaign exists
+    // Calculate spot incentive based on active campaign
     let spotincentiveEarned = 0;
     const isCampaignActive = !!activeCampaign;
 
@@ -148,7 +147,7 @@ export async function POST(req: NextRequest) {
         spotincentiveEarned = Math.round(plan.price * (activeCampaign.incentiveValue / 100));
       }
     }
-    // If no campaign, spotincentiveEarned remains 0 and isCampaignActive is false
+    // If no active campaign, spotincentiveEarned remains 0
 
     // Use provided dateOfSale or default to now
     const saleDate = dateOfSale ? new Date(dateOfSale) : now;
@@ -202,7 +201,7 @@ export async function POST(req: NextRequest) {
       {
         success: true,
         message: 'Spot incentive report submitted successfully',
-        spotReport: {
+        salesReport: {
           id: spotReport.id,
           imei: spotReport.imei,
           incentiveEarned: spotReport.spotincentiveEarned,

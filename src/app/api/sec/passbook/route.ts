@@ -293,7 +293,7 @@ export async function GET(req: NextRequest) {
           date: formatDate(report.Date_of_sale || report.submittedAt),
           deviceName: report.samsungSKU.ModelName || report.samsungSKU.Category,
           planName: planName,
-          incentive: `₹${report.spotincentiveEarned.toLocaleString('en-IN')}`,
+          incentive: report.spotincentiveEarned > 0 ? `₹${report.spotincentiveEarned.toLocaleString('en-IN')}` : '-',
           voucherCode: report.voucherCode || '',
           isPaid: !!report.spotincentivepaidAt,
           paidAt: report.spotincentivepaidAt 
@@ -388,9 +388,9 @@ export async function GET(req: NextRequest) {
 
       monthlyFyStats[fy] = {
         units: monthlyUnits.toLocaleString('en-IN'),
-        totalEarned: `₹${monthlyEarned.toLocaleString('en-IN')}`,
-        paid: `₹${monthlyPaid.toLocaleString('en-IN')}`,
-        net: `₹${monthlyNet.toLocaleString('en-IN')}`,
+        totalEarned: monthlyEarned > 0 ? `₹${monthlyEarned.toLocaleString('en-IN')}` : '-',
+        paid: monthlyPaid > 0 ? `₹${monthlyPaid.toLocaleString('en-IN')}` : '-',
+        net: monthlyNet > 0 ? `₹${monthlyNet.toLocaleString('en-IN')}` : '-',
       };
 
       // Calculate SPOT incentive stats for this FY
@@ -417,9 +417,9 @@ export async function GET(req: NextRequest) {
 
       spotFyStats[fy] = {
         units: spotUnits.toLocaleString('en-IN'),
-        totalEarned: `₹${spotEarned.toLocaleString('en-IN')}`,
-        paid: `₹${spotPaid.toLocaleString('en-IN')}`,
-        net: `₹${spotNet.toLocaleString('en-IN')}`,
+        totalEarned: spotEarned > 0 ? `₹${spotEarned.toLocaleString('en-IN')}` : '-',
+        paid: spotPaid > 0 ? `₹${spotPaid.toLocaleString('en-IN')}` : '-',
+        net: spotNet > 0 ? `₹${spotNet.toLocaleString('en-IN')}` : '-',
       };
     }
 
