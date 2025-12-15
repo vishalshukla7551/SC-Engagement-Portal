@@ -123,17 +123,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate spot incentive based on plan type
-    // ADLD_1_YR = ₹200, COMBO_2_YRS = ₹300
-    let spotincentiveEarned = 0;
-    const isCampaignActive = true; // Set campaigns as active for now as requested
+    // Check for active spot incentive campaign
+    const now = new Date();
+    const activeCampaign = await prisma.spotIncentiveCampaign.findFirst({
+      where: {
+        storeId: store.id,
+        samsungSKUId: device.id,
+        planId: plan.id,
+        active: true,
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+    });
 
-    if (plan.planType === 'ADLD_1_YR') {
-      spotincentiveEarned = 200;
-    } else if (plan.planType === 'COMBO_2_YRS') {
-      spotincentiveEarned = 300;
+    // Calculate spot incentive based on active campaign
+    let spotincentiveEarned = 0;
+    const isCampaignActive = !!activeCampaign;
+
+    if (activeCampaign) {
+      if (activeCampaign.incentiveType === 'FIXED') {
+        spotincentiveEarned = Math.round(activeCampaign.incentiveValue);
+      } else if (activeCampaign.incentiveType === 'PERCENTAGE') {
+        spotincentiveEarned = Math.round(plan.price * (activeCampaign.incentiveValue / 100));
+      }
     }
-    // Other plan types get 0 incentive
+    // If no active campaign, spotincentiveEarned remains 0
 
     // Use provided dateOfSale or default to now
     const saleDate = dateOfSale ? new Date(dateOfSale) : now;
@@ -187,7 +201,7 @@ export async function POST(req: NextRequest) {
       {
         success: true,
         message: 'Spot incentive report submitted successfully',
-        spotReport: {
+        salesReport: {
           id: spotReport.id,
           imei: spotReport.imei,
           incentiveEarned: spotReport.spotincentiveEarned,

@@ -762,25 +762,7 @@ function MonthlyIncentiveSection({
         </div>
       </section>
 
-      {/* FY Dropdown */}
-      <section className="mb-3">
-        <div className="flex justify-end">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-gray-600">Financial Year</span>
-            <select
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-700 bg-white"
-              value={selectedFY}
-              onChange={(e) => setSelectedFY(e.target.value)}
-            >
-              {allFYs.map((fy) => (
-                <option key={fy} value={fy}>
-                  {fy}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </section>
+
     </>
   );
 }
