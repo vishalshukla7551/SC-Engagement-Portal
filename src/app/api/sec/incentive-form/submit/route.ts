@@ -6,6 +6,8 @@ import { getAuthenticatedUserFromCookies } from '@/lib/auth';
  * POST /api/sec/incentive-form/submit
  * Submit a spot incentive sales report
  * 
+ * RESTRICTED: Only saves to SpotIncentiveReport (not DailyIncentiveReport)
+ * 
  * Body:
  * {
  *   secPhone: string,
@@ -13,6 +15,7 @@ import { getAuthenticatedUserFromCookies } from '@/lib/auth';
  *   deviceId: string,
  *   planId: string,
  *   imei: string,
+ *   dateOfSale?: string (optional, defaults to now)
  * }
  */
 export async function POST(req: NextRequest) {
@@ -64,12 +67,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if IMEI already exists
-    const existingReport = await prisma.salesReport.findUnique({
+    // Check if IMEI already exists in SpotIncentiveReport ONLY
+    const existingSpotReport = await prisma.spotIncentiveReport.findUnique({
       where: { imei },
     });
 
-    if (existingReport) {
+    if (existingSpotReport) {
       return NextResponse.json(
         { error: 'This IMEI has already been submitted' },
         { status: 409 }
@@ -150,33 +153,8 @@ export async function POST(req: NextRequest) {
     // Use provided dateOfSale or default to now
     const saleDate = dateOfSale ? new Date(dateOfSale) : now;
 
-    // Get month and year from sale date for SalesSummary
-    const month = saleDate.getMonth() + 1; // 1-12
-    const year = saleDate.getFullYear();
-
-    // Find or create SalesSummary for this month/year
-    let salesSummary = await prisma.salesSummary.findFirst({
-      where: {
-        secId: secUser.id,
-        month,
-        year,
-      },
-    });
-
-    if (!salesSummary) {
-      // Create new SalesSummary
-      salesSummary = await prisma.salesSummary.create({
-        data: {
-          secId: secUser.id,
-          month,
-          year,
-          totalSpotIncentiveEarned: 0,
-        },
-      });
-    }
-
-    // Create the sales report with isCampaignActive field
-    const salesReport = await prisma.salesReport.create({
+    // Create the spot incentive report (RESTRICTED TO SPOT INCENTIVE ONLY)
+    const spotReport = await prisma.spotIncentiveReport.create({
       data: {
         secId: secUser.id,
         storeId: store.id,
@@ -186,7 +164,6 @@ export async function POST(req: NextRequest) {
         spotincentiveEarned,
         isCompaignActive: isCampaignActive,
         Date_of_sale: saleDate,
-        salesSummaryid: salesSummary.id,
       },
       include: {
         secUser: {
@@ -221,40 +198,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Update SalesSummary totals
-    // Get all sales reports for this month/year to recalculate totals
-    const monthReports = await prisma.salesReport.findMany({
-      where: {
-        salesSummaryid: salesSummary.id,
-      },
-    });
-
-    // Calculate total spot incentive (from all reports in this month)
-    const totalSpotIncentive = monthReports.reduce(
-      (sum, report: any) => sum + (report.spotincentiveEarned || 0),
-      0
-    );
-
-    // Update SalesSummary with new totals
-    await prisma.salesSummary.update({
-      where: { id: salesSummary.id },
-      data: {
-        totalSpotIncentiveEarned: totalSpotIncentive,
-      },
-    });
-
     return NextResponse.json(
       {
         success: true,
-        salesReport: {
-          id: salesReport.id,
-          imei: salesReport.imei,
-          incentiveEarned: salesReport.spotincentiveEarned,
-          dateOfSale: salesReport.Date_of_sale,
-          isCampaignActive: salesReport.isCompaignActive,
-          store: salesReport.store,
-          device: salesReport.samsungSKU,
-          plan: salesReport.plan,
+        message: 'Spot incentive report submitted successfully',
+        spotReport: {
+          id: spotReport.id,
+          imei: spotReport.imei,
+          incentiveEarned: spotReport.spotincentiveEarned,
+          dateOfSale: spotReport.Date_of_sale,
+          isCampaignActive: spotReport.isCompaignActive,
+          store: spotReport.store,
+          device: spotReport.samsungSKU,
+          plan: spotReport.plan,
         },
       },
       { status: 201 }

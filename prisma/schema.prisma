@@ -362,4 +362,3 @@ model PriceIncentiveSlab {
 
   @@index([minPrice, maxPrice])
 }
-
