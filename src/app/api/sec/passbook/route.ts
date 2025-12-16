@@ -274,7 +274,13 @@ export async function GET(req: NextRequest) {
       .filter(transaction => transaction.units > 0) // Only show months with actual sales
       .sort((a, b) => {
         // Sort by date descending (newest first)
-        return b.month.localeCompare(a.month);
+        // Parse "Jan 24" format to compare chronologically
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+        const [monthA, yearA] = a.month.split(' ');
+        const [monthB, yearB] = b.month.split(' ');
+        const dateA = parseInt(yearA) * 100 + monthNames.indexOf(monthA);
+        const dateB = parseInt(yearB) * 100 + monthNames.indexOf(monthB);
+        return dateB - dateA; // Descending order (newest first)
       });
 
     // Spot Incentive Transactions (from SpotIncentiveReport)
@@ -460,6 +466,7 @@ export async function GET(req: NextRequest) {
           name: secUser.store.name,
           city: secUser.store.city,
           state: secUser.store.city || null,
+          numberOfSec: secUser.store.numberOfSec || 1, // Fetch from store model
         },
         
         // Monthly incentive tab data
