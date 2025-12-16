@@ -165,9 +165,6 @@ export default function SalesChampionLeaderboardPage() {
             {leaderboardData && (
               <div className="flex justify-center gap-4 mb-3 text-xs">
                 <span className="text-gray-300">
-                  Active Campaigns: <span className="font-bold text-white">{leaderboardData.activeCampaignsCount}</span>
-                </span>
-                <span className="text-gray-300">
                   Total Sales: <span className="font-bold text-white">{leaderboardData.totalSalesReports}</span>
                 </span>
               </div>
@@ -192,10 +189,6 @@ export default function SalesChampionLeaderboardPage() {
                 ))}
               </select>
             </div>
-
-            <p className="text-xs text-gray-300 leading-relaxed">
-              Based on sales from active spot incentive campaigns
-            </p>
           </div>
 
 
@@ -238,7 +231,7 @@ export default function SalesChampionLeaderboardPage() {
                       
                       {/* The card - responsive sizing, champion taller */}
                       <div
-                        className={`w-[105px] sm:w-[180px] lg:w-[220px] ${card.highlight ? 'h-[105px] sm:h-[180px] lg:h-[200px]' : 'h-[95px] sm:h-[160px] lg:h-[180px]'} rounded-2xl sm:rounded-3xl bg-gradient-to-b ${card.bg} text-white p-3 sm:p-4 lg:p-5 shadow-lg flex flex-col items-center justify-between overflow-hidden`}
+                        className={`w-[105px] sm:w-[180px] lg:w-[220px] ${card.highlight ? 'h-[140px] sm:h-[200px] lg:h-[220px]' : 'h-[130px] sm:h-[180px] lg:h-[200px]'} rounded-2xl sm:rounded-3xl bg-gradient-to-b ${card.bg} text-white p-2 sm:p-4 lg:p-5 shadow-lg flex flex-col items-center justify-between overflow-hidden`}
                       >
                         {/* Icon */}
                         <div className="flex justify-center shrink-0">
@@ -246,15 +239,15 @@ export default function SalesChampionLeaderboardPage() {
                         </div>
                         
                         {/* Store name - show for all ranks */}
-                        <div className="text-center px-1 overflow-hidden w-full">
-                          <p className="text-[8px] sm:text-xs lg:text-sm font-semibold leading-tight line-clamp-2 overflow-hidden">
+                        <div className="text-center px-1 w-full flex-shrink min-h-0">
+                          <p className="text-[9px] sm:text-xs lg:text-sm font-semibold leading-tight line-clamp-2 break-words">
                             {card.store}
                           </p>
                           <p className="text-[7px] sm:text-[10px] lg:text-xs text-white/90 mt-0.5 truncate">{card.city}</p>
                         </div>
                         
                         {/* Amount */}
-                        <p className="text-base sm:text-2xl lg:text-3xl font-bold shrink-0">{card.incentives}</p>
+                        <p className="text-sm sm:text-2xl lg:text-3xl font-bold shrink-0">{card.incentives}</p>
                         
                         {/* Bottom badge */}
                         {card.highlight ? (
