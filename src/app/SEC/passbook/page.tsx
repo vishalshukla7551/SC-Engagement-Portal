@@ -111,7 +111,7 @@ export default function IncentivePassbookPage() {
   // Modal state
   const [showIncentiveModal, setShowIncentiveModal] = useState(false);
   const [selectedIncentiveData, setSelectedIncentiveData] = useState<any>(null);
-  const [loadingIncentiveDetails, setLoadingIncentiveDetails] = useState(false);
+  const [loadingIncentiveDetails, setLoadingIncentiveDetails] = useState<string | null>(null); // Track which month is loading
   const [numberOfSECs, setNumberOfSECs] = useState<number>(3);
 
   // Fetch passbook data from API
@@ -142,6 +142,10 @@ export default function IncentivePassbookPage() {
           setPassbookData(passbookResult.data);
           setStoreData(passbookResult.data.store);
           setSecData(passbookResult.data.sec);
+          // Set numberOfSECs from store data
+          if (passbookResult.data.store?.numberOfSec) {
+            setNumberOfSECs(passbookResult.data.store.numberOfSec);
+          }
         } else {
           setError(passbookResult.error || 'Invalid response from server');
           return;
@@ -515,50 +519,8 @@ export default function IncentivePassbookPage() {
                     </tr>
                     <tr className="border-b border-gray-100">
                       <td className="px-4 py-3 text-gray-600">Number Of SECs</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="relative inline-block modal-dropdown">
-                          <select
-                            value={numberOfSECs}
-                            onChange={async (e) => {
-                              const newNumberOfSECs = Number(e.target.value);
-                              setNumberOfSECs(newNumberOfSECs);
-                              
-                              // Recalculate with new number of SECs
-                              if (selectedIncentiveData?.month) {
-                                try {
-                                  const monthParts = selectedIncentiveData.month.split(' ');
-                                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-                                  const monthNumber = monthNames.indexOf(monthParts[0]) + 1;
-                                  const year = 2000 + parseInt(monthParts[1]);
-                                  
-                                  const response = await fetch(`/api/sec/incentive/calculate?month=${monthNumber}&year=${year}&numberOfSECs=${newNumberOfSECs}`);
-                                  
-                                  if (response.ok) {
-                                    const result = await response.json();
-                                    setSelectedIncentiveData({
-                                      ...selectedIncentiveData,
-                                      breakdown: result.data
-                                    });
-                                  }
-                                } catch (error) {
-                                  console.error('Error recalculating incentive:', error);
-                                }
-                              }
-                            }}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm font-medium text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8 min-w-[60px]"
-                          >
-                            <option value={1}>1</option>
-                            <option value={2}>2</option>
-                            <option value={3}>3</option>
-                            <option value={4}>4</option>
-                            <option value={5}>5</option>
-                          </select>
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </div>
+                      <td className="px-4 py-3 font-medium text-right text-gray-900">
+                        {numberOfSECs}
                       </td>
                     </tr>
                     <tr className="border-b border-gray-100">
@@ -614,7 +576,7 @@ export default function IncentivePassbookPage() {
                     <tr className="border-b border-gray-100">
                       <td className="px-4 py-3 text-gray-600">Volume Kicker Applicable</td>
                       <td className="px-4 py-3 font-medium text-right text-gray-900">
-                        8 x {numberOfSECs} = {8 * numberOfSECs}
+                        8 x {numberOfSECs} = {8 * numberOfSECs} Units
                       </td>
                     </tr>
                     <tr className="border-b border-gray-100 bg-blue-50">
@@ -636,37 +598,49 @@ export default function IncentivePassbookPage() {
                 </div>
               </div>
 
-              {/* Incentive Breakdown by Price Slab */}
+              {/* Incentive Breakdown */}
               <div className="mb-4">
-                <h4 className="text-md font-semibold text-gray-900 mb-3">Incentive Breakdown by Price Slab</h4>
+                <h4 className="text-md font-semibold text-gray-900 mb-3">Incentive Breakdown</h4>
                 <div className="border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white">
                   <div className="bg-gray-50 px-3 py-2">
-                    <div className="grid grid-cols-6 gap-2 text-xs font-semibold text-gray-900">
-                      <span>Price Range</span>
-                      <span className="text-center">Units</span>
-                      <span className="text-center">Rate Applied</span>
+                    <div className="grid grid-cols-7 gap-2 text-xs font-semibold text-gray-900">
+                      <span>Date</span>
+                      <span className="text-center">Units Sold</span>
                       <span className="text-center">Base Incentive</span>
-                      <span className="text-center">Device Bonus</span>
-                      <span className="text-center">Total</span>
+                      <span className="text-center">Volume Incentive</span>
+                      <span className="text-center">Units Fold 7</span>
+                      <span className="text-center">Units S25</span>
+                      <span className="text-center">Attach Incentive</span>
                     </div>
                   </div>
                   
                   <div className="max-h-48 overflow-y-auto">
-                    {selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.breakdownBySlab?.length > 0 ? (
-                      selectedIncentiveData.breakdown.breakdownByStore[0].breakdownBySlab.map((slab: any, index: number) => (
-                        <div key={index} className="grid grid-cols-6 gap-2 px-3 py-2 text-xs text-gray-800 border-b border-gray-100">
-                          <span className="text-xs">
-                            ₹{slab.minPrice?.toLocaleString() || '0'} - {slab.maxPrice ? `₹${slab.maxPrice.toLocaleString()}` : 'No limit'}
-                          </span>
-                          <span className="text-center">{slab.units}</span>
-                          <span className="text-center">
-                            {slab.appliedRate === 0 ? '0%' : slab.appliedRate === 1.0 ? '100%' : '120%'}
-                          </span>
-                          <span className="text-center">₹{slab.baseIncentive.toLocaleString()}</span>
-                          <span className="text-center">₹{(slab.deviceBonuses.foldBonus + slab.deviceBonuses.s25Bonus).toLocaleString()}</span>
-                          <span className="text-center font-medium text-blue-600">₹{slab.totalIncentive.toLocaleString()}</span>
-                        </div>
-                      ))
+                    {selectedIncentiveData?.breakdown?.breakdownByDate?.length > 0 ? (
+                      selectedIncentiveData.breakdown.breakdownByDate.map((daily: any, index: number) => {
+                        // Format date from DD-MM-YYYY to "1 Dec" format
+                        const formatDate = (dateStr: string) => {
+                          try {
+                            const [day, month, year] = dateStr.split('-');
+                            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                            const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+                            return `${parseInt(day)} ${monthName}`;
+                          } catch {
+                            return dateStr;
+                          }
+                        };
+                        
+                        return (
+                          <div key={index} className="grid grid-cols-7 gap-2 px-3 py-2 text-xs text-gray-800 border-b border-gray-100">
+                            <span className="text-xs">{formatDate(daily.date)}</span>
+                            <span className="text-center">{daily.unitsSold}</span>
+                            <span className="text-center">₹{daily.baseIncentive.toLocaleString()}</span>
+                            <span className="text-center">₹{daily.volumeIncentive.toLocaleString()}</span>
+                            <span className="text-center">{daily.unitsFold7}</span>
+                            <span className="text-center">{daily.unitsS25}</span>
+                            <span className="text-center font-medium text-blue-600">₹{daily.attachmentIncentive.toLocaleString()}</span>
+                          </div>
+                        );
+                      })
                     ) : (
                       <div className="px-3 py-4 text-center text-gray-500 text-xs">
                         Detailed breakdown not available. The incentive calculation API may not be properly configured.
@@ -674,19 +648,26 @@ export default function IncentivePassbookPage() {
                     )}
                     
                     {/* Total Row */}
-                    {selectedIncentiveData?.breakdown?.breakdownByStore?.[0] && (
-                      <div className="grid grid-cols-6 gap-2 px-3 py-2 text-xs bg-gray-50 font-medium text-gray-900 border-t-2 border-gray-200">
+                    {selectedIncentiveData?.breakdown?.breakdownByDate?.length > 0 && (
+                      <div className="grid grid-cols-7 gap-2 px-3 py-2 text-xs bg-gray-50 font-medium text-gray-900 border-t-2 border-gray-200">
                         <span>Total</span>
-                        <span className="text-center">{selectedIncentiveData?.breakdown?.unitsSummary?.totalUnits || 0}</span>
-                        <span className="text-center">-</span>
                         <span className="text-center">
-                          ₹{selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.breakdownBySlab?.reduce((sum: number, slab: any) => sum + slab.baseIncentive, 0).toLocaleString() || '0'}
+                          {selectedIncentiveData?.breakdown?.breakdownByDate?.reduce((sum: number, daily: any) => sum + daily.unitsSold, 0) || 0}
                         </span>
                         <span className="text-center">
-                          ₹{selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.breakdownBySlab?.reduce((sum: number, slab: any) => sum + slab.deviceBonuses.foldBonus + slab.deviceBonuses.s25Bonus, 0).toLocaleString() || '0'}
+                          ₹{selectedIncentiveData?.breakdown?.breakdownByDate?.reduce((sum: number, daily: any) => sum + daily.baseIncentive, 0).toLocaleString() || '0'}
+                        </span>
+                        <span className="text-center">
+                          ₹{selectedIncentiveData?.breakdown?.breakdownByDate?.reduce((sum: number, daily: any) => sum + daily.volumeIncentive, 0).toLocaleString() || '0'}
+                        </span>
+                        <span className="text-center">
+                          {selectedIncentiveData?.breakdown?.breakdownByDate?.reduce((sum: number, daily: any) => sum + daily.unitsFold7, 0) || 0}
+                        </span>
+                        <span className="text-center">
+                          {selectedIncentiveData?.breakdown?.breakdownByDate?.reduce((sum: number, daily: any) => sum + daily.unitsS25, 0) || 0}
                         </span>
                         <span className="text-center font-bold text-blue-600">
-                          ₹{selectedIncentiveData?.breakdown?.totalIncentive?.toLocaleString() || '0'}
+                          ₹{selectedIncentiveData?.breakdown?.breakdownByDate?.reduce((sum: number, daily: any) => sum + daily.attachmentIncentive, 0).toLocaleString() || '0'}
                         </span>
                       </div>
                     )}
@@ -743,8 +724,8 @@ function MonthlyIncentiveSection({
   allFYs: string[];
   setSelectedIncentiveData: (data: any) => void;
   setShowIncentiveModal: (show: boolean) => void;
-  loadingIncentiveDetails: boolean;
-  setLoadingIncentiveDetails: (loading: boolean) => void;
+  loadingIncentiveDetails: string | null;
+  setLoadingIncentiveDetails: (loading: string | null) => void;
   numberOfSECs: number;
 }) {
   return (
@@ -822,10 +803,10 @@ function MonthlyIncentiveSection({
                     type="button"
                     className="px-3 py-1 rounded-lg bg-blue-100 text-blue-600 text-xs font-medium hover:bg-blue-200 transition-colors disabled:opacity-50"
                     title="View incentive calculation details"
-                    disabled={loadingIncentiveDetails}
+                    disabled={loadingIncentiveDetails === row.month}
                     onClick={async () => {
                       try {
-                        setLoadingIncentiveDetails(true);
+                        setLoadingIncentiveDetails(row.month);
                         
                         // Parse month from "Jan 24" format to month number and year
                         const monthParts = row.month.split(' ');
@@ -865,11 +846,11 @@ function MonthlyIncentiveSection({
                         alert('Failed to load incentive calculation. Please try again.');
                         // Don't show modal if API fails
                       } finally {
-                        setLoadingIncentiveDetails(false);
+                        setLoadingIncentiveDetails(null);
                       }
                     }}
                   >
-                    {loadingIncentiveDetails ? (
+                    {loadingIncentiveDetails === row.month ? (
                       <div className="flex items-center gap-2">
                         <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-600"></div>
                         <span>Loading...</span>

@@ -86,7 +86,7 @@ export default function ReportPage() {
       }
 
       // Use different API endpoints based on active tab
-      const endpoint = activeTab === 'monthly' ? '/api/zsm/monthly-report' : '/api/zsm/report';
+      const endpoint = activeTab === 'monthly' ? '/api/zse/monthly-report' : '/api/zse/report';
       const response = await fetch(`${endpoint}?${params.toString()}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

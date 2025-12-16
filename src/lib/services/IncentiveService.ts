@@ -24,6 +24,16 @@ interface IncentiveCalculationResult {
       totalIncentive: number;
     }>;
   }>;
+  breakdownByDate: Array<{
+    date: string; // DD-MM-YYYY format
+    unitsSold: number;
+    baseIncentive: number;
+    volumeIncentive: number;
+    unitsFold7: number;
+    unitsS25: number;
+    attachmentIncentive: number;
+    totalIncentive: number;
+  }>;
   unitsSummary: {
     totalUnits: number;
     unitsAboveGate: number;
@@ -300,6 +310,7 @@ export class IncentiveService {
       return {
         totalIncentive: 0,
         breakdownByStore: [],
+        breakdownByDate: [],
         unitsSummary: {
           totalUnits: 0,
           unitsAboveGate: 0,
@@ -340,6 +351,7 @@ export class IncentiveService {
       return {
         totalIncentive: 0,
         breakdownByStore: [],
+        breakdownByDate: [],
         unitsSummary: {
           totalUnits: 0,
           unitsAboveGate: 0,
@@ -581,14 +593,150 @@ export class IncentiveService {
     console.log(`\n  Number of SECs at store: ${numberOfSec}`);
     console.log(`  INCENTIVE PER SEC: Rs.${secShare.toLocaleString()}\n`);
 
+    // Calculate daily breakdown
+    const dailyBreakdown = await this.calculateDailyBreakdown(
+      salesReports,
+      globalAppliedRate,
+      firstGroup.attachPercentage
+    );
+
     return {
       totalIncentive: secShare, // Return the SEC's share, not the total store incentive
       breakdownByStore,
+      breakdownByDate: dailyBreakdown,
       unitsSummary: {
         totalUnits,
         unitsAboveGate,
         unitsAboveVolumeKicker
       }
     };
+  }
+
+  /**
+   * Calculate daily breakdown from sales reports
+   * Groups sales by date and calculates incentives per day
+   */
+  private static async calculateDailyBreakdown(
+    salesReports: any[],
+    globalAppliedRate: number,
+    storeAttachPercentage: number | null
+  ): Promise<Array<{
+    date: string;
+    unitsSold: number;
+    baseIncentive: number;
+    volumeIncentive: number;
+    unitsFold7: number;
+    unitsS25: number;
+    attachmentIncentive: number;
+    totalIncentive: number;
+  }>> {
+    // Group sales by date
+    const salesByDate = new Map<string, any[]>();
+    
+    for (const report of salesReports) {
+      const dateKey = this.formatDateToDDMMYYYY(report.Date_of_sale);
+      if (!salesByDate.has(dateKey)) {
+        salesByDate.set(dateKey, []);
+      }
+      salesByDate.get(dateKey)!.push(report);
+    }
+
+    // Calculate incentives for each date
+    const dailyBreakdown: Array<{
+      date: string;
+      unitsSold: number;
+      baseIncentive: number;
+      volumeIncentive: number;
+      unitsFold7: number;
+      unitsS25: number;
+      attachmentIncentive: number;
+      totalIncentive: number;
+    }> = [];
+
+    for (const [date, reports] of salesByDate.entries()) {
+      let baseIncentive = 0;
+      let volumeIncentive = 0;
+      let unitsFold7 = 0;
+      let unitsS25 = 0;
+      let attachmentIncentive = 0;
+
+      // Process all reports for this date
+      for (const report of reports) {
+        const modelPrice = report.samsungSKU?.ModelPrice || 0;
+        const category = report.samsungSKU?.Category || '';
+        const modelName = report.samsungSKU?.ModelName || '';
+        const deviceType = this.identifyDeviceType(category, modelName);
+
+        // Get slab for this price
+        const slab = await this.getSlabForPrice(modelPrice);
+        if (!slab) continue;
+
+        // Calculate base incentive (100% rate)
+        const unitBaseIncentive = slab.incentiveAmount * 1.0;
+        baseIncentive += unitBaseIncentive;
+
+        // Calculate volume incentive (additional 20% if applicable)
+        if (globalAppliedRate === 1.2) {
+          volumeIncentive += slab.incentiveAmount * 0.2;
+        }
+
+        // Count device types and calculate bonuses
+        if (deviceType === 'FOLD') {
+          unitsFold7++;
+          const bonus = this.calculateDeviceBonus('FOLD', storeAttachPercentage);
+          attachmentIncentive += bonus;
+        } else if (deviceType === 'S25') {
+          unitsS25++;
+          const bonus = this.calculateDeviceBonus('S25', storeAttachPercentage);
+          attachmentIncentive += bonus;
+        }
+      }
+
+      // Apply global rate to base incentive
+      if (globalAppliedRate === 0) {
+        baseIncentive = 0;
+        volumeIncentive = 0;
+      }
+
+      const totalIncentive = baseIncentive + volumeIncentive + attachmentIncentive;
+
+      dailyBreakdown.push({
+        date,
+        unitsSold: reports.length,
+        baseIncentive: Math.round(baseIncentive),
+        volumeIncentive: Math.round(volumeIncentive),
+        unitsFold7,
+        unitsS25,
+        attachmentIncentive: Math.round(attachmentIncentive),
+        totalIncentive: Math.round(totalIncentive)
+      });
+    }
+
+    // Sort by date (newest first)
+    dailyBreakdown.sort((a, b) => {
+      const dateA = this.parseDDMMYYYY(a.date);
+      const dateB = this.parseDDMMYYYY(b.date);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return dailyBreakdown;
+  }
+
+  /**
+   * Format Date object to DD-MM-YYYY string
+   */
+  private static formatDateToDDMMYYYY(date: Date): string {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  /**
+   * Parse DD-MM-YYYY string to Date object
+   */
+  private static parseDDMMYYYY(dateStr: string): Date {
+    const [day, month, year] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
   }
 }
