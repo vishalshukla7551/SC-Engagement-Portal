@@ -603,7 +603,7 @@ export default function IncentivePassbookPage() {
                 <h4 className="text-md font-semibold text-gray-900 mb-3">Incentive Breakdown</h4>
                 <div className="border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white">
                   <div className="bg-gray-50 px-3 py-2">
-                    <div className="grid grid-cols-7 gap-2 text-xs font-semibold text-gray-900">
+                    <div className="grid grid-cols-7 gap-2 text-[9px] sm:text-xs font-semibold text-gray-900">
                       <span>Date</span>
                       <span className="text-center">Units Sold</span>
                       <span className="text-center">Base Incentive</span>
@@ -761,17 +761,23 @@ function MonthlyIncentiveSection({
             <span>Combo</span>
             <span className="text-right">Units</span>
           </div>
-          {rows.map((row, idx) => (
-            <div
-              key={row.date + idx}
-              className="grid grid-cols-4 px-3 py-2 border-t border-gray-100 text-gray-800"
-            >
-              <span>{row.date}</span>
-              <span>{row.adld}</span>
-              <span>{row.combo}</span>
-              <span className="text-right">{row.units}</span>
+          {rows.length === 0 ? (
+            <div className="px-3 py-4 text-center text-gray-500 text-xs">
+              No sales found
             </div>
-          ))}
+          ) : (
+            rows.map((row, idx) => (
+              <div
+                key={row.date + idx}
+                className="grid grid-cols-4 px-3 py-2 border-t border-gray-100 text-gray-800"
+              >
+                <span>{row.date}</span>
+                <span>{row.adld}</span>
+                <span>{row.combo}</span>
+                <span className="text-right">{row.units}</span>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
@@ -801,7 +807,7 @@ function MonthlyIncentiveSection({
                 <div className="text-center">
                   <button
                     type="button"
-                    className="px-3 py-1 rounded-lg bg-blue-100 text-blue-600 text-xs font-medium hover:bg-blue-200 transition-colors disabled:opacity-50"
+                    className="px-2 sm:px-3 py-1 rounded-lg bg-blue-100 text-blue-600 text-[10px] sm:text-xs font-medium hover:bg-blue-200 transition-colors disabled:opacity-50"
                     title="View incentive calculation details"
                     disabled={loadingIncentiveDetails === row.month}
                     onClick={async () => {
@@ -851,12 +857,15 @@ function MonthlyIncentiveSection({
                     }}
                   >
                     {loadingIncentiveDetails === row.month ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 sm:gap-2">
                         <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-600"></div>
-                        <span>Loading...</span>
+                        <span className="hidden sm:inline">Loading...</span>
                       </div>
                     ) : (
-                      'View Your Calculation'
+                      <span className="hidden sm:inline">View Your Calculation</span>
+                    )}
+                    {loadingIncentiveDetails !== row.month && (
+                      <span className="sm:hidden">View</span>
                     )}
                   </button>
                 </div>
@@ -988,17 +997,23 @@ function SpotIncentiveSection({
             <span className="text-center">Combo (₹300)</span>
             <span className="text-right">Units</span>
           </div>
-          {filteredSalesData.map((row: any, idx: number) => (
-            <div
-              key={row.date + idx}
-              className="grid grid-cols-4 px-3 py-2 border-t border-gray-100 text-gray-800"
-            >
-              <span>{row.date}</span>
-              <span className="text-center text-blue-600 font-medium">{row.adld}</span>
-              <span className="text-center text-purple-600 font-medium">{row.combo}</span>
-              <span className="text-right">{row.units}</span>
+          {filteredSalesData.length === 0 ? (
+            <div className="px-3 py-4 text-center text-gray-500 text-xs">
+              No transactions found
             </div>
-          ))}
+          ) : (
+            filteredSalesData.map((row: any, idx: number) => (
+              <div
+                key={row.date + idx}
+                className="grid grid-cols-4 px-3 py-2 border-t border-gray-100 text-gray-800"
+              >
+                <span>{row.date}</span>
+                <span className="text-center text-blue-600 font-medium">{row.adld}</span>
+                <span className="text-center text-purple-600 font-medium">{row.combo}</span>
+                <span className="text-right">{row.units}</span>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
