@@ -58,6 +58,7 @@ export default function ProctoredTestPage() {
   const [score, setScore] = useState(0);
   const [sessionToken] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [submittedAt, setSubmittedAt] = useState<string>('');
+  const [secUserName, setSecUserName] = useState<string>('SEC User');
 
   const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -66,7 +67,26 @@ export default function ProctoredTestPage() {
   const faceDetectionInterval = useRef<NodeJS.Timeout | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
+  // Get SEC user name from localStorage
+  const getSecUserName = () => {
+    try {
+      const authUser = localStorage.getItem('authUser');
+      if (authUser) {
+        const userData = JSON.parse(authUser);
+        // Priority: fullName > name > phone > default
+        return userData.fullName || userData.name || userData.phone || 'SEC User';
+      }
+    } catch (error) {
+      console.error('Error reading authUser from localStorage:', error);
+    }
+    return 'SEC User';
+  };
+
   useEffect(() => {
+    // Get SEC user name from localStorage
+    const userName = getSecUserName();
+    setSecUserName(userName);
+    
     setTimeout(() => { setTestData(MOCK_TEST); setTimeLeft(MOCK_TEST.duration * 60); setLoading(false); }, 500);
   }, [testId]);
 
@@ -220,7 +240,7 @@ export default function ProctoredTestPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{passed ? 'Certificate of Achievement' : 'Certificate of Participation'}</h1>
           <p className="text-sm text-gray-500 mb-6">Presented by Zopper</p>
           <p className="text-gray-600 text-lg mb-2">This is proudly awarded to</p>
-          <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-3">SEC User</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-3">{secUserName}</h2>
           <p className="text-gray-600 mb-2 px-4">for successfully completing the <strong>SEC Knowledge Assessment</strong>.</p>
           <div className="my-6 bg-blue-50 rounded-xl py-4 px-6 inline-block"><h3 className="text-4xl sm:text-5xl font-bold text-blue-600 mb-2">🎉 {score}%</h3><p className="text-gray-700 font-medium">{correctCount} out of {testData.questions.length} correct</p></div>
           <div className="mb-6"><p className="text-gray-500 text-sm mb-1">Test: {testData.name}</p><p className="text-gray-500 text-sm">Submitted on: {submittedAt}</p></div>

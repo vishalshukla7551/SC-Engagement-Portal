@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRequireAuth } from '@/lib/clientAuth';
+import { useState, useEffect } from 'react';
+import { FaBars, FaTimes } from 'react-icons/fa';
 
 export default function ZopperAdministratorLayout({
   children,
@@ -12,6 +14,20 @@ export default function ZopperAdministratorLayout({
   const pathname = usePathname();
   const { loading } = useRequireAuth(['ZOPPER_ADMINISTRATOR']);
 
+  // Sidebar state with localStorage persistence
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('zopperAdminSidebarOpen');
+      return saved !== null ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
+
+  // Save sidebar state to localStorage
+  useEffect(() => {
+    localStorage.setItem('zopperAdminSidebarOpen', JSON.stringify(sidebarOpen));
+  }, [sidebarOpen]);
+
   if (loading) {
     return null; // or a loading spinner
   }
@@ -20,8 +36,18 @@ export default function ZopperAdministratorLayout({
 
   return (
     <div className="flex h-screen bg-gray-900">
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-black text-white flex flex-col border-r border-neutral-700">
+      <aside 
+        className={`${sidebarOpen ? 'w-72' : 'w-0'} bg-black text-white flex flex-col border-r border-neutral-700 h-full transition-all duration-300 ease-in-out overflow-hidden`}
+      >
         {/* Logo */}
         <div className="relative w-full h-[69px] bg-black border-b border-[#353535] overflow-hidden">
           <div 
@@ -62,6 +88,15 @@ export default function ZopperAdministratorLayout({
           >
             Safalta ka Sathi
           </div>
+
+          {/* Hamburger Menu Button */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="absolute top-[20px] right-[15px] p-2 rounded-md bg-slate-800 text-white hover:bg-slate-700 transition-colors z-[4]"
+            title="Collapse Menu"
+          >
+            <FaBars size={16} />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -252,7 +287,19 @@ export default function ZopperAdministratorLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className={`flex-1 overflow-auto relative ${!sidebarOpen ? 'pl-16' : ''}`}>
+        {/* Hamburger button when sidebar is hidden */}
+        {!sidebarOpen && (
+          <div className="absolute top-4 left-4 z-40">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-3 rounded-md bg-slate-800 text-white hover:bg-slate-700 transition-colors shadow-lg"
+              title="Expand Menu"
+            >
+              <FaBars size={18} />
+            </button>
+          </div>
+        )}
         {children}
       </main>
     </div>
