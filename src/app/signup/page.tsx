@@ -233,7 +233,7 @@ export default function SignUpPage() {
       className="min-h-screen flex items-center justify-center p-4 relative"
       style={{ backgroundColor: '#F5F6F8' }}
     >
-      {/* Gift Box - Fixed to page */}
+      {/* Gift Box - Fixed to page
       <Image
         src="/images/gift-box.png"
         alt="Christmas Gift"
@@ -248,10 +248,11 @@ export default function SignUpPage() {
         }}
         priority
       />
+      */}
 
       {/* Card Wrapper - Anchors Santa hat to the card */}
       <div className="relative" style={{ maxWidth: '512px', width: '100%' }}>
-        {/* Santa Hat - Anchored to Card Top Left */}
+        {/* Santa Hat - Anchored to Card Top Left
         <Image
           src="/images/santa-hat.png"
           alt="Santa Hat"
@@ -266,6 +267,7 @@ export default function SignUpPage() {
           }}
           priority
         />
+        */}
 
         {/* Signup Card */}
         <div
@@ -292,8 +294,10 @@ export default function SignUpPage() {
                 type="text"
                 id="fullName"
                 name="fullName"
+                pattern="[A-Za-z ]+"
+                maxLength={80}
                 value={formData.fullName}
-                onChange={handleInputChange}
+                onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value.replace(/[^A-Za-z\s]/g, '') }))}
                 placeholder="Enter your full name"
                 className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base text-gray-900 placeholder:text-gray-500"
                 required
@@ -313,11 +317,14 @@ export default function SignUpPage() {
                 </svg>
               </div>
               <input
-                type="tel"
+                type="text"
                 id="phoneNumber"
                 name="phoneNumber"
+                inputMode="numeric"
+                pattern="\d{10}"
+                maxLength={10}
                 value={formData.phoneNumber}
-                onChange={handleInputChange}
+                onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
                 placeholder="Enter 10-digit number"
                 className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base text-gray-900 placeholder:text-gray-500"
                 required

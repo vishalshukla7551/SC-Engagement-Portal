@@ -104,7 +104,7 @@ export default function RoleLogin() {
       className="min-h-screen flex items-center justify-center p-4 relative"
       style={{ backgroundColor: '#F5F6F8' }}
     >
-      {/* Gift Box - Fixed to page */}
+      {/* Gift Box - Fixed to page
       <Image
         src="/images/gift-box.png"
         alt="Christmas Gift"
@@ -119,10 +119,11 @@ export default function RoleLogin() {
         }}
         priority
       />
+      */}
 
       {/* Card Wrapper - Anchors Santa hat to the card */}
       <div className="relative" style={{ maxWidth: '450px', width: '100%' }}>
-        {/* Santa Hat - Anchored to Card Top Left */}
+        {/* Santa Hat - Anchored to Card Top Left
         <Image
           src="/images/santa-hat.png"
           alt="Santa Hat"
@@ -137,6 +138,7 @@ export default function RoleLogin() {
           }}
           priority
         />
+        */}
 
         {/* Login Card */}
         <div

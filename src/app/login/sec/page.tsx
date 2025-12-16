@@ -186,7 +186,7 @@ export default function SECLogin() {
     >
       {/* Card Wrapper - Anchors Santa hat and Gift box to the card */}
       <div className="relative w-full max-w-[450px] mx-auto overflow-visible">
-        {/* Santa Hat - Anchored to Card Top Left - Responsive positioning */}
+        {/* Santa Hat - Anchored to Card Top Left - Responsive positioning
         <Image
           src="/images/santa-hat.png"
           alt="Santa Hat"
@@ -199,8 +199,9 @@ export default function SECLogin() {
           }}
           priority
         />
+        */}
 
-        {/* Gift Box - Anchored to Card Right Side (Desktop only) */}
+        {/* Gift Box - Anchored to Card Right Side (Desktop only)
         <Image
           src="/images/gift-box.png"
           alt="Christmas Gift"
@@ -215,6 +216,7 @@ export default function SECLogin() {
           }}
           priority
         />
+        */}
 
         {/* Login Card */}
         <div
@@ -355,8 +357,10 @@ export default function SECLogin() {
                   name="otp"
                   autoComplete="off"
                   inputMode="numeric"
+                  pattern="\d{6}"
+                  maxLength={6}
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="Enter OTP"
                   className={inputBaseClasses}
                   style={{
@@ -472,6 +476,7 @@ export default function SECLogin() {
         </div>
 
         {/* Gift Box - Mobile: touching the bottom of the card */}
+        {/*
         <div className="md:hidden flex justify-center -mt-6 relative z-10">
           <Image
             src="/images/gift-box.png"
@@ -485,6 +490,7 @@ export default function SECLogin() {
             priority
           />
         </div>
+        */}
       </div>
     </div>
   );
