@@ -270,14 +270,11 @@ export default function SalesChampionLeaderboardPage() {
                 </section>
               )}
 
-              {/* All Stores Ranking */}
+              {/* All Stores Ranking - Compact Mobile-First Table */}
               <section className="mb-4">
-                <div className="rounded-t-2xl bg-gradient-to-r from-[#4F46E5] to-[#EC4899] px-4 py-3 text-white">
+                <div className="rounded-t-2xl bg-gradient-to-r from-[#4F46E5] to-[#EC4899] px-3 py-2.5 text-white">
                   <p className="text-xs font-semibold flex items-center gap-1">
                     <span>🔥</span> All Stores Ranking
-                  </p>
-                  <p className="text-[10px] text-gray-100 mt-1">
-                    Complete leaderboard by total incentives earned from active campaigns
                   </p>
                 </div>
                 <div className="bg-white rounded-b-2xl overflow-hidden">
@@ -286,83 +283,59 @@ export default function SalesChampionLeaderboardPage() {
                       <p className="text-sm">No active campaigns or sales data available</p>
                     </div>
                   ) : (
-                    <table className="w-full">
+                    <table className="w-full table-fixed">
                       <thead>
-                        <tr className="text-[10px] font-semibold text-gray-700 bg-gray-50 border-b border-gray-200">
-                          <th className="text-left px-2 py-2 w-[40px]">
-                            Rank
-                          </th>
-                          <th className="text-left px-2 py-2">
-                            Store
-                          </th>
-                          <th className="text-right px-2 py-2 w-[45px]">
-                            ADLD
-                          </th>
-                          <th className="text-right px-2 py-2 w-[45px]">
-                            Combo
-                          </th>
-                          <th className="text-right px-2 py-2 w-[60px]">
-                            Sales
-                          </th>
-                          <th className="text-right px-2 py-2 w-[80px]">
-                            Total
-                          </th>
+                        <tr className="bg-gray-100 text-gray-600 text-[9px] uppercase font-semibold">
+                          <th className="text-left px-1.5 py-1.5 w-[50px]">Rank</th>
+                          <th className="text-left px-1.5 py-1.5">Store</th>
+                          <th className="text-center px-1 py-1.5 w-[42px]">ADLD</th>
+                          <th className="text-center px-1 py-1.5 w-[50px]">Combo</th>
+                          <th className="text-right px-1.5 py-1.5 w-[70px]">Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         {leaderboardData.stores.map((store) => {
-                          const medal = store.rank === 1 ? '🥇' : store.rank === 2 ? '🥈' : store.rank === 3 ? '🥉' : '⭐';
+                          const medal = store.rank === 1 ? '👑' : store.rank === 2 ? '🥈' : store.rank === 3 ? '🥉' : `#${store.rank}`;
                           
                           return (
-                            <tr key={store.storeId} className="border-b border-gray-100">
+                            <tr key={store.storeId} className="border-b border-gray-100 last:border-none">
                               {/* Rank */}
-                              <td className="px-2 py-2.5">
-                                <div className="flex items-center gap-1">
-                                  <span className="text-sm">{medal}</span>
-                                  <span className="text-[10px] font-semibold text-gray-600">
-                                    #{store.rank}
-                                  </span>
-                                </div>
+                              <td className="px-1.5 py-2">
+                                <span className="text-xs font-medium">{medal}</span>
                               </td>
 
                               {/* Store name + city */}
-                              <td className="px-2 py-2.5">
-                                <div className="flex flex-col">
-                                  <span className="text-[11px] font-semibold text-gray-900 leading-tight">
-                                    {store.storeName}
-                                  </span>
-                                  <span className="text-[9px] text-gray-500 leading-tight">
-                                    {store.city || 'N/A'}
-                                  </span>
+                              <td className="px-1.5 py-2">
+                                <div className="font-medium text-gray-900 text-[10px] leading-tight line-clamp-1">
+                                  {store.storeName}
+                                </div>
+                                <div className="text-[8px] text-gray-500 leading-tight mt-0.5">
+                                  {store.city || 'N/A'}
                                 </div>
                               </td>
 
                               {/* ADLD units */}
-                              <td className="px-2 py-2.5 text-right">
-                                <span className="text-[11px] font-medium text-blue-600">
-                                  {store.adldUnits > 0 ? store.adldUnits : '-'}
+                              <td className="px-1 py-2 text-center">
+                                <span className="text-[10px] font-medium text-gray-900">
+                                  {store.adldUnits > 0 ? store.adldUnits : '0'}
                                 </span>
                               </td>
 
                               {/* Combo units */}
-                              <td className="px-2 py-2.5 text-right">
-                                <span className="text-[11px] font-medium text-purple-600">
-                                  {store.comboUnits > 0 ? store.comboUnits : '-'}
+                              <td className="px-1 py-2 text-center">
+                                <span className="text-[10px] font-medium text-gray-900">
+                                  {store.comboUnits > 0 ? store.comboUnits : '0'}
                                 </span>
                               </td>
 
-                              {/* Sales count */}
-                              <td className="px-2 py-2.5 text-right">
-                                <span className="text-[11px] font-medium text-gray-900">
-                                  {store.totalSales}
-                                </span>
-                              </td>
-
-                              {/* Total incentive */}
-                              <td className="px-2 py-2.5 text-right">
-                                <span className="text-[13px] font-bold text-emerald-600">
+                              {/* Total incentive + Sales count */}
+                              <td className="px-1.5 py-2 text-right">
+                                <div className="font-semibold text-green-600 text-[11px] leading-tight">
                                   {store.totalIncentive}
-                                </span>
+                                </div>
+                                <div className="text-[8px] text-gray-500 leading-tight mt-0.5">
+                                  {store.totalSales} sales
+                                </div>
                               </td>
                             </tr>
                           );
