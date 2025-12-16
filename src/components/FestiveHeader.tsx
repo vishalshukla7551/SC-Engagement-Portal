@@ -75,14 +75,14 @@ export default function FestiveHeader({ userName = 'Guest', hideGreeting = false
       <div className={styles.content}>
         {!hideGreeting ? (
           <div className={styles.greeting}>
-            <Image
+            {/* <Image
               src="/images/santa-hat.png"
               alt=""
               width={60}
               height={60}
               className={styles.santaHat}
               priority
-            />
+            /> */}
             <div className={styles.greetingText}>
               <h1>Hello {userName}</h1>
               <p>Welcome! Choose your action below</p>

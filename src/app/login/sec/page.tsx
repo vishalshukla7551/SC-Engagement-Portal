@@ -186,7 +186,7 @@ export default function SECLogin() {
     >
       {/* Card Wrapper - Anchors Santa hat and Gift box to the card */}
       <div className="relative w-full max-w-[450px] mx-auto overflow-visible">
-        {/* Santa Hat - Anchored to Card Top Left - Responsive positioning */}
+        {/* Santa Hat - Anchored to Card Top Left - Responsive positioning
         <Image
           src="/images/santa-hat.png"
           alt="Santa Hat"
@@ -199,6 +199,7 @@ export default function SECLogin() {
           }}
           priority
         />
+        */}
 
         {/* Gift Box - Anchored to Card Right Side (Desktop only)
         <Image

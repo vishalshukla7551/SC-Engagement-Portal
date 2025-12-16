@@ -251,7 +251,7 @@ export default function SignUpPage() {
 
       {/* Card Wrapper - Anchors Santa hat to the card */}
       <div className="relative" style={{ maxWidth: '512px', width: '100%' }}>
-        {/* Santa Hat - Anchored to Card Top Left */}
+        {/* Santa Hat - Anchored to Card Top Left
         <Image
           src="/images/santa-hat.png"
           alt="Santa Hat"
@@ -266,6 +266,7 @@ export default function SignUpPage() {
           }}
           priority
         />
+        */}
 
         {/* Signup Card */}
         <div

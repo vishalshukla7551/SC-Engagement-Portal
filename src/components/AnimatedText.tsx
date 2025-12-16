@@ -8,7 +8,8 @@ export default function AnimatedText() {
   const text = 'SalesDost';
   const totalChars = text.length;
   const moveDuration = 3.5; // Time for each character to move across screen
-  const triggerDuration = 1.5; // Time spread for all characters to start moving
+  const triggerDuration = 0.6; // Time spread for all characters to start moving (sped up)
+  const initialDelay = 1.0; // hold 1 second before any character starts
   const [screenWidth, setScreenWidth] = useState(0);
   const router = useRouter();
 
@@ -21,12 +22,10 @@ export default function AnimatedText() {
     
     window.addEventListener('resize', handleResize);
     
+    // Wait briefly after page load before starting the animation
     // Navigate as soon as S starts moving off screen (very early to avoid blank screen)
-    // S delay = 0.3s + 1.5s = 1.8s, then moves for 3.5s
-    // Navigate 2.5s before S fully disappears (right when it starts moving)
-    const initialDelay = 0.3;
     const sCharDelay = initialDelay + triggerDuration; // S starts last
-    const sCharCompleteTime = sCharDelay + moveDuration - 2.5; // Navigate much earlier
+    const sCharCompleteTime = sCharDelay + moveDuration - 2.5; // Navigate earlier for quick transition
     
     const navigationTimer = setTimeout(() => {
       router.push('/login/sec');
@@ -44,7 +43,7 @@ export default function AnimatedText() {
         {text.split('').map((char, index) => {
           // Last character starts first (index 8), first character starts last (index 0)
           const reverseIndex = totalChars - 1 - index;
-          const delay = 0.3 + (reverseIndex * triggerDuration / totalChars);
+          const delay = initialDelay + (reverseIndex * triggerDuration / totalChars);
           
           return (
             <motion.span
