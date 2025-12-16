@@ -200,56 +200,7 @@ export default function SalesChampionLeaderboardPage() {
 
 
 
-          {/* Active Campaigns */}
-          {!loading && !error && activeCampaignsData && activeCampaignsData.campaigns.length > 0 && (
-            <div className="mb-6">
-              <div className="bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl p-4 text-white">
-                <div className="text-center mb-3">
-                  <h2 className="text-lg font-bold mb-1">Active Campaigns for Your Store</h2>
-                  <p className="text-xs text-white/80">
-                    {activeCampaignsData.store.name} - {activeCampaignsData.store.city}
-                  </p>
-                  <p className="text-xs text-white/60 mt-1">
-                    {activeCampaignsData.totalActiveCampaigns} active campaign{activeCampaignsData.totalActiveCampaigns !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                
-                <div className="space-y-3">
-                  {activeCampaignsData.campaigns.slice(0, 3).map((campaign: any) => (
-                    <div key={campaign.id} className="bg-white/10 rounded-xl p-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="text-sm font-semibold">{campaign.name}</h3>
-                          <p className="text-xs text-white/70">{campaign.deviceName} - {campaign.planType}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold">
-                            {campaign.incentiveType === 'FIXED' 
-                              ? `₹${campaign.incentiveValue}` 
-                              : `${campaign.incentiveValue}%`
-                            }
-                          </p>
-                          <p className="text-xs text-white/70">per sale</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-xs text-white/60">
-                        <span>Valid: {campaign.startDate} to {campaign.endDate}</span>
-                        <span>Plan: ₹{campaign.planPrice.toLocaleString('en-IN')}</span>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {activeCampaignsData.campaigns.length > 3 && (
-                    <div className="text-center">
-                      <p className="text-xs text-white/70">
-                        +{activeCampaignsData.campaigns.length - 3} more campaign{activeCampaignsData.campaigns.length - 3 !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Active Campaigns - Hidden from UI but data still fetched */}
 
           {/* Loading/Error States */}
           {loading && (

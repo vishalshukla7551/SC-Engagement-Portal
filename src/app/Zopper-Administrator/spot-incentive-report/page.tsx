@@ -1,54 +1,69 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { FaDownload, FaSignOutAlt } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaDownload, FaSignOutAlt, FaSpinner } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
-import Link from 'next/link';
 import { clientLogout } from '@/lib/clientLogout';
 
-// Mock data
-const mockData = [
-  {
-    id: '1',
-    createdAt: '2025-01-15 10:30',
-    submittedAt: '2025-01-15 10:25',
-    imei: '123456789012345',
-    planPrice: 5000,
-    incentiveEarned: 500,
-    isPaid: true,
-    voucherCode: 'VOUCH123',
-    secUser: { secId: 'SEC001', phone: '9876543210', name: 'John Doe' },
-    store: { id: '1', storeName: 'Samsung Store Delhi', city: 'Delhi' },
-    samsungSKU: { id: '1', Category: 'Flagship', ModelName: 'Galaxy S24 Ultra' },
-    plan: { id: '1', planType: 'ADLD', price: 5000 }
-  },
-  {
-    id: '2',
-    createdAt: '2025-01-15 11:45',
-    submittedAt: '2025-01-15 11:40',
-    imei: '987654321098765',
-    planPrice: 3000,
-    incentiveEarned: 300,
-    isPaid: false,
-    secUser: { secId: 'SEC002', phone: '9876543211', name: 'Jane Smith' },
-    store: { id: '2', storeName: 'Samsung Store Mumbai', city: 'Mumbai' },
-    samsungSKU: { id: '2', Category: 'Mid-Range', ModelName: 'Galaxy A54' },
-    plan: { id: '2', planType: 'Combo', price: 3000 }
-  },
-  {
-    id: '3',
-    createdAt: '2025-01-16 09:15',
-    submittedAt: '2025-01-16 09:10',
-    imei: '456789123456789',
-    planPrice: 4500,
-    incentiveEarned: 450,
-    isPaid: false,
-    secUser: { secId: 'SEC003', phone: '9876543212', name: 'Mike Johnson' },
-    store: { id: '1', storeName: 'Samsung Store Delhi', city: 'Delhi' },
-    samsungSKU: { id: '3', Category: 'Flagship', ModelName: 'Galaxy Z Fold 5' },
-    plan: { id: '1', planType: 'ADLD', price: 4500 }
-  }
-];
+interface SpotIncentiveReport {
+  id: string;
+  createdAt: string;
+  submittedAt: string;
+  imei: string;
+  planPrice: number;
+  incentiveEarned: number;
+  isPaid: boolean;
+  paidAt?: string;
+  voucherCode: string;
+  isCompaignActive: boolean;
+  secUser: {
+    secId: string;
+    phone: string;
+    name: string;
+  };
+  store: {
+    id: string;
+    storeName: string;
+    city: string;
+  };
+  samsungSKU: {
+    id: string;
+    Category: string;
+    ModelName: string;
+  };
+  plan: {
+    id: string;
+    planType: string;
+    price: number;
+  };
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: {
+    reports: SpotIncentiveReport[];
+    pagination: {
+      page: number;
+      limit: number;
+      totalCount: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+    summary: {
+      totalReports: number;
+      activeStores: number;
+      activeSECs: number;
+      totalIncentiveEarned: number;
+      totalIncentivePaid: number;
+      totalIncentivePending: number;
+    };
+    filters: {
+      stores: Array<{ id: string; name: string; city: string }>;
+      planTypes: string[];
+    };
+  };
+}
 
 function formatDateWithTime(ts: string) {
   const [date, time] = ts.split(' ');
@@ -77,7 +92,7 @@ function StatCard({ title, value }: { title: string; value: string }) {
   );
 }
 
-export default function MonthlyIncentiveReport() {
+export default function SpotIncentiveReport() {
   const [query, setQuery] = useState('');
   const [storeFilter, setStoreFilter] = useState('');
   const [planFilter, setPlanFilter] = useState('');
@@ -87,37 +102,107 @@ export default function MonthlyIncentiveReport() {
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
-  const stores = useMemo(() => Array.from(new Set(mockData.map(d => d.store.storeName))), []);
-  const plans = useMemo(() => Array.from(new Set(mockData.map(d => d.plan.planType))), []);
+  // API state
+  const [data, setData] = useState<ApiResponse['data'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    return mockData.filter(r => {
-      const matchesQuery = [
-        r.secUser.secId || r.secUser.phone,
-        r.store.storeName,
-        r.samsungSKU.ModelName,
-        r.imei
-      ].some(v => v.toLowerCase().includes(query.toLowerCase()));
-      const matchesStore = !storeFilter || r.store.storeName === storeFilter;
-      const matchesPlan = !planFilter || r.plan.planType === planFilter;
-      const matchesPayment = paymentFilter === 'all' || (paymentFilter === 'paid' ? r.isPaid : !r.isPaid);
-      return matchesQuery && matchesStore && matchesPlan && matchesPayment;
-    });
-  }, [query, storeFilter, planFilter, paymentFilter]);
+  // Handle Mark Paid action
+  const handleMarkPaid = async (reportId: string) => {
+    try {
+      const response = await fetch(`/api/zopper-admin/spot-incentive-report/${reportId}/mark-paid`, {
+        method: 'POST',
+      });
 
-  const totals = useMemo(() => {
-    const totalIncentive = filtered.reduce((s, r) => s + r.incentiveEarned, 0);
-    const totalPaid = filtered.filter(r => r.isPaid).reduce((s, r) => s + r.incentiveEarned, 0);
-    const totalSECs = new Set(filtered.map(r => r.secUser.secId || r.secUser.phone)).size;
-    const activeStores = new Set(filtered.map(r => r.store.id)).size;
-    return { totalSECs, totalReports: filtered.length, totalIncentive, totalPaid, activeStores };
-  }, [filtered]);
+      if (response.ok) {
+        // Refresh data after successful action
+        fetchData();
+      } else {
+        alert('Failed to mark as paid');
+      }
+    } catch (error) {
+      console.error('Error marking as paid:', error);
+      alert('Error marking as paid');
+    }
+  };
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageData = filtered.slice((page - 1) * pageSize, page * pageSize);
+  // Handle Discard action
+  const handleDiscard = async (reportId: string) => {
+    if (confirm('Are you sure you want to discard this report?')) {
+      try {
+        const response = await fetch(`/api/zopper-admin/spot-incentive-report/${reportId}/discard`, {
+          method: 'POST',
+        });
+
+        if (response.ok) {
+          // Refresh data after successful action
+          fetchData();
+        } else {
+          alert('Failed to discard report');
+        }
+      } catch (error) {
+        console.error('Error discarding report:', error);
+        alert('Error discarding report');
+      }
+    }
+  };
+
+  // Fetch data from API
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pageSize.toString(),
+      });
+
+      if (query) params.append('search', query);
+      if (storeFilter) params.append('storeId', storeFilter);
+      if (planFilter) params.append('planType', planFilter);
+      if (paymentFilter !== 'all') params.append('paymentStatus', paymentFilter);
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const response = await fetch(`/api/zopper-admin/spot-incentive-report?${params}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
+      const result: ApiResponse = await response.json();
+      
+      if (result.success) {
+        setData(result.data);
+      } else {
+        throw new Error('API returned error');
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to load data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchData();
+  }, [page, query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
+
+  const reports = data?.reports || [];
+  const pagination = data?.pagination || { page: 1, totalPages: 1, hasNext: false, hasPrev: false };
+  const summary = data?.summary || { activeStores: 0, activeSECs: 0, totalReports: 0, totalIncentiveEarned: 0, totalIncentivePaid: 0 };
+  const filters = data?.filters || { stores: [], planTypes: [] };
 
   const exportExcel = () => {
-    const exportData = filtered.map(report => ({
+    const exportData = reports.map(report => ({
       'Report ID': report.id,
       'SEC ID': report.secUser.secId || 'Not Set',
       'SEC Phone': report.secUser.phone,
@@ -133,38 +218,43 @@ export default function MonthlyIncentiveReport() {
       'Payment Status': report.isPaid ? 'Paid' : 'Pending',
       'Submitted Date': formatDateWithTime(report.submittedAt).date,
       'Submitted Time': formatDateWithTime(report.submittedAt).time,
-      'Voucher Code': report.voucherCode || ''
+      'Voucher Code': report.voucherCode || '',
+      'Campaign Active': report.isCompaignActive ? 'Yes' : 'No',
+      'Paid Date': report.paidAt ? formatDateWithTime(report.paidAt).date : '',
+      'Action Required': report.isPaid ? 'None' : 'Mark Paid Available'
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Monthly Report');
+    XLSX.utils.book_append_sheet(wb, ws, 'Spot Incentive Report');
     XLSX.writeFile(wb, `spot-incentive-report-${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 md:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full space-y-8">
         {/* Header */}
-        <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-1">Spot Incentive Report</h1>
-            <p className="text-sm text-neutral-400">
-              Paid: {filtered.filter(r => r.isPaid).length} | Unpaid: {
-                filtered.filter(r => !r.isPaid).length
-              }
-            </p>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Live
-              </span>
+        <header className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-white mb-3">Spot Incentive Report</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <p className="text-sm text-neutral-400">
+                Paid: {reports.filter(r => r.isPaid).length} | Unpaid: {
+                  reports.filter(r => !r.isPaid).length
+                }
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  Live
+                </span>
+              </div>
             </div>
           </div>
 
           <button
             onClick={() => clientLogout('/login/role')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg self-start"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
           >
             <FaSignOutAlt size={12} />
             Logout
@@ -173,11 +263,11 @@ export default function MonthlyIncentiveReport() {
 
         {/* Key metrics */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard title="Active Stores" value={totals.activeStores.toString()} />
-          <StatCard title="SECs Active" value={totals.totalSECs.toString()} />
-          <StatCard title="Reports Submitted" value={totals.totalReports.toString()} />
-          <StatCard title="Incentive Earned" value={`₹${totals.totalIncentive}`} />
-          <StatCard title="Incentive Paid" value={`₹${totals.totalPaid}`} />
+          <StatCard title="Active Stores" value={summary.activeStores.toString()} />
+          <StatCard title="SECs Active" value={summary.activeSECs.toString()} />
+          <StatCard title="Reports Submitted" value={summary.totalReports.toString()} />
+          <StatCard title="Incentive Earned" value={`₹${summary.totalIncentiveEarned.toLocaleString('en-IN')}`} />
+          <StatCard title="Incentive Paid" value={`₹${summary.totalIncentivePaid.toLocaleString('en-IN')}`} />
         </section>
 
         {/* Filters */}
@@ -188,15 +278,29 @@ export default function MonthlyIncentiveReport() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          <input
+            type="date"
+            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Start Date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <input
+            type="date"
+            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="End Date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
           <select
             className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
             value={storeFilter}
             onChange={(e) => setStoreFilter(e.target.value)}
           >
             <option value="">All Stores</option>
-            {stores.map((s) => (
-              <option key={s} value={s}>
-                {s}
+            {filters.stores.map((store) => (
+              <option key={store.id} value={store.id}>
+                {store.name} - {store.city}
               </option>
             ))}
           </select>
@@ -206,9 +310,9 @@ export default function MonthlyIncentiveReport() {
             onChange={(e) => setPlanFilter(e.target.value)}
           >
             <option value="">All Plans</option>
-            {plans.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            {filters.planTypes.map((planType) => (
+              <option key={planType} value={planType}>
+                {planType.replace(/_/g, ' ')}
               </option>
             ))}
           </select>
@@ -234,99 +338,150 @@ export default function MonthlyIncentiveReport() {
 
         {/* Table */}
         <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto">
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr className="text-left">
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                   Timestamp
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                   Date of Sale
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[100px]">
                   SEC ID
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider">
                   Store Name
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider">
                   Device Name
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                   Plan Type
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[140px]">
                   IMEI
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[100px]">
                   Incentive
                 </th>
-                <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[80px]">
                   Status
+                </th>
+                <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
-              {pageData.map((r) => (
-                <tr key={r.id} className="hover:bg-neutral-50 transition">
-                  <td className="p-3 md:p-4 text-neutral-900 text-sm">
-                    <div>{formatDateWithTime(r.createdAt).date}</div>
-                    <div className="text-neutral-500 text-xs">
-                      {formatDateWithTime(r.createdAt).time}
-                    </div>
-                  </td>
-                  <td className="p-3 md:p-4 text-neutral-700 text-sm">
-                    <div>{formatDateWithTime(r.submittedAt).date}</div>
-                    <div className="text-neutral-500 text-xs">
-                      {formatDateWithTime(r.submittedAt).time}
-                    </div>
-                  </td>
-                  <td className="p-3 md:p-4 text-neutral-900 text-sm font-medium">
-                    {r.secUser.secId}
-                  </td>
-                  <td className="p-3 md:p-4 text-neutral-900 text-sm">{r.store.storeName}</td>
-                  <td className="p-3 md:p-4 text-neutral-700 text-sm">
-                    {r.samsungSKU.ModelName}
-                  </td>
-                  <td className="p-3 md:p-4 text-neutral-700 text-sm">{r.plan.planType}</td>
-                  <td className="p-3 md:p-4 text-neutral-500 text-xs font-mono">
-                    {r.imei}
-                  </td>
-                  <td className="p-3 md:p-4 text-emerald-600 text-sm font-semibold">
-                    ₹{r.incentiveEarned}
-                  </td>
-                  <td className="p-3 md:p-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        r.isPaid
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-amber-50 text-amber-700'
-                      }`}
-                    >
-                      {r.isPaid ? 'Paid' : 'Pending'}
-                    </span>
+              {loading ? (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-neutral-500">
+                    <FaSpinner className="animate-spin mx-auto mb-2" size={20} />
+                    Loading reports...
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-red-500">
+                    {error}
+                  </td>
+                </tr>
+              ) : reports.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-neutral-500">
+                    No reports found
+                  </td>
+                </tr>
+              ) : (
+                reports.map((r: SpotIncentiveReport) => (
+                  <tr key={r.id} className="hover:bg-neutral-50 transition">
+                    <td className="p-2 md:p-3 text-neutral-900 text-sm">
+                      <div className="text-xs">{formatDateWithTime(r.createdAt).date}</div>
+                      <div className="text-neutral-500 text-xs">
+                        {formatDateWithTime(r.createdAt).time}
+                      </div>
+                    </td>
+                    <td className="p-2 md:p-3 text-neutral-700 text-sm">
+                      <div className="text-xs">{formatDateWithTime(r.submittedAt).date}</div>
+                      <div className="text-neutral-500 text-xs">
+                        {formatDateWithTime(r.submittedAt).time}
+                      </div>
+                    </td>
+                    <td className="p-2 md:p-3 text-neutral-900 text-sm font-medium">
+                      <div className="truncate">{r.secUser.secId || 'Not Set'}</div>
+                    </td>
+                    <td className="p-2 md:p-3 text-neutral-900 text-sm">
+                      <div className="truncate">{r.store.storeName}</div>
+                    </td>
+                    <td className="p-2 md:p-3 text-neutral-700 text-sm">
+                      <div className="truncate">{r.samsungSKU.ModelName}</div>
+                    </td>
+                    <td className="p-2 md:p-3 text-neutral-700 text-xs">
+                      <div className="truncate">{r.plan.planType.replace(/_/g, ' ')}</div>
+                    </td>
+                    <td className="p-2 md:p-3 text-neutral-500 text-xs font-mono">
+                      <div className="truncate">{r.imei}</div>
+                    </td>
+                    <td className="p-2 md:p-3 text-emerald-600 text-sm font-semibold">
+                      ₹{r.incentiveEarned}
+                    </td>
+                    <td className="p-2 md:p-3">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          r.isPaid
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-amber-50 text-amber-700'
+                        }`}
+                      >
+                        {r.isPaid ? 'Paid' : 'Pending'}
+                      </span>
+                    </td>
+                    <td className="p-2 md:p-3">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          onClick={() => handleMarkPaid(r.id)}
+                          disabled={r.isPaid}
+                          className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                            r.isPaid
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          }`}
+                        >
+                          Mark Paid
+                        </button>
+                        <button
+                          onClick={() => handleDiscard(r.id)}
+                          className="px-2 py-1 rounded text-xs font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
-          </table>
+            </table>
+          </div>
         </section>
 
-        {totalPages > 1 && (
+        {pagination.totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-4 text-sm text-neutral-200">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
+              disabled={!pagination.hasPrev}
               className="px-3 py-1 border border-neutral-700 rounded-lg disabled:opacity-40 text-neutral-100 bg-neutral-900 hover:bg-neutral-800"
             >
               Previous
             </button>
             <span className="px-3 py-1">
-              Page {page} of {totalPages}
+              Page {pagination.page} of {pagination.totalPages}
             </span>
             <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
+              onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+              disabled={!pagination.hasNext}
               className="px-3 py-1 border border-neutral-700 rounded-lg disabled:opacity-40 text-neutral-100 bg-neutral-900 hover:bg-neutral-800"
             >
               Next

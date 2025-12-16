@@ -1,0 +1,264 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getAuthenticatedUserFromCookies } from '@/lib/auth';
+
+/**
+ * GET /api/zopper-admin/spot-incentive-report
+ * Get all spot incentive reports for Zopper Administrator
+ * 
+ * Query Parameters:
+ * - storeId?: string (filter by store)
+ * - planType?: string (filter by plan type)
+ * - paymentStatus?: 'paid' | 'unpaid' | 'all'
+ * - startDate?: string (YYYY-MM-DD)
+ * - endDate?: string (YYYY-MM-DD)
+ * - search?: string (search SEC/Store/Device/IMEI)
+ * - page?: number (pagination)
+ * - limit?: number (page size)
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const cookies = await (await import('next/headers')).cookies();
+    const authUser = await getAuthenticatedUserFromCookies(cookies as any);
+
+    if (!authUser || authUser.role !== 'ZOPPER_ADMINISTRATOR') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const storeId = searchParams.get('storeId');
+    const planType = searchParams.get('planType');
+    const paymentStatus = searchParams.get('paymentStatus') || 'all';
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const search = searchParams.get('search');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+
+    // Build where clause
+    const where: any = {};
+
+    // Store filter
+    if (storeId) {
+      where.storeId = storeId;
+    }
+
+    // Plan type filter
+    if (planType) {
+      where.plan = {
+        planType: planType
+      };
+    }
+
+    // Payment status filter
+    if (paymentStatus === 'paid') {
+      where.spotincentivepaidAt = { not: null };
+    } else if (paymentStatus === 'unpaid') {
+      where.spotincentivepaidAt = null;
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+      where.Date_of_sale = {};
+      if (startDate) {
+        where.Date_of_sale.gte = new Date(startDate);
+      }
+      if (endDate) {
+        where.Date_of_sale.lte = new Date(endDate + 'T23:59:59.999Z');
+      }
+    }
+
+    // Search filter (SEC phone, store name, device name, IMEI)
+    if (search) {
+      where.OR = [
+        {
+          secUser: {
+            phone: { contains: search, mode: 'insensitive' }
+          }
+        },
+        {
+          secUser: {
+            fullName: { contains: search, mode: 'insensitive' }
+          }
+        },
+        {
+          store: {
+            name: { contains: search, mode: 'insensitive' }
+          }
+        },
+        {
+          samsungSKU: {
+            ModelName: { contains: search, mode: 'insensitive' }
+          }
+        },
+        {
+          samsungSKU: {
+            Category: { contains: search, mode: 'insensitive' }
+          }
+        },
+        {
+          imei: { contains: search, mode: 'insensitive' }
+        }
+      ];
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.spotIncentiveReport.count({ where });
+
+    // Get paginated reports
+    const reports = await prisma.spotIncentiveReport.findMany({
+      where,
+      include: {
+        secUser: {
+          select: {
+            id: true,
+            phone: true,
+            fullName: true,
+          }
+        },
+        store: {
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            state: true,
+          }
+        },
+        samsungSKU: {
+          select: {
+            id: true,
+            Category: true,
+            ModelName: true,
+          }
+        },
+        plan: {
+          select: {
+            id: true,
+            planType: true,
+            price: true,
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      skip: (page - 1) * limit,
+      take: limit
+    });
+
+    // Format date helper
+    const formatDate = (date: Date) => {
+      const d = new Date(date);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    };
+
+    // Transform data for frontend
+    const transformedReports = reports.map((report: any) => ({
+      id: report.id,
+      createdAt: formatDate(report.createdAt),
+      submittedAt: formatDate(report.Date_of_sale || report.createdAt),
+      imei: report.imei,
+      planPrice: report.plan.price,
+      incentiveEarned: report.spotincentiveEarned,
+      isPaid: !!report.spotincentivepaidAt,
+      paidAt: report.spotincentivepaidAt ? formatDate(report.spotincentivepaidAt) : null,
+      voucherCode: report.voucherCode || '',
+      isCompaignActive: report.isCompaignActive,
+      secUser: {
+        secId: report.secUser.id,
+        phone: report.secUser.phone,
+        name: report.secUser.fullName || 'Not Set'
+      },
+      store: {
+        id: report.store.id,
+        storeName: report.store.name,
+        city: report.store.city || 'Not Set'
+      },
+      samsungSKU: {
+        id: report.samsungSKU.id,
+        Category: report.samsungSKU.Category,
+        ModelName: report.samsungSKU.ModelName
+      },
+      plan: {
+        id: report.plan.id,
+        planType: report.plan.planType,
+        price: report.plan.price
+      }
+    }));
+
+    // Calculate summary statistics
+    const totalIncentiveEarned = reports.reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
+    const totalIncentivePaid = reports
+      .filter((report: any) => report.spotincentivepaidAt)
+      .reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
+    
+    const uniqueStores = new Set(reports.map((report: any) => report.storeId));
+    const uniqueSECs = new Set(reports.map((report: any) => report.secId));
+
+    // Get available filters data
+    const [stores, planTypes] = await Promise.all([
+      prisma.store.findMany({
+        select: {
+          id: true,
+          name: true,
+          city: true
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      }),
+      prisma.plan.findMany({
+        select: {
+          planType: true
+        },
+        distinct: ['planType'],
+        orderBy: {
+          planType: 'asc'
+        }
+      })
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        reports: transformedReports,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasNext: page * limit < totalCount,
+          hasPrev: page > 1
+        },
+        summary: {
+          totalReports: totalCount,
+          activeStores: uniqueStores.size,
+          activeSECs: uniqueSECs.size,
+          totalIncentiveEarned,
+          totalIncentivePaid,
+          totalIncentivePending: totalIncentiveEarned - totalIncentivePaid
+        },
+        filters: {
+          stores: stores.map(store => ({
+            id: store.id,
+            name: store.name,
+            city: store.city
+          })),
+          planTypes: planTypes.map(plan => plan.planType)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in GET /api/zopper-admin/spot-incentive-report', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

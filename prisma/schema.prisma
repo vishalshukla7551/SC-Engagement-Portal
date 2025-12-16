@@ -364,3 +364,24 @@ model PriceIncentiveSlab {
 
   @@index([minPrice, maxPrice])
 }
+
+model TestSubmission {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  secId               String?  // SEC identifier
+  phone               String?  // SEC phone number
+  sessionToken        String?  // Test session identifier
+  testName            String?  // Name of the test taken
+  responses           Json?    // Test answers/responses
+  score               Int      // Test score achieved
+  totalQuestions      Int      // Total number of questions
+  completionTime      Int      // Time taken to complete (in seconds)
+  isProctoringFlagged Boolean  @default(false) // Proctoring violation flag
+  storeId             String?  // Store identifier
+  storeName           String?  // Store name
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([secId])
+  @@index([phone])
+  @@index([createdAt])
+} 

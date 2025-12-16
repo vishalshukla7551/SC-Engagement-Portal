@@ -111,10 +111,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Get total count for pagination
-    const totalCount = await (prisma as any).salesReport.count({ where });
+    const totalCount = await prisma.spotIncentiveReport.count({ where });
 
     // Fetch sales reports with all related data
-    const salesReports = await (prisma as any).salesReport.findMany({
+    const salesReports = await prisma.spotIncentiveReport.findMany({
       where,
       include: {
         secUser: {
@@ -154,7 +154,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Calculate summary statistics
-    const allReports = await (prisma as any).salesReport.findMany({
+    const allReports = await prisma.spotIncentiveReport.findMany({
       where,
       select: {
         spotincentiveEarned: true,
