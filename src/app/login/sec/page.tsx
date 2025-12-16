@@ -200,7 +200,7 @@ export default function SECLogin() {
           priority
         />
 
-        {/* Gift Box - Anchored to Card Right Side (Desktop only) */}
+        {/* Gift Box - Anchored to Card Right Side (Desktop only)
         <Image
           src="/images/gift-box.png"
           alt="Christmas Gift"
@@ -215,6 +215,7 @@ export default function SECLogin() {
           }}
           priority
         />
+        */}
 
         {/* Login Card */}
         <div
@@ -472,6 +473,7 @@ export default function SECLogin() {
         </div>
 
         {/* Gift Box - Mobile: touching the bottom of the card */}
+        {/*
         <div className="md:hidden flex justify-center -mt-6 relative z-10">
           <Image
             src="/images/gift-box.png"
@@ -485,6 +487,7 @@ export default function SECLogin() {
             priority
           />
         </div>
+        */}
       </div>
     </div>
   );
