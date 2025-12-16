@@ -357,8 +357,10 @@ export default function SECLogin() {
                   name="otp"
                   autoComplete="off"
                   inputMode="numeric"
+                  pattern="\d{6}"
+                  maxLength={6}
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="Enter OTP"
                   className={inputBaseClasses}
                   style={{
