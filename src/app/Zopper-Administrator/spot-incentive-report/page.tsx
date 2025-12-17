@@ -168,7 +168,8 @@ export default function SpotIncentiveReport() {
       const response = await fetch(`/api/zopper-admin/spot-incentive-report?${params}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.details || errorData.error || `Failed to fetch data (${response.status})`);
       }
 
       const result: ApiResponse = await response.json();
@@ -180,7 +181,7 @@ export default function SpotIncentiveReport() {
       }
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Failed to load data. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
     }

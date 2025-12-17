@@ -5,31 +5,26 @@ import { prisma } from '@/lib/prisma';
  * GET /api/zopper-administrator/leaderboard
  * Same behavior as SEC leaderboard:
  * - Returns top stores, devices, plans for active spot incentive campaigns
- * - period query: 'week' | 'month' | 'all' (default: 'month')
+ * - month query: number (1-12, optional - defaults to current month)
+ * - year query: number (optional - defaults to current year)
  * - limit query: number (default: 10)
  */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const period = searchParams.get('period') || 'month';
     const limit = parseInt(searchParams.get('limit') || '10');
-
-    // Calculate date range based on period
+    
+    // Get month and year from query params
     const now = new Date();
-    let startDate: Date;
-
-    switch (period) {
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'all':
-      default:
-        startDate = new Date(0);
-        break;
-    }
+    const monthParam = searchParams.get('month');
+    const yearParam = searchParams.get('year');
+    
+    const month = monthParam ? parseInt(monthParam) - 1 : now.getMonth(); // 0-indexed
+    const year = yearParam ? parseInt(yearParam) : now.getFullYear();
+    
+    // Calculate date range for the selected month
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999); // Last day of month
 
     // Get all active campaigns
     const activeCampaigns = await prisma.spotIncentiveCampaign.findMany({
@@ -59,11 +54,14 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Get sales reports for active campaigns within the period
+    // Get sales reports for active campaigns within the selected month
     const salesReports = await prisma.spotIncentiveReport.findMany({
       where: {
         isCompaignActive: true,
-        Date_of_sale: { gte: startDate },
+        Date_of_sale: { 
+          gte: startDate,
+          lte: endDate,
+        },
       },
       include: {
         store: true,
@@ -193,7 +191,8 @@ export async function GET(req: NextRequest) {
         stores: topStores,
         devices: topDevices,
         plans: topPlans,
-        period,
+        month: month + 1,
+        year,
         activeCampaignsCount: activeCampaigns.length,
         totalSalesReports: salesReports.length,
       },

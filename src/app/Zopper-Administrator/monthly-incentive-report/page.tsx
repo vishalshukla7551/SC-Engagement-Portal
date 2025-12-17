@@ -10,13 +10,10 @@ interface SalesReportData {
   id: string;
   createdAt: string;
   submittedAt: string;
+  dateOfSale: string;
   imei: string;
-  spotincentiveEarned: number;
-  voucherCode?: string;
-  isPaid: boolean;
-  paidAt?: string;
-  validationStatus: 'NOT_VALIDATED' | 'VALIDATED' | 'DISCARDED';
-  approvedBySamsung: boolean;
+  planPrice: number;
+  devicePrice: number;
   secUser: {
     secId: string;
     phone: string;
@@ -37,6 +34,7 @@ interface SalesReportData {
     planType: string;
     price: number;
   };
+  metadata?: any;
 }
 
 interface ApiResponse {
@@ -51,8 +49,6 @@ interface ApiResponse {
     };
     summary: {
       totalReports: number;
-      totalIncentiveEarned: number;
-      totalIncentivePaid: number;
       uniqueSECs: number;
       uniqueStores: number;
     };
@@ -82,8 +78,6 @@ function StatCard({ title, value }: { title: string; value: string }) {
     'Active Stores': 'from-indigo-600 to-purple-600 shadow-[0_10px_40px_rgba(79,70,229,0.4)]',
     'SECs Active': 'from-emerald-600 to-teal-600 shadow-[0_10px_40px_rgba(16,185,129,0.4)]',
     'Reports Submitted': 'from-blue-600 to-cyan-600 shadow-[0_10px_40px_rgba(37,99,235,0.4)]',
-    'Incentive Earned': 'from-amber-500 to-orange-600 shadow-[0_10px_40px_rgba(245,158,11,0.4)]',
-    'Incentive Paid': 'from-rose-600 to-pink-600 shadow-[0_10px_40px_rgba(244,63,94,0.4)]',
   };
 
   const gradient = gradientMap[title] || 'from-slate-700 to-slate-900 shadow-[0_10px_40px_rgba(15,23,42,0.5)]';
@@ -102,9 +96,8 @@ export default function MonthlyIncentiveReport() {
   const [query, setQuery] = useState('');
   const [storeFilter, setStoreFilter] = useState('');
   const [planFilter, setPlanFilter] = useState('');
-
-  const [validationFilter, setValidationFilter] = useState<'all' | 'not_validated' | 'validated' | 'discarded'>('all');
   const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 50;
   
@@ -120,8 +113,6 @@ export default function MonthlyIncentiveReport() {
   });
   const [summary, setSummary] = useState({
     totalReports: 0,
-    totalIncentiveEarned: 0,
-    totalIncentivePaid: 0,
     uniqueSECs: 0,
     uniqueStores: 0
   });
@@ -142,9 +133,8 @@ export default function MonthlyIncentiveReport() {
         ...(query && { query }),
         ...(storeFilter && { storeFilter }),
         ...(planFilter && { planFilter }),
-
-        ...(validationFilter !== 'all' && { validationFilter }),
-        ...(startDate && { startDate })
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate })
       });
 
       const response = await fetch(`/api/zopper-admin/monthly-incentive-report?${params}`);
@@ -175,38 +165,14 @@ export default function MonthlyIncentiveReport() {
   // Fetch data on component mount and when filters change
   useEffect(() => {
     fetchData();
-  }, [page, query, storeFilter, planFilter, validationFilter, startDate]);
+  }, [page, query, storeFilter, planFilter, startDate, endDate]);
 
   // Reset page when filters change
   useEffect(() => {
     if (page !== 1) {
       setPage(1);
     }
-  }, [query, storeFilter, planFilter, validationFilter, startDate]);
-
-  // Handle validation actions
-  const handleValidationAction = async (reportId: string, action: 'validate' | 'discard') => {
-    try {
-      const response = await fetch('/api/zopper-admin/monthly-incentive-report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reportId, action }),
-      });
-
-      if (response.ok) {
-        // Refresh data after successful action
-        fetchData();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to update report');
-      }
-    } catch (err) {
-      setError('Failed to update report');
-      console.error('Error updating report:', err);
-    }
-  };
+  }, [query, storeFilter, planFilter, startDate, endDate]);
 
   const exportExcel = () => {
     const exportData = data.map(report => ({
@@ -218,16 +184,13 @@ export default function MonthlyIncentiveReport() {
       'Store City': report.store.city,
       'Device Category': report.samsungSKU.Category,
       'Device Model': report.samsungSKU.ModelName,
+      'Device Price': report.devicePrice ? `₹${report.devicePrice}` : 'N/A',
       'Plan Type': report.plan.planType.replace(/_/g, ' '),
       'Plan Price': `₹${report.plan.price}`,
       'IMEI': report.imei,
-      'Incentive Earned': `₹${report.spotincentiveEarned}`,
-      'Payment Status': report.isPaid ? 'Paid' : 'Pending',
-      'Validation Status': report.validationStatus.replace(/_/g, ' '),
-      'Approved by Samsung': report.approvedBySamsung ? 'Yes' : 'No',
-      'Submitted Date': formatDateWithTime(report.submittedAt).date,
-      'Submitted Time': formatDateWithTime(report.submittedAt).time,
-      'Voucher Code': report.voucherCode || ''
+      'Date of Sale': formatDateWithTime(report.submittedAt).date,
+      'Time': formatDateWithTime(report.submittedAt).time,
+      'Created Date': formatDateWithTime(report.createdAt).date,
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -244,9 +207,7 @@ export default function MonthlyIncentiveReport() {
           <div>
             <h1 className="text-3xl font-bold text-white mb-1">Monthly Incentive Report</h1>
             <p className="text-sm text-neutral-400">
-              Validated: {data.filter(r => r.validationStatus === 'VALIDATED').length} | 
-              Not Validated: {data.filter(r => r.validationStatus === 'NOT_VALIDATED').length} | 
-              Discarded: {data.filter(r => r.validationStatus === 'DISCARDED').length}
+              Daily sales data from DailyIncentiveReport
             </p>
             <div className="flex items-center gap-2 mt-2">
               <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
@@ -266,12 +227,10 @@ export default function MonthlyIncentiveReport() {
         </header>
 
         {/* Key metrics */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard title="Active Stores" value={summary.uniqueStores.toString()} />
           <StatCard title="SECs Active" value={summary.uniqueSECs.toString()} />
           <StatCard title="Reports Submitted" value={summary.totalReports.toString()} />
-          <StatCard title="Incentive Earned" value={`₹${summary.totalIncentiveEarned}`} />
-          <StatCard title="Incentive Paid" value={`₹${summary.totalIncentivePaid}`} />
         </section>
 
         {/* Filters */}
@@ -288,7 +247,15 @@ export default function MonthlyIncentiveReport() {
             className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            placeholder="Filter by Date"
+            placeholder="Start Date"
+          />
+
+          <input
+            type="date"
+            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            placeholder="End Date"
           />
 
           <select
@@ -315,21 +282,6 @@ export default function MonthlyIncentiveReport() {
                 {plan.replace(/_/g, ' ')}
               </option>
             ))}
-          </select>
-
-
-
-          <select
-            className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
-            value={validationFilter}
-            onChange={(e) =>
-              setValidationFilter(e.target.value as 'all' | 'not_validated' | 'validated' | 'discarded')
-            }
-          >
-            <option value="all">All Validation Status</option>
-            <option value="not_validated">Not Validated</option>
-            <option value="validated">Validated</option>
-            <option value="discarded">Discarded</option>
           </select>
 
           <button
@@ -365,135 +317,69 @@ export default function MonthlyIncentiveReport() {
         {/* Table */}
         {!loading && !error && (
           <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-neutral-50 border-b border-neutral-200">
-                <tr className="text-left">
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Timestamp
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Date of Sale
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    SEC Name
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Store Name
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Device Name
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Plan Type
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    IMEI
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Validation Status
-                  </th>
-                  <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100">
-                {data.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="p-8 text-center text-neutral-500">
-                      No sales reports found matching your criteria.
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-neutral-50 border-b border-neutral-200">
+                  <tr className="text-left">
+                    <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                      Date of Sale
+                    </th>
+                    <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                      Store Name
+                    </th>
+                    <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                      Device Name
+                    </th>
+                    <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                      Plan Type
+                    </th>
+                    <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                      Plan Price
+                    </th>
+                    <th className="p-3 md:p-4 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                      IMEI
+                    </th>
                   </tr>
-                ) : (
-                  data.map((r) => (
-                    <tr key={r.id} className="hover:bg-neutral-50 transition">
-                      <td className="p-3 md:p-4 text-neutral-900 text-sm">
-                        <div>{formatDateWithTime(r.createdAt).date}</div>
-                        <div className="text-neutral-500 text-xs">
-                          {formatDateWithTime(r.createdAt).time}
-                        </div>
-                      </td>
-                      <td className="p-3 md:p-4 text-neutral-700 text-sm">
-                        <div>{formatDateWithTime(r.submittedAt).date}</div>
-                        <div className="text-neutral-500 text-xs">
-                          {formatDateWithTime(r.submittedAt).time}
-                        </div>
-                      </td>
-                      <td className="p-3 md:p-4 text-neutral-900 text-sm font-medium">
-                        <div>{r.secUser.name}</div>
-                        <div className="text-neutral-500 text-xs">{r.secUser.phone}</div>
-                      </td>
-                      <td className="p-3 md:p-4 text-neutral-900 text-sm">{r.store.storeName}</td>
-                      <td className="p-3 md:p-4 text-neutral-700 text-sm">
-                        {r.samsungSKU.ModelName}
-                      </td>
-                      <td className="p-3 md:p-4 text-neutral-700 text-sm">{r.plan.planType.replace(/_/g, ' ')}</td>
-                      <td className="p-3 md:p-4 text-neutral-500 text-xs font-mono">
-                        {r.imei}
-                      </td>
-                      <td className="p-3 md:p-4">
-                        <div className="space-y-1">
-                          {r.validationStatus === 'NOT_VALIDATED' && (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                              Not Validated
-                            </span>
-                          )}
-                          {r.validationStatus === 'VALIDATED' && (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                              Validated
-                            </span>
-                          )}
-                          {r.validationStatus === 'DISCARDED' && (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                              Discarded
-                            </span>
-                          )}
-                          {r.approvedBySamsung && (
-                            <div className="text-xs text-green-600 font-medium">
-                              Approved by Samsung
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-3 md:p-4">
-                        {r.validationStatus === 'NOT_VALIDATED' ? (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleValidationAction(r.id, 'validate')}
-                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors"
-                            >
-                              Validate
-                            </button>
-                            <button
-                              onClick={() => handleValidationAction(r.id, 'discard')}
-                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition-colors"
-                            >
-                              Discard
-                            </button>
-                          </div>
-                        ) : r.validationStatus === 'VALIDATED' ? (
-                          <div className="flex gap-2">
-                            <span className="px-2 py-1 text-xs text-blue-700 bg-blue-50 rounded">
-                              Validated
-                            </span>
-                            <button
-                              onClick={() => handleValidationAction(r.id, 'discard')}
-                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition-colors"
-                            >
-                              Discard
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-500">
-                            Discarded
-                          </span>
-                        )}
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {data.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-neutral-500">
+                        No sales reports found matching your criteria.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    data.map((r) => (
+                      <tr key={r.id} className="hover:bg-neutral-50 transition">
+                        <td className="p-3 md:p-4 text-neutral-900 text-sm">
+                          <div>{formatDateWithTime(r.submittedAt).date}</div>
+                          <div className="text-neutral-500 text-xs">
+                            {formatDateWithTime(r.submittedAt).time}
+                          </div>
+                        </td>
+                        <td className="p-3 md:p-4 text-neutral-900 text-sm">
+                          <div>{r.store.storeName}</div>
+                          <div className="text-neutral-500 text-xs">{r.store.city}</div>
+                        </td>
+                        <td className="p-3 md:p-4 text-neutral-700 text-sm">
+                          <div>{r.samsungSKU.ModelName}</div>
+                          <div className="text-neutral-500 text-xs">{r.samsungSKU.Category}</div>
+                        </td>
+                        <td className="p-3 md:p-4 text-neutral-700 text-sm">
+                          {r.plan.planType.replace(/_/g, ' ')}
+                        </td>
+                        <td className="p-3 md:p-4 text-emerald-600 text-sm font-semibold">
+                          ₹{r.plan.price}
+                        </td>
+                        <td className="p-3 md:p-4 text-neutral-500 text-xs font-mono">
+                          {r.imei}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
 

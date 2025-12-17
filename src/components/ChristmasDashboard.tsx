@@ -75,9 +75,6 @@ export default function ChristmasDashboard({ userName, loading, cards, logoutPat
         <div className={`grid grid-cols-1 gap-6 ${cards.length === 2 ? 'md:grid-cols-2 max-w-3xl' : 'md:grid-cols-3 max-w-4xl'}`}>
           {cards.map((card, idx) => (
             <Link key={idx} href={card.href} className="relative h-60 rounded-2xl bg-[#fffaf0] shadow-[0_12px_30px_rgba(0,0,0,0.15)] p-6 block hover:shadow-[0_16px_40px_rgba(0,0,0,0.2)] hover:-translate-y-1 transition-all cursor-pointer group">
-              <div className={`absolute top-6 right-6 h-10 w-10 rounded-full bg-gradient-to-r ${colorClasses[card.color].bg} shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                <span className="text-white text-lg font-semibold">{">"}</span>
-              </div>
               <div className="relative mb-6">
                 <div className={`h-16 w-16 rounded-2xl bg-gradient-to-r ${colorClasses[card.color].bg} shadow-lg flex items-center justify-center`}>{card.icon}</div>
               </div>
