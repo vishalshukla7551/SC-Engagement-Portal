@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
 // GET /api/zopper-admin/monthly-incentive-report
-// Fetches monthly incentive report data from SalesReport schema
+// Fetches monthly incentive report data from DailyIncentiveReport schema
 export async function GET(req: NextRequest) {
   try {
     const cookies = await (await import('next/headers')).cookies();
@@ -19,8 +19,6 @@ export async function GET(req: NextRequest) {
     const query = searchParams.get('query') || '';
     const storeFilter = searchParams.get('storeFilter') || '';
     const planFilter = searchParams.get('planFilter') || '';
-
-    const validationFilter = searchParams.get('validationFilter') || 'all';
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
@@ -34,17 +32,14 @@ export async function GET(req: NextRequest) {
         where.Date_of_sale.gte = new Date(startDate);
       }
       if (endDate) {
-        where.Date_of_sale.lte = new Date(endDate);
+        where.Date_of_sale.lte = new Date(endDate + 'T23:59:59.999Z');
       }
     }
 
-    // Store filter
+    // Store filter - use exact match since we're selecting from dropdown
     if (storeFilter) {
       where.store = {
-        name: {
-          contains: storeFilter,
-          mode: 'insensitive' as any
-        }
+        name: storeFilter
       };
     }
 
@@ -52,17 +47,6 @@ export async function GET(req: NextRequest) {
     if (planFilter) {
       where.plan = {
         planType: planFilter
-      };
-    }
-
-
-
-    // Validation status filter
-    if (validationFilter !== 'all') {
-      const validationStatus = validationFilter.toUpperCase();
-      where.metadata = {
-        path: ['validationStatus'],
-        equals: validationStatus
       };
     }
 
@@ -111,17 +95,18 @@ export async function GET(req: NextRequest) {
     }
 
     // Get total count for pagination
-    const totalCount = await prisma.spotIncentiveReport.count({ where });
+    const totalCount = await prisma.dailyIncentiveReport.count({ where });
 
-    // Fetch sales reports with all related data
-    const salesReports = await prisma.spotIncentiveReport.findMany({
+    // Fetch daily incentive reports with all related data
+    const dailyReports = await prisma.dailyIncentiveReport.findMany({
       where,
       include: {
         secUser: {
           select: {
             id: true,
             phone: true,
-            fullName: true
+            fullName: true,
+            secId: true
           }
         },
         store: {
@@ -135,7 +120,8 @@ export async function GET(req: NextRequest) {
           select: {
             id: true,
             Category: true,
-            ModelName: true
+            ModelName: true,
+            ModelPrice: true
           }
         },
         plan: {
@@ -154,21 +140,21 @@ export async function GET(req: NextRequest) {
     });
 
     // Calculate summary statistics
-    const allReports = await prisma.spotIncentiveReport.findMany({
+    const allReports = await prisma.dailyIncentiveReport.findMany({
       where,
       select: {
-        spotincentiveEarned: true,
-        spotincentivepaidAt: true,
+        id: true,
         secId: true,
-        storeId: true
+        storeId: true,
+        plan: {
+          select: {
+            price: true
+          }
+        }
       }
     });
 
-    const totalIncentiveEarned = allReports.reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
-    const totalIncentivePaid = allReports
-      .filter((report: any) => report.spotincentivepaidAt)
-      .reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
-    const uniqueSECs = new Set(allReports.map((report: any) => report.secId)).size;
+    const uniqueSECs = new Set(allReports.filter(r => r.secId).map((report: any) => report.secId)).size;
     const uniqueStores = new Set(allReports.map((report: any) => report.storeId)).size;
 
     // Get unique stores and plans for filter options
@@ -196,23 +182,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        salesReports: salesReports.map((report: any) => ({
+        salesReports: dailyReports.map((report: any) => ({
           id: report.id,
           createdAt: report.createdAt,
           submittedAt: report.Date_of_sale || report.createdAt,
           dateOfSale: report.Date_of_sale,
           imei: report.imei,
-          spotincentiveEarned: report.spotincentiveEarned,
-          voucherCode: report.voucherCode,
-          isPaid: !!report.spotincentivepaidAt,
-          paidAt: report.spotincentivepaidAt,
-          // Add validation status - using metadata to store validation info
-          validationStatus: report.metadata?.validationStatus || 'NOT_VALIDATED',
-          approvedBySamsung: report.metadata?.approvedBySamsung || false,
+          planPrice: report.plan.price,
+          devicePrice: report.samsungSKU.ModelPrice || 0,
           secUser: {
-            secId: report.secUser.id,
-            phone: report.secUser.phone,
-            name: report.secUser.fullName || 'Not Set'
+            secId: report.secUser?.secId || report.secUser?.id || 'Not Set',
+            phone: report.secUser?.phone || 'Not Set',
+            name: report.secUser?.fullName || 'Not Set'
           },
           store: {
             id: report.store.id,
@@ -229,7 +210,7 @@ export async function GET(req: NextRequest) {
             planType: report.plan.planType,
             price: report.plan.price
           },
-          isCampaignActive: report.isCompaignActive || false
+          metadata: report.metadata
         })),
         pagination: {
           page,
@@ -238,9 +219,7 @@ export async function GET(req: NextRequest) {
           totalPages: Math.ceil(totalCount / pageSize)
         },
         summary: {
-          totalReports: allReports.length,
-          totalIncentiveEarned,
-          totalIncentivePaid,
+          totalReports: totalCount,
           uniqueSECs,
           uniqueStores
         },
@@ -265,63 +244,6 @@ export async function GET(req: NextRequest) {
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/zopper-admin/monthly-incentive-report
-// Validate or discard a sales report
-export async function POST(req: NextRequest) {
-  try {
-    const cookies = await (await import('next/headers')).cookies();
-    const authUser = await getAuthenticatedUserFromCookies(cookies as any);
-
-    if (!authUser || authUser.role !== 'ZOPPER_ADMINISTRATOR') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const { reportId, action } = body; // action: 'validate' or 'discard'
-
-    if (!reportId || !action) {
-      return NextResponse.json(
-        { error: 'Report ID and action are required' },
-        { status: 400 }
-      );
-    }
-
-    if (!['validate', 'discard'].includes(action)) {
-      return NextResponse.json(
-        { error: 'Invalid action. Must be "validate" or "discard"' },
-        { status: 400 }
-      );
-    }
-
-    // Update the sales report validation status
-    const validationStatus = action === 'validate' ? 'VALIDATED' : 'DISCARDED';
-    
-    const updatedReport = await prisma.spotIncentiveReport.update({
-      where: { id: reportId },
-      data: {
-        metadata: {
-          validationStatus,
-          validatedAt: new Date().toISOString(),
-          validatedBy: authUser.username
-        }
-      }
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: `Report ${action}d successfully`,
-      reportId,
-      validationStatus
-    });
-  } catch (error) {
-    console.error('Error in POST /api/zopper-admin/monthly-incentive-report', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
       { status: 500 }
     );
   }

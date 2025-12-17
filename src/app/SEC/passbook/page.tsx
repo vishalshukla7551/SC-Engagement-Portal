@@ -524,6 +524,30 @@ export default function IncentivePassbookPage() {
                       </td>
                     </tr>
                     <tr className="border-b border-gray-100">
+                      <td className="px-4 py-3 text-gray-600">Base Gate Status</td>
+                      <td className="px-4 py-3 text-right">
+                        {(() => {
+                          const totalUnits = selectedIncentiveData?.breakdown?.unitsSummary?.totalUnits || 0;
+                          const gate = 4 * numberOfSECs;
+                          const isQualified = totalUnits >= gate;
+                          return (
+                            <div className="flex flex-col items-end gap-1">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                isQualified 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {isQualified ? 'Qualified' : `Not Qualified`}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                (4 x {numberOfSECs} = {gate} Units)
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
                       <td className="px-4 py-3 text-gray-600">Fold 7 Sold</td>
                       <td className="px-4 py-3 font-medium text-right text-gray-900">
                         {(() => {
@@ -574,13 +598,31 @@ export default function IncentivePassbookPage() {
                       </td>
                     </tr>
                     <tr className="border-b border-gray-100">
-                      <td className="px-4 py-3 text-gray-600">Volume Kicker Applicable</td>
-                      <td className="px-4 py-3 font-medium text-right text-gray-900">
-                        8 x {numberOfSECs} = {8 * numberOfSECs} Units
+                      <td className="px-4 py-3 text-gray-600">Volume Kicker Status</td>
+                      <td className="px-4 py-3 text-right">
+                        {(() => {
+                          const totalUnits = selectedIncentiveData?.breakdown?.unitsSummary?.totalUnits || 0;
+                          const volumeKicker = 8 * numberOfSECs;
+                          const isQualified = totalUnits >= volumeKicker;
+                          return (
+                            <div className="flex flex-col items-end gap-1">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                isQualified 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {isQualified ? 'Qualified' : `Not Qualified`}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                (8 x {numberOfSECs} = {volumeKicker} Units)
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </td>
                     </tr>
                     <tr className="border-b border-gray-100 bg-blue-50">
-                      <td className="px-4 py-3 text-blue-700 font-semibold">Total Incentive Earned</td>
+                      <td className="px-4 py-3 text-blue-700 font-semibold">Estimated Incentive Earned</td>
                       <td className="px-4 py-3 font-bold text-right text-blue-700">
                         ₹{selectedIncentiveData?.breakdown?.totalIncentive?.toLocaleString() || '0'}
                       </td>

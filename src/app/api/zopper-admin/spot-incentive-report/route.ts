@@ -112,6 +112,7 @@ export async function GET(req: NextRequest) {
         secUser: {
           select: {
             id: true,
+            secId: true,
             phone: true,
             fullName: true,
           }
@@ -121,7 +122,6 @@ export async function GET(req: NextRequest) {
             id: true,
             name: true,
             city: true,
-            state: true,
           }
         },
         samsungSKU: {
@@ -170,7 +170,7 @@ export async function GET(req: NextRequest) {
       voucherCode: report.voucherCode || '',
       isCompaignActive: report.isCompaignActive,
       secUser: {
-        secId: report.secUser.id,
+        secId: report.secUser.secId || report.secUser.id,
         phone: report.secUser.phone,
         name: report.secUser.fullName || 'Not Set'
       },
@@ -257,7 +257,10 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Error in GET /api/zopper-admin/spot-incentive-report', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

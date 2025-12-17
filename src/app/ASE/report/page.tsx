@@ -27,6 +27,12 @@ interface Summary {
   unpaidCount: number;
 }
 
+interface FilterOptions {
+  stores: Array<{ id: string; name: string; city: string | null }>;
+  plans: string[];
+  devices: string[];
+}
+
 type ReportTab = 'monthly' | 'spot';
 
 export default function ReportPage() {
@@ -34,6 +40,11 @@ export default function ReportPage() {
   const [planSearch, setPlanSearch] = useState("");
   const [storeSearch, setStoreSearch] = useState("");
   const [deviceSearch, setDeviceSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [filterType, setFilterType] = useState<'date' | 'month' | 'year'>('date');
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
   
   const [reports, setReports] = useState<Report[]>([]);
   const [summary, setSummary] = useState<Summary>({
@@ -42,6 +53,11 @@ export default function ReportPage() {
     totalReports: 0,
     paidCount: 0,
     unpaidCount: 0
+  });
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    stores: [],
+    plans: [],
+    devices: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,13 +72,21 @@ export default function ReportPage() {
       // Use different parameter names based on the API
       if (activeTab === 'monthly') {
         if (planSearch) {
-          params.append('planType', planSearch.includes('_') ? planSearch : planSearch + '_1_YR');
+          params.append('planType', planSearch);
         }
         if (storeSearch) {
           params.append('store', storeSearch);
         }
         if (deviceSearch) {
           params.append('device', deviceSearch);
+        }
+        // Add date filter based on filter type
+        if (filterType === 'date' && selectedDate) {
+          params.append('date', selectedDate);
+        } else if (filterType === 'month' && selectedMonth) {
+          params.append('month', selectedMonth);
+        } else if (filterType === 'year' && selectedYear) {
+          params.append('year', selectedYear);
         }
       } else {
         if (planSearch) {
@@ -73,6 +97,14 @@ export default function ReportPage() {
         }
         if (deviceSearch) {
           params.append('deviceFilter', deviceSearch);
+        }
+        // Add date filter based on filter type
+        if (filterType === 'date' && selectedDate) {
+          params.append('date', selectedDate);
+        } else if (filterType === 'month' && selectedMonth) {
+          params.append('month', selectedMonth);
+        } else if (filterType === 'year' && selectedYear) {
+          params.append('year', selectedYear);
         }
       }
 
@@ -100,20 +132,26 @@ export default function ReportPage() {
             deviceCategory: r.deviceCategory,
             planType: r.planType,
             imei: r.imei,
-            incentive: 0, // Monthly reports don't have incentive amounts
+            incentive: 0,
             isPaid: false
           })));
           setSummary({
             activeStores: result.data.summary.uniqueStores || 0,
-            activeSECs: 0, // Monthly API doesn't track this
+            activeSECs: 0,
             totalReports: result.data.summary.totalReports || 0,
             paidCount: 0,
             unpaidCount: 0
           });
+          if (result.data.filterOptions) {
+            setFilterOptions(result.data.filterOptions);
+          }
         } else {
-          // Handle spot report API response structure (existing)
+          // Handle spot report API response structure
           setReports(result.data.reports);
           setSummary(result.data.summary);
+          if (result.data.filterOptions) {
+            setFilterOptions(result.data.filterOptions);
+          }
         }
       }
     } catch (err) {
@@ -123,7 +161,9 @@ export default function ReportPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, [activeTab, planSearch, storeSearch, deviceSearch]);
+  useEffect(() => { 
+    fetchData(); 
+  }, [activeTab, planSearch, storeSearch, deviceSearch, filterType, selectedDate, selectedMonth, selectedYear]);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
@@ -132,6 +172,16 @@ export default function ReportPage() {
     if (!day || !month || !year) return dateString; // Return as-is if parsing fails
     const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-IN');
+  };
+
+  const clearFilters = () => {
+    setPlanSearch("");
+    setStoreSearch("");
+    setDeviceSearch("");
+    setSelectedDate("");
+    setSelectedMonth("");
+    setSelectedYear("");
+    setFilterType('date');
   };
 
   const renderContent = () => (
@@ -217,7 +267,7 @@ export default function ReportPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-10">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 md:p-10">
       <header className="mb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -234,18 +284,114 @@ export default function ReportPage() {
             <span>Logout</span>
           </button>
         </div>
+        
+        {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <button onClick={() => setActiveTab('monthly')} className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'monthly' ? 'bg-blue-600 text-white shadow-lg' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'}`}>Monthly Report</button>
           <button onClick={() => setActiveTab('spot')} className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'spot' ? 'bg-blue-600 text-white shadow-lg' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'}`}>Spot Report</button>
         </div>
-        <div className="flex items-center gap-4">
-          <input type="text" placeholder="Filter by Plan Type" value={planSearch} onChange={(e) => setPlanSearch(e.target.value)} className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-48" />
-          <input type="text" placeholder="Filter by Store" value={storeSearch} onChange={(e) => setStoreSearch(e.target.value)} className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64" />
-          <input type="text" placeholder="Filter by Device" value={deviceSearch} onChange={(e) => setDeviceSearch(e.target.value)} className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 w-56" />
+        
+        {/* Filters */}
+        <div className="flex items-center gap-2">
+          {/* Filter Type Selector */}
+          <select 
+            value={filterType} 
+            onChange={(e) => {
+              setFilterType(e.target.value as 'date' | 'month' | 'year');
+              setSelectedDate("");
+              setSelectedMonth("");
+              setSelectedYear("");
+            }} 
+            className="appearance-none bg-blue-600 border border-blue-500 text-white rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 w-[110px]"
+          >
+            <option value="date">By Date</option>
+            <option value="month">By Month</option>
+            <option value="year">By Year</option>
+          </select>
+          
+          {/* Date Picker - shown when filterType is 'date' */}
+          {filterType === 'date' && (
+            <input 
+              type="date" 
+              value={selectedDate} 
+              onChange={(e) => setSelectedDate(e.target.value)} 
+              className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 w-[140px]"
+              placeholder="Select date"
+            />
+          )}
+          
+          {/* Month Picker - shown when filterType is 'month' */}
+          {filterType === 'month' && (
+            <input 
+              type="month" 
+              value={selectedMonth} 
+              onChange={(e) => setSelectedMonth(e.target.value)} 
+              className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 w-[140px]"
+              placeholder="Select month"
+            />
+          )}
+          
+          {/* Year Picker - shown when filterType is 'year' */}
+          {filterType === 'year' && (
+            <select 
+              value={selectedYear} 
+              onChange={(e) => setSelectedYear(e.target.value)} 
+              className="appearance-none bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 w-[110px]"
+            >
+              <option value="">Select Year</option>
+              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          )}
+          
+          {/* Plan Filter */}
+          <select 
+            value={planSearch} 
+            onChange={(e) => setPlanSearch(e.target.value)} 
+            className="appearance-none bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 w-[130px]"
+          >
+            <option value="">All Plans</option>
+            {filterOptions.plans.map((plan) => (
+              <option key={plan} value={plan}>{plan.replace(/_/g, ' ')}</option>
+            ))}
+          </select>
+          
+          {/* Store Filter */}
+          <select 
+            value={storeSearch} 
+            onChange={(e) => setStoreSearch(e.target.value)} 
+            className="appearance-none bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 w-[140px]"
+          >
+            <option value="">All Stores</option>
+            {filterOptions.stores.map((store) => (
+              <option key={store.id} value={store.name}>{store.name} {store.city && `- ${store.city}`}</option>
+            ))}
+          </select>
+          
+          {/* Device Filter */}
+          <select 
+            value={deviceSearch} 
+            onChange={(e) => setDeviceSearch(e.target.value)} 
+            className="appearance-none bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 w-[140px]"
+          >
+            <option value="">All Devices</option>
+            {filterOptions.devices.map((device) => (
+              <option key={device} value={device}>{device}</option>
+            ))}
+          </select>
+          
+          {/* Clear Filters */}
+          <button 
+            onClick={clearFilters}
+            className="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white text-xs rounded-lg transition-colors whitespace-nowrap"
+          >
+            Clear
+          </button>
         </div>
       </header>
-      {activeTab === 'monthly' && renderContent()}
-      {activeTab === 'spot' && renderContent()}
+      
+      {renderContent()}
     </div>
   );
 }

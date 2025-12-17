@@ -15,7 +15,7 @@ export default function WalletPage() {
   // Modal state for incentive breakdown
   const [showIncentiveModal, setShowIncentiveModal] = useState(false);
   const [selectedIncentiveData, setSelectedIncentiveData] = useState<any>(null);
-  const [loadingIncentiveDetails, setLoadingIncentiveDetails] = useState(false);
+  const [loadingIncentiveDetails, setLoadingIncentiveDetails] = useState<string | null>(null);
   
   // State for current month data
   const [currentMonthData, setCurrentMonthData] = useState<any>(null);
@@ -188,10 +188,10 @@ export default function WalletPage() {
                     type="button"
                     className="px-3 py-1 rounded-lg bg-blue-600/20 text-blue-400 text-xs font-medium hover:bg-blue-600/30 transition-colors disabled:opacity-50"
                     title="View incentive calculation details"
-                    disabled={loadingIncentiveDetails}
+                    disabled={loadingIncentiveDetails === row.month}
                     onClick={async () => {
                       try {
-                        setLoadingIncentiveDetails(true);
+                        setLoadingIncentiveDetails(row.month);
                         
                         // Fetch real incentive data from API
                         const response = await fetch(`/api/ase/incentive/calculate?month=${row.monthNum}&year=${row.year}`);
@@ -220,11 +220,11 @@ export default function WalletPage() {
                         });
                         setShowIncentiveModal(true);
                       } finally {
-                        setLoadingIncentiveDetails(false);
+                        setLoadingIncentiveDetails(null);
                       }
                     }}
                   >
-                    {loadingIncentiveDetails ? (
+                    {loadingIncentiveDetails === row.month ? (
                       <div className="flex items-center gap-2">
                         <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-400"></div>
                         <span>Loading...</span>
