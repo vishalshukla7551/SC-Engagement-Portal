@@ -98,7 +98,6 @@ export default function SpotIncentiveReport() {
   const [planFilter, setPlanFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
   const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
@@ -162,8 +161,10 @@ export default function SpotIncentiveReport() {
       if (storeFilter) params.append('storeId', storeFilter);
       if (planFilter) params.append('planType', planFilter);
       if (paymentFilter !== 'all') params.append('paymentStatus', paymentFilter);
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      if (startDate) {
+        params.append('startDate', startDate);
+        params.append('endDate', startDate);
+      }
 
       const response = await fetch(`/api/zopper-admin/spot-incentive-report?${params}`);
       
@@ -190,12 +191,12 @@ export default function SpotIncentiveReport() {
   // Fetch data on component mount and when filters change
   useEffect(() => {
     fetchData();
-  }, [page, query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
+  }, [page, query, storeFilter, planFilter, paymentFilter, startDate]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
+  }, [query, storeFilter, planFilter, paymentFilter, startDate]);
 
   const reports = data?.reports || [];
   const pagination = data?.pagination || { page: 1, totalPages: 1, hasNext: false, hasPrev: false };
@@ -281,17 +282,10 @@ export default function SpotIncentiveReport() {
           />
           <input
             type="date"
-            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Start Date"
+            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+            placeholder="Date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-          />
-          <input
-            type="date"
-            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="End Date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
           />
           <select
             className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
