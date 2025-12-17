@@ -97,7 +97,6 @@ export default function MonthlyIncentiveReport() {
   const [storeFilter, setStoreFilter] = useState('');
   const [planFilter, setPlanFilter] = useState('');
   const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 50;
   
@@ -134,7 +133,7 @@ export default function MonthlyIncentiveReport() {
         ...(storeFilter && { storeFilter }),
         ...(planFilter && { planFilter }),
         ...(startDate && { startDate }),
-        ...(endDate && { endDate })
+        ...(startDate && { endDate: startDate })
       });
 
       const response = await fetch(`/api/zopper-admin/monthly-incentive-report?${params}`);
@@ -165,14 +164,14 @@ export default function MonthlyIncentiveReport() {
   // Fetch data on component mount and when filters change
   useEffect(() => {
     fetchData();
-  }, [page, query, storeFilter, planFilter, startDate, endDate]);
+  }, [page, query, storeFilter, planFilter, startDate]);
 
   // Reset page when filters change
   useEffect(() => {
     if (page !== 1) {
       setPage(1);
     }
-  }, [query, storeFilter, planFilter, startDate, endDate]);
+  }, [query, storeFilter, planFilter, startDate]);
 
   const exportExcel = () => {
     const exportData = data.map(report => ({
@@ -244,18 +243,10 @@ export default function MonthlyIncentiveReport() {
 
           <input
             type="date"
-            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            placeholder="Start Date"
-          />
-
-          <input
-            type="date"
-            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            placeholder="End Date"
+            placeholder="Date"
           />
 
           <select
