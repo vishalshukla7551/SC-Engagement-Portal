@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
           fullName: 'Test ASE User',
           phone: '1234567890',
           storeIds: [],
-          zsmId: '507f1f77bcf86cd799439011' // dummy ObjectId
+          zseId: '507f1f77bcf86cd799439011' // dummy ObjectId
         }
       });
 

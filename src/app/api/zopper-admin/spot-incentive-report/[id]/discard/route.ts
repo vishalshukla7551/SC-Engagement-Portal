@@ -8,7 +8,7 @@ import { getAuthenticatedUserFromCookies } from '@/lib/auth';
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookies = await (await import('next/headers')).cookies();
@@ -18,7 +18,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const reportId = params.id;
+    const { id: reportId } = await params;
 
     // Delete the report
     await prisma.spotIncentiveReport.delete({

@@ -48,7 +48,8 @@ export async function GET(req: NextRequest) {
           stores: [],
           devices: [],
           plans: [],
-          period,
+          month: month + 1,
+          year,
           activeCampaignsCount: 0,
         },
       });
