@@ -43,7 +43,7 @@ export default function ZSMPage() {
   }, []);
 
   const cards = [
-    { title: 'Incentive Wallet', description: 'Track your earnings', href: '/ZSM/wallet', badge: '₹12,450 Available', color: 'green' as const, icon: <WalletIcon /> },
+    { title: 'Incentive Passbook', description: 'Track your earnings', href: '/ZSM/passbook', badge: '₹12,450 Available', color: 'green' as const, icon: <WalletIcon /> },
     { title: 'View Reports', description: 'Check your stores performance', href: '/ZSM/report', badge: 'Analytics Ready', color: 'blue' as const, icon: <ReportIcon /> },
     { title: 'Store Settings', description: 'Manage your store configuration', href: '/ZSM/profile', badge: 'Configure', color: 'orange' as const, icon: <SettingsIcon /> },
   ];

@@ -1,6 +1,25 @@
+'use client';
+
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { clientLogout } from '@/lib/clientLogout';
 
 export default function ASEPage() {
+  const [userName, setUserName] = useState('User');
+
+  useEffect(() => {
+    // Get user's full name from localStorage
+    const authUser = localStorage.getItem('authUser');
+    if (authUser) {
+      try {
+        const user = JSON.parse(authUser);
+        setUserName(user.fullName || user.name || 'User');
+      } catch (error) {
+        console.error('Error parsing authUser:', error);
+      }
+    }
+  }, []);
+
   return (
     <div className="flex-1 relative overflow-hidden bg-gray-900">
       {/* background glow */}
@@ -10,7 +29,7 @@ export default function ASEPage() {
       <div className="flex justify-between items-center px-10 pt-6">
         <div>
           <p className="text-neutral-50 text-3xl font-semibold leading-[48px]">
-            Hello John Doe,
+            Hello {userName},
           </p>
           <p className="text-white text-lg leading-7">
             Welcome! Choose your action below
@@ -18,8 +37,8 @@ export default function ASEPage() {
         </div>
         
         {/* Logout button */}
-        <Link 
-          href="/login/role"
+        <button 
+          onClick={() => clientLogout('/login/role')}
           className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
         >
           <svg
@@ -52,7 +71,7 @@ export default function ASEPage() {
             />
           </svg>
           <span>Logout</span>
-        </Link>
+        </button>
       </div>
 
       {/* Hero text */}
@@ -74,8 +93,8 @@ export default function ASEPage() {
       {/* Cards row */}
       <section className="mt-12 px-10 pb-10">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 max-w-4xl">
-          {/* Incentive Wallet card */}
-          <Link href="/ASE/wallet" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
+          {/* Incentive Passbook card */}
+          <Link href="/ASE/passbook" className="relative h-60 rounded-2xl border border-zinc-100 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] p-6 block hover:shadow-[0_8px_32px_rgba(0,0,0,0.16)] transition-shadow cursor-pointer">
             {/* Arrow button - top right */}
             <div className="absolute top-6 right-6 h-10 w-10 rounded-full bg-emerald-600 shadow-[0_2px_8px_rgba(5,150,105,0.3)] flex items-center justify-center">
               <span className="text-white text-lg font-semibold">{">"}</span>
@@ -123,17 +142,12 @@ export default function ASEPage() {
             </div>
 
             <h3 className="text-zinc-900 text-xl font-bold leading-8">
-              Incentive Wallet
+              Incentive Passbook
             </h3>
             <p className="text-stone-500 text-base leading-6">
               Track your earnings
             </p>
 
-            <div className="mt-4 inline-flex items-center rounded-md bg-emerald-600 px-3 py-1.5">
-              <span className="text-white text-xs font-semibold leading-4">
-                ₹12,450 Available
-              </span>
-            </div>
           </Link>
 
           {/* View Reports card */}
@@ -166,12 +180,6 @@ export default function ASEPage() {
             <p className="text-stone-500 text-base leading-6">
               Check your stores performance
             </p>
-
-            <div className="mt-4 inline-flex items-center rounded-md bg-indigo-700 px-3 py-1.5">
-              <span className="text-white text-xs font-semibold leading-4">
-                Analytics Ready
-              </span>
-            </div>
           </Link>
 
           {/* Store Settings card */}
@@ -199,17 +207,11 @@ export default function ASEPage() {
             </div>
 
             <h3 className="text-zinc-900 text-xl font-bold leading-8">
-              Store Settings
+              Profile Settings
             </h3>
             <p className="text-stone-500 text-base leading-6">
-              Manage your store configuration
+              Manage your Profile configuration
             </p>
-
-            <div className="mt-4 inline-flex items-center rounded-md bg-amber-600 px-3 py-1.5">
-              <span className="text-white text-xs font-semibold leading-4">
-                Configure
-              </span>
-            </div>
           </Link>
         </div>
       </section>

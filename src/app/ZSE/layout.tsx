@@ -99,11 +99,11 @@ export default function ZSELayout({
               </span>
             </Link>
 
-            {/* Wallet */}
+            {/* Passbook */}
             <Link
-              href="/ZSE/wallet"
+              href="/ZSE/passbook"
               className={`w-full flex items-center space-x-2.5 rounded-lg py-2 px-3 select-none ${
-                isActive('/ZSE/wallet')
+                isActive('/ZSE/passbook')
                   ? 'bg-blue-600 text-white font-semibold'
                   : 'text-white hover:bg-white/5'
               }`}
@@ -121,7 +121,7 @@ export default function ZSELayout({
                 <circle cx="15" cy="13.5" r="2" fill="rgba(16,185,129,0.3)"/>
               </svg>
 
-              <span className="text-sm leading-normal">Wallet</span>
+              <span className="text-sm leading-normal">Passbook</span>
             </Link>
 
             {/* Report */}

@@ -52,7 +52,7 @@ export default function ProfilePage() {
     storeAddress: '',
     storeCategory: '',
     
-    // Agency & ASE
+    // AgencY
     agencyName: '',
     aseCode: '',
     referralCode: '',
@@ -535,9 +535,9 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Middle row - Agency & ASE and KYC/PAN Details */}
+        {/* Middle row - Agency and KYC/PAN Details */}
         <div className="grid grid-cols-2 gap-6 mb-6">
-          {/* Agency & ASE Card */}
+          {/* Agency Card */}
           <div className="rounded-2xl bg-white p-8 shadow-lg">
             <div className="flex items-center gap-2 mb-6">
               <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center">
@@ -569,7 +569,7 @@ export default function ProfilePage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">Agency & ASE</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Agency</h2>
             </div>
 
             <div className="space-y-5">

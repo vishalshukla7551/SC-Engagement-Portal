@@ -55,7 +55,7 @@ export default function WalletPage() {
   const fetchBalance = async () => {
     try {
       setLoadingBalance(true);
-      const response = await fetch('/api/ase/wallet/balance');
+      const response = await fetch('/api/ase/passbook-balance/balance');
       const result = await response.json();
       
       if (result.success) {
