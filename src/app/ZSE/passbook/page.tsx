@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { clientLogout } from '@/lib/clientLogout';
 
-export default function WalletPage() {
+export default function ZSEWalletPage() {
   // Modal state for incentive breakdown
   const [showIncentiveModal, setShowIncentiveModal] = useState(false);
   const [selectedIncentiveData, setSelectedIncentiveData] = useState<any>(null);
@@ -13,34 +13,35 @@ export default function WalletPage() {
   const incentiveTransactions = [
     {
       month: "Nov 24",
-      incentive: "₹5,200",
+      incentive: "₹3,062.5",
       status: "Paid",
       paymentDate: "15-11-2024"
     },
     {
       month: "Oct 24", 
-      incentive: "₹4,800",
+      incentive: "₹14,800",
       status: "Paid",
       paymentDate: "12-10-2024"
     },
     {
       month: "Sep 24",
-      incentive: "₹6,100",
+      incentive: "₹16,100",
       status: "Accumulated",
       paymentDate: "--"
     },
     {
       month: "Aug 24",
-      incentive: "₹3,900",
+      incentive: "₹13,900",
       status: "Paid", 
       paymentDate: "08-08-2024"
     }
   ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-10">
       <header className="mb-10 flex justify-between items-start">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">Incentive Wallet</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">ZSE Incentive Passbook</h1>
           <p className="text-neutral-300">Track your earnings and transaction history</p>
         </div>
         <button
@@ -84,7 +85,7 @@ export default function WalletPage() {
       <div className="max-w-4xl mb-8">
         <div className="bg-gradient-to-br from-emerald-600 to-emerald-500 rounded-3xl p-8 shadow-[0_20px_60px_rgba(5,150,105,0.4)]">
           <p className="text-emerald-100 text-sm font-medium mb-2">Total Available Balance</p>
-          <h2 className="text-white text-5xl font-bold mb-6">₹12,450</h2>
+          <h2 className="text-white text-5xl font-bold mb-6">₹32,450</h2>
           <div className="flex gap-4">
             <button className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-semibold hover:bg-emerald-50 transition">
               Withdraw
@@ -102,17 +103,17 @@ export default function WalletPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
             <p className="text-slate-400 text-sm mb-2">Earned</p>
-            <p className="text-white text-3xl font-bold">₹8,200</p>
-            <p className="text-emerald-400 text-sm mt-2">+15% from last month</p>
+            <p className="text-white text-3xl font-bold">₹18,200</p>
+            <p className="text-emerald-400 text-sm mt-2">+12% from last month</p>
           </div>
           <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
             <p className="text-slate-400 text-sm mb-2">Withdrawn</p>
-            <p className="text-white text-3xl font-bold">₹3,500</p>
-            <p className="text-slate-400 text-sm mt-2">2 transactions</p>
+            <p className="text-white text-3xl font-bold">₹8,500</p>
+            <p className="text-slate-400 text-sm mt-2">3 transactions</p>
           </div>
           <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
             <p className="text-slate-400 text-sm mb-2">Pending</p>
-            <p className="text-white text-3xl font-bold">₹750</p>
+            <p className="text-white text-3xl font-bold">₹1,250</p>
             <p className="text-amber-400 text-sm mt-2">Processing</p>
           </div>
         </div>
@@ -149,7 +150,7 @@ export default function WalletPage() {
                       try {
                         setLoadingIncentiveDetails(true);
                         
-                        // TODO: Replace with actual API call for ASE incentive calculation
+                        // TODO: Replace with actual API call for ZSE incentive calculation
                         // For now, using placeholder data
                         setSelectedIncentiveData({
                           month: row.month,
@@ -158,9 +159,9 @@ export default function WalletPage() {
                           paymentDate: row.paymentDate,
                           // Placeholder breakdown data
                           breakdown: {
-                            storeName: "Sample Store - City",
-                            totalUnits: 25,
-                            attachRate: "28%",
+                            storeName: "Regional Store Network",
+                            totalUnits: 150,
+                            attachRate: "32%",
                             totalIncentive: row.incentive
                           }
                         });
@@ -208,8 +209,6 @@ export default function WalletPage() {
         </div>
       </div>
 
-
-
       {/* Incentive Details Modal */}
       {showIncentiveModal && selectedIncentiveData && (
         <div 
@@ -227,14 +226,14 @@ export default function WalletPage() {
           >
             {/* Header */}
             <div className="bg-slate-700 px-4 py-3 rounded-t-lg flex-shrink-0">
-       <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-white">
-                  Incentive Breakdown - {selectedIncentiveData?.month || 'N/A'}
+                  ZSE Incentive Breakdown - {selectedIncentiveData?.month || 'N/A'}
                 </h3>
                 <button
                   onClick={() => setShowIncentiveModal(false)}
                   className="text-slate-400 hover:text-white hover:bg-slate-600 rounded-full p-1 transition-colors"
-          >
+                >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -244,7 +243,7 @@ export default function WalletPage() {
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-4" style={{ position: 'relative', zIndex: 1 }}>
-              {/* ASE Incentive Details Section */}
+              {/* ZSE Incentive Details Section */}
               <div className="mb-6">
                 <div className="overflow-hidden rounded-xl border border-slate-600 shadow-lg bg-slate-800">
                   <table className="w-full text-sm">
@@ -258,15 +257,15 @@ export default function WalletPage() {
                       <tr className="border-b border-slate-600">
                         <td className="px-4 py-3 text-slate-400">Qualification Gate</td>
                         <td className="px-4 py-3 font-medium text-right text-white">
-                          35 packs
+                          300 units
                         </td>
                       </tr>
                       <tr className="border-b border-slate-600">
                         <td className="px-4 py-3 text-slate-400">Volume Slab</td>
                         <td className="px-4 py-3 font-medium text-right text-white">
                           <div className="text-right space-y-1">
-                            <div className="text-xs text-slate-300">Slab 1: 35 to 100 Units</div>
-                            <div className="text-emerald-400 font-semibold">₹18.75 per pack</div>
+                            <div className="text-xs text-slate-300">Slab 1: 300 to 800 Units</div>
+                            <div className="text-emerald-400 font-semibold">₹8.75 per unit</div>
                           </div>
                         </td>
                       </tr>
@@ -274,15 +273,21 @@ export default function WalletPage() {
                         <td className="px-4 py-3 text-slate-400"></td>
                         <td className="px-4 py-3 font-medium text-right text-white">
                           <div className="text-right space-y-1">
-                            <div className="text-xs text-slate-300">Slab 2: &gt;100 Units</div>
-                            <div className="text-emerald-400 font-semibold">₹28.75 per pack</div>
+                            <div className="text-xs text-slate-300">Slab 2: &gt;800 Units</div>
+                            <div className="text-emerald-400 font-semibold">₹12.5 per unit</div>
                           </div>
                         </td>
                       </tr>
                       <tr className="border-b border-slate-600">
                         <td className="px-4 py-3 text-slate-400">Total Units Sold</td>
                         <td className="px-4 py-3 font-medium text-right text-white">
-                          85 packs
+                          350 units
+                        </td>
+                      </tr>
+                      <tr className="border-b border-slate-600">
+                        <td className="px-4 py-3 text-slate-400">Team Performance Bonus</td>
+                        <td className="px-4 py-3 font-medium text-right text-white">
+                          ₹3,062.5
                         </td>
                       </tr>
                       <tr className="border-b border-slate-600 bg-blue-900/30">
@@ -319,7 +324,7 @@ export default function WalletPage() {
                   <div className="ml-2">
                     <p className="text-sm text-yellow-200">
                       <strong>Note:</strong><br />
-                      Incentive calculations are based on store-level performance. This is estimated data and final confirmation will be from Samsung. Detailed breakdown may not be available if the incentive calculation system is not fully configured.
+                      Incentive calculations are based on regional performance and team achievements. This is estimated data and final confirmation will be from Samsung. Detailed breakdown may not be available if the incentive calculation system is not fully configured.
                     </p>
                   </div>
                 </div>

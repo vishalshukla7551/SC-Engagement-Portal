@@ -187,11 +187,11 @@ export default function ASELayout({ children }: { children: ReactNode }) {
                 </span>
             </Link>
 
-            {/* Wallet */}
+            {/* Passbook */}
             <Link
-              href="/ASE/wallet"
+              href="/ASE/passbook"
               className={`w-full flex items-center space-x-2.5 rounded-lg py-2 px-3 select-none ${
-                  pathname === '/ASE/wallet'
+                  pathname === '/ASE/passbook'
                     ? 'bg-blue-600 text-white font-semibold'
                     : 'text-white hover:bg-white/5'
                 }`}
@@ -217,7 +217,7 @@ export default function ASELayout({ children }: { children: ReactNode }) {
                 </svg>
 
                 <span className="text-sm leading-normal">
-                  Wallet
+                  Passbook
                 </span>
             </Link>
 

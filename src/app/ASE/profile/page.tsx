@@ -52,7 +52,7 @@ export default function ProfilePage() {
     storeAddress: '',
     storeCategory: '',
     
-    // Agency & ASE
+    // AgencY
     agencyName: '',
     aseCode: '',
     referralCode: '',
@@ -379,51 +379,18 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name
                 </label>
-                <input
-                  type="text"
-                  placeholder="Enter your complete name"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
+                <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 font-medium">
+                  {formData.fullName || 'Not provided'}
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number
                 </label>
-                <input
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                />
+                <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 font-medium">
+                  {formData.phoneNumber || 'Not provided'}
+                </div>
               </div>
             </div>
           </div>
@@ -568,46 +535,41 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Middle row - Agency & ASE and KYC/PAN Details */}
+        {/* Middle row - Agency and KYC/PAN Details */}
         <div className="grid grid-cols-2 gap-6 mb-6">
-          {/* Agency & ASE Card */}
+          {/* Agency Card */}
           <div className="rounded-2xl bg-white p-8 shadow-lg">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+                    stroke="white"
+                    strokeWidth="2"
                     fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
-                      stroke="white"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                    <circle cx="9" cy="7" r="4" fill="white" />
-                    <path
-                      d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
-                      stroke="white"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                    <path
-                      d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88"
-                      stroke="white"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">Agency & ASE</h2>
+                  />
+                  <circle cx="9" cy="7" r="4" fill="white" />
+                  <path
+                    d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
+                    stroke="white"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <path
+                    d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88"
+                    stroke="white"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                </svg>
               </div>
-              <div className="px-4 py-1.5 rounded-full bg-gray-900 text-white text-sm font-semibold">
-                ₹1068.24
-              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Agency</h2>
             </div>
 
             <div className="space-y-5">
@@ -615,40 +577,30 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Agency Name
                 </label>
-                <input
-                  type="text"
-                  placeholder="Enter agency name"
+                <select
                   value={formData.agencyName}
                   onChange={(e) => setFormData({ ...formData, agencyName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                >
+                  <option value="">Select Agency</option>
+                  <option value="Agency A">Agency A</option>
+                  <option value="Agency B">Agency B</option>
+                  <option value="Agency C">Agency C</option>
+                  <option value="Agency D">Agency D</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ASE Code
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter ASE code"
-                  value={formData.aseCode}
-                  onChange={(e) => setFormData({ ...formData, aseCode: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Referral Code
-                </label>
-                <input
-                  type="text"
-                  placeholder="Please enter referral code"
-                  value={formData.referralCode}
-                  onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('Agency submitted:', formData.agencyName);
+                  alert('Agency information saved successfully!');
+                }}
+                className="w-full px-4 py-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 transition-colors"
+              >
+                Submit Agency Info
+              </button>
             </div>
           </div>
 
@@ -672,31 +624,23 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  PAN Number
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter PAN number"
-                    value={panNumber}
-                    onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
-                    maxLength={10}
-                    disabled={panVerified}
-                    className={`flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400 ${
-                      panVerified ? 'bg-gray-50 text-gray-500' : ''
-                    }`}
-                  />
-                  {panVerified && (
-                    <div className="flex items-center px-3 py-3 bg-green-50 border border-green-300 rounded-lg">
-                      <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
+              {!panVerified && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    PAN Number
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter PAN number"
+                      value={panNumber}
+                      onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
+                      maxLength={10}
+                      className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Error Message */}
               {panError && (
@@ -882,18 +826,27 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('Bank details submitted:', {
+                    bankName: formData.bankName,
+                    accountNumber: formData.accountNumber,
+                    ifscCode: formData.ifscCode,
+                    accountHolderName: formData.accountHolderName
+                  });
+                  alert('Bank details saved successfully!');
+                }}
+                className="px-8 py-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 transition-colors"
+              >
+                Submit Bank Details
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-center">
-          <button
-            type="submit"
-            className="px-12 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-lg shadow-lg transition-all duration-200 transform hover:scale-105"
-          >
-            Submit
-          </button>
-        </div>
       </form>
 
       {/* Store Change Request Modal */}

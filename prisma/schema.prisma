@@ -36,7 +36,6 @@ model Store {
   name  String
   city  String?
   numberOfSec Int?  // Number of SECs associated with the store (nullable)
-  attachPercentage Float?  // Current attach rate percentage for device bonuses (nullable)
   periodicAttachRates periodicAttachRate[]
   samsungIncentiveInfo Json?  // Array<Object>: { month: String(MM-YYYY), samsungIncentiveAmount: Int, samsungIncentivePaidAt: Date | null }    
   dailyIncentiveReports   DailyIncentiveReport[]
@@ -201,8 +200,7 @@ model ABM {
 
   fullName String
   phone    String
-
-  storeIds String[]
+  storeIds String[] // Array of Store IDs
   zsmId    String   @db.ObjectId
 
   user User @relation("UserABM", fields: [userId], references: [id], onDelete: Cascade)
@@ -218,7 +216,7 @@ model ASE {
   fullName String
   phone    String
 
-  storeIds String[]
+  storeIds String[] // Array of Store IDs
   zseId    String   @db.ObjectId
 
   user User @relation("UserASE", fields: [userId], references: [id], onDelete: Cascade)
@@ -265,7 +263,7 @@ model SEC {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   fullName    String?
   phone       String    @unique
-  secId      String?
+  employeeId      String?  // Unique employee identifier
   email       String?
   kycInfo     Json?
   lastLoginAt DateTime?

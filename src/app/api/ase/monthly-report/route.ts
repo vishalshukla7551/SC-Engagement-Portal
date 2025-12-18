@@ -95,9 +95,10 @@ export async function GET(req: NextRequest) {
       include: {
         secUser: {
           select: {
+            id: true,
             fullName: true,
             phone: true,
-            secId: true,
+            employeeId: true,
           },
         },
         plan: {
@@ -140,7 +141,7 @@ export async function GET(req: NextRequest) {
       dateOfSale: formatDate(report.Date_of_sale),
       secName: report.secUser?.fullName || 'N/A',
       secPhone: report.secUser?.phone || 'N/A',
-      secId: report.secUser?.secId || 'N/A',
+      secId: report.secUser?.employeeId || report.secUser?.id || 'N/A',
       storeName: report.store.name,
       storeCity: report.store.city || 'N/A',
       deviceName: report.samsungSKU.ModelName,
@@ -203,7 +204,9 @@ export async function GET(req: NextRequest) {
     }> = {};
 
     formattedReports.forEach((report) => {
-      const date = new Date(report.dateOfSale.split('/').reverse().join('-'));
+      // Parse DD/MM/YYYY format correctly
+      const [day, month, year] = report.dateOfSale.split('/').map(Number);
+      const date = new Date(year, month - 1, day);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
       if (!monthlyData[monthKey]) {
