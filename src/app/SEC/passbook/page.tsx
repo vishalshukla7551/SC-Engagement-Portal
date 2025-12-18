@@ -592,9 +592,25 @@ export default function IncentivePassbookPage() {
                     <tr className="border-b border-gray-100">
                       <td className="px-4 py-3 text-gray-600">Store Attach Rate</td>
                       <td className="px-4 py-3 font-medium text-right text-gray-900">
-                        {selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.attachPercentage !== null && selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.attachPercentage !== undefined
-                          ? `${selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.attachPercentage}%` 
-                          : 'N/A'}
+                        {(() => {
+                          const latestInfo = selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.latestAttachRateInfo;
+                          const attachPercentage = selectedIncentiveData?.breakdown?.breakdownByStore?.[0]?.attachPercentage;
+                          
+                          if (latestInfo) {
+                            return (
+                              <div className="flex flex-col items-end">
+                                <span>{latestInfo.percentage}%</span>
+                                <span className="text-xs text-gray-500">
+                                  Latest By: {latestInfo.endDate}
+                                </span>
+                              </div>
+                            );
+                          } else if (attachPercentage !== null && attachPercentage !== undefined) {
+                            return `${attachPercentage}%`;
+                          } else {
+                            return 'N/A';
+                          }
+                        })()}
                       </td>
                     </tr>
                     <tr className="border-b border-gray-100">
@@ -622,8 +638,14 @@ export default function IncentivePassbookPage() {
                       </td>
                     </tr>
                     <tr className="border-b border-gray-100 bg-blue-50">
-                      <td className="px-4 py-3 text-blue-700 font-semibold">Estimated Incentive Earned</td>
+                      <td className="px-4 py-3 text-blue-700 font-semibold">Estimated Incentive Earned (Store Level)</td>
                       <td className="px-4 py-3 font-bold text-right text-blue-700">
+                        ₹{selectedIncentiveData?.breakdown?.storeLevelIncentive?.toLocaleString() || '0'}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-100 bg-green-50">
+                      <td className="px-4 py-3 text-green-700 font-semibold">Your Estimated Earning</td>
+                      <td className="px-4 py-3 font-bold text-right text-green-700">
                         ₹{selectedIncentiveData?.breakdown?.totalIncentive?.toLocaleString() || '0'}
                       </td>
                     </tr>
@@ -642,7 +664,7 @@ export default function IncentivePassbookPage() {
 
               {/* Incentive Breakdown */}
               <div className="mb-4">
-                <h4 className="text-md font-semibold text-gray-900 mb-3">Incentive Breakdown</h4>
+                <h4 className="text-md font-semibold text-gray-900 mb-3">Incentive Breakdown(Store Level)</h4>
                 <div className="border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white">
                   <div className="bg-gray-50 px-3 py-2">
                     <div className="grid grid-cols-7 gap-2 text-[9px] sm:text-xs font-semibold text-gray-900">

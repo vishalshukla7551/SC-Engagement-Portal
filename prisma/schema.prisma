@@ -36,7 +36,6 @@ model Store {
   name  String
   city  String?
   numberOfSec Int?  // Number of SECs associated with the store (nullable)
-  attachPercentage Float?  // Current attach rate percentage for device bonuses (nullable)
   periodicAttachRates periodicAttachRate[]
   samsungIncentiveInfo Json?  // Array<Object>: { month: String(MM-YYYY), samsungIncentiveAmount: Int, samsungIncentivePaidAt: Date | null }    
   dailyIncentiveReports   DailyIncentiveReport[]
@@ -201,14 +200,8 @@ model ABM {
 
   fullName String
   phone    String
-
-<<<<<<< HEAD
   storeIds String[] // Array of Store IDs
-  zbmId    String   @db.ObjectId
-=======
-  storeIds String[]
   zsmId    String   @db.ObjectId
->>>>>>> f928eadcdec7ed6c218703cf0c30673033be86be
 
   user User @relation("UserABM", fields: [userId], references: [id], onDelete: Cascade)
 

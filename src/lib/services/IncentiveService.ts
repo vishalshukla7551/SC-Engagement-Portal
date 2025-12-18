@@ -3,12 +3,18 @@ import { prisma } from '@/lib/prisma';
 type DeviceType = 'FOLD' | 'S25' | 'OTHER';
 
 interface IncentiveCalculationResult {
-  totalIncentive: number;
+  totalIncentive: number; // Per SEC incentive (already divided)
+  storeLevelIncentive: number; // Total store incentive (before division)
   breakdownByStore: Array<{
     storeId: string;
     storeName: string;
     totalIncentive: number;
     attachPercentage: number | null;
+    latestAttachRateInfo?: {
+      percentage: number;
+      startDate: string;
+      endDate: string;
+    } | null;
     breakdownBySlab: Array<{
       slabId: string;
       minPrice: number | null;
@@ -96,12 +102,57 @@ export class IncentiveService {
   }
 
   /**
+   * Get the latest attach rate for a store in a given month
+   * Returns the attach rate with the most recent end date
+   */
+  static async getLatestAttachRateForMonth(
+    storeId: string,
+    month: number,
+    year: number
+  ): Promise<{ percentage: number; startDate: string; endDate: string } | null> {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+    const attachRate = await (prisma as any).periodicAttachRate.findFirst({
+      where: {
+        storeId: storeId,
+        OR: [
+          {
+            AND: [
+              { start: { lte: endDate } },
+              { end: { gte: startDate } }
+            ]
+          }
+        ]
+      },
+      orderBy: {
+        end: 'desc'  // Get the most recent period
+      },
+      select: {
+        attachPercentage: true,
+        start: true,
+        end: true
+      }
+    });
+
+    if (!attachRate) return null;
+
+    return {
+      percentage: attachRate.attachPercentage,
+      startDate: this.formatDateToDDMMYYYY(attachRate.start),
+      endDate: this.formatDateToDDMMYYYY(attachRate.end)
+    };
+  }
+
+  /**
    * Identify device type based on Category and ModelName
+   * FOLD bonus only applies to Fold 7 devices
    */
   static identifyDeviceType(category: string, modelName: string): DeviceType {
     const combinedString = `${category}${modelName}`.toUpperCase();
     
-    if (combinedString.includes('FOLD')) {
+    // Check for Fold 7 specifically (with or without space)
+    if (combinedString.includes('FOLD 7') || combinedString.includes('FOLD7')) {
       return 'FOLD';
     }
     if (combinedString.includes('S25')) {
@@ -121,7 +172,7 @@ export class IncentiveService {
     const attachRate = attachPercentage ?? 0;
 
     if (deviceType === 'FOLD') {
-      // Fold devices: <25 → ₹400, >=25 → ₹600
+      // Fold 7 devices: <25 → ₹400, >=25 → ₹600
       return attachRate < 25 ? 400 : 600;
     }
 
@@ -247,7 +298,7 @@ export class IncentiveService {
 
     if (foldCount > 0) {
       const bonusPerUnit = this.calculateDeviceBonus('FOLD', attachPercentage);
-      console.log(`  🔲 Fold Devices: ${foldCount} units × ₹${bonusPerUnit} = ₹${foldBonus}`);
+      console.log(`  🔲 Fold 7 Devices: ${foldCount} units × ₹${bonusPerUnit} = ₹${foldBonus}`);
       console.log(`     (Attach rate ${attachPercentage ?? 0}% ${(attachPercentage ?? 0) < 25 ? '<' : '>='} 25%)`);
     }
     
@@ -368,6 +419,10 @@ export class IncentiveService {
     console.log(`   (All SECs at ${secUser.store?.name || storeId} combined)`);
     console.log(`========================================\n`);
 
+    console.log(`\n╔════════════════════════════════════════════════════════════╗`);
+    console.log(`║              INDIVIDUAL SALES WITH ATTACH RATES            ║`);
+    console.log(`╚════════════════════════════════════════════════════════════╝\n`);
+
     for (let i = 0; i < salesReports.length; i++) {
       const report = salesReports[i];
       const modelPrice = report.samsungSKU.ModelPrice || 0;
@@ -375,27 +430,49 @@ export class IncentiveService {
       const modelName = report.samsungSKU.ModelName || '';
       const deviceType = this.identifyDeviceType(category, modelName);
       
+      // Fetch attach rate for this specific sale's date
+      const saleAttachRate = await this.getAttachRateForStoreAndDate(
+        report.storeId,
+        report.Date_of_sale
+      );
+      
+      // Calculate the device bonus for this sale
+      const deviceBonus = this.calculateDeviceBonus(deviceType, saleAttachRate);
+      
+      // Log each sale with its details
+      const saleDate = this.formatDateToDDMMYYYY(report.Date_of_sale);
+      const attachRateDisplay = saleAttachRate !== null ? `${saleAttachRate}%` : 'N/A';
+      
+      console.log(`[Sale ${i + 1}/${salesReports.length}] ${modelName}`);
+      console.log(`  📅 Date: ${saleDate}`);
+      console.log(`  💰 Price: ₹${modelPrice.toLocaleString()}`);
+      console.log(`  📱 Type: ${deviceType}`);
+      
+      // Only show attach rate and device bonus for FOLD and S25 devices
+      if (deviceType === 'FOLD' || deviceType === 'S25') {
+        console.log(`  📊 Attach Rate: ${attachRateDisplay}`);
+        const bonusLogic = deviceType === 'FOLD' 
+          ? `(${(saleAttachRate ?? 0) < 25 ? '<25%' : '≥25%'} → ₹${deviceBonus})`
+          : `(${(saleAttachRate ?? 0) < 15 ? '<15%' : '≥15%'} → ₹${deviceBonus})`;
+        console.log(`  🎁 Device Bonus: ₹${deviceBonus} ${bonusLogic}`);
+      }
+      console.log('');
+      
       const slab = await this.getSlabForPrice(modelPrice);
 
       if (!slab) {
-        console.warn(`  ❌ No slab found for price ₹${modelPrice}, skipping report ${report.id}`);
+        console.warn(`  ❌ No slab found for price ₹${modelPrice}, skipping report ${report.id}\n`);
         continue;
       }
 
       const groupKey = `${report.storeId}_${slab.id}`;
 
       if (!groupedSales.has(groupKey)) {
-        // Fetch attach rate for this sale's date
-        const attachPercentage = await this.getAttachRateForStoreAndDate(
-          report.storeId,
-          report.Date_of_sale
-        );
-
         groupedSales.set(groupKey, {
           storeId: report.store.id,
           storeName: report.store.name,
           numberOfSec: numberOfSec,
-          attachPercentage: attachPercentage,
+          attachPercentage: saleAttachRate,
           slabId: slab.id,
           slab: {
             minPrice: slab.minPrice,
@@ -416,6 +493,8 @@ export class IncentiveService {
         modelName
       });
     }
+    
+    console.log(`════════════════════════════════════════════════════════════\n`);
 
     console.log(`\n========================================`);
     console.log(`📦 TOTAL GROUPS CREATED: ${groupedSales.size}`);
@@ -523,7 +602,7 @@ export class IncentiveService {
         if (foldCount > 0) {
           const bonusPerUnit = this.calculateDeviceBonus('FOLD', group.attachPercentage);
           const logic = attachRate < 25 ? `Attach ${attachRate}% < 25% → ₹400/unit` : `Attach ${attachRate}% ≥ 25% → ₹600/unit`;
-          console.log(`     FOLD: ${foldCount} units × ₹${bonusPerUnit} = ₹${foldBonus.toLocaleString()} (${logic})`);
+          console.log(`     FOLD 7: ${foldCount} units × ₹${bonusPerUnit} = ₹${foldBonus.toLocaleString()} (${logic})`);
         }
         
         if (s25Count > 0) {
@@ -573,8 +652,12 @@ export class IncentiveService {
       unitsAboveVolumeKicker = totalUnits - finalVolumeKicker;
     }
 
+    // Get latest attach rate info for the month
+    const latestAttachRateInfo = await this.getLatestAttachRateForMonth(storeId, month, year);
+
     // Convert store groups to array
     for (const storeBreakdown of storeGroups.values()) {
+      storeBreakdown.latestAttachRateInfo = latestAttachRateInfo;
       breakdownByStore.push(storeBreakdown);
     }
 
@@ -601,7 +684,8 @@ export class IncentiveService {
     );
 
     return {
-      totalIncentive: secShare, // Return the SEC's share, not the total store incentive
+      totalIncentive: secShare, // Per SEC incentive (already divided)
+      storeLevelIncentive: Math.round(totalIncentive), // Total store incentive (before division)
       breakdownByStore,
       breakdownByDate: dailyBreakdown,
       unitsSummary: {
