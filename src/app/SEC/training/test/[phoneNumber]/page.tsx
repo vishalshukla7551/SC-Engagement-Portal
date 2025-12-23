@@ -83,11 +83,43 @@ export default function ProctoredTestPage() {
   };
 
   useEffect(() => {
+    const fetchQuestions = async () => {
+      setLoading(true);
+      try {
+        // Fetch 10 random questions from the database
+        const response = await fetch(`/api/test/questions?testType=CERTIFICATION&limit=10`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setTestData({
+            id: 'dynamic_' + Date.now(),
+            name: 'Samsung Protect Max Certification',
+            duration: 15, // Standard duration
+            totalQuestions: result.data.length,
+            passingPercentage: 60,
+            questions: result.data
+          });
+          setTimeLeft(15 * 60);
+        } else {
+          // Fallback to mock if API fails or is empty
+          console.warn('Fallback to mock test data');
+          setTestData(MOCK_TEST);
+          setTimeLeft(MOCK_TEST.duration * 60);
+        }
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        setTestData(MOCK_TEST);
+        setTimeLeft(MOCK_TEST.duration * 60);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     // Get SEC user name from localStorage
     const userName = getSecUserName();
     setSecUserName(userName);
 
-    setTimeout(() => { setTestData(MOCK_TEST); setTimeLeft(MOCK_TEST.duration * 60); setLoading(false); }, 500);
+    fetchQuestions();
   }, [phoneNumber]);
 
   useEffect(() => {

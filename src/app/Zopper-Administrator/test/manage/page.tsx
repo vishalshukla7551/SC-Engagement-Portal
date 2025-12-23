@@ -19,51 +19,35 @@ interface Test {
   createdAt: string;
 }
 
-// Mock data for now
-const MOCK_TESTS: Test[] = [
-  {
-    id: '1',
-    name: 'Samsung Protect Max Basic',
-    description: 'Basic knowledge test for Samsung Protect Max',
-    type: 'QUIZ',
-    totalQuestions: 10,
-    duration: 15,
-    maxAttempts: 3,
-    passingPercentage: 60,
-    status: 'ACTIVE',
-    enableProctoring: true,
-    startDate: '2025-01-01',
-    endDate: '2025-12-31',
-    createdAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Coverage & Benefits Assessment',
-    description: 'Assessment on coverage and benefits knowledge',
-    type: 'ASSESSMENT',
-    totalQuestions: 20,
-    duration: 30,
-    maxAttempts: 2,
-    passingPercentage: 70,
-    status: 'ACTIVE',
-    enableProctoring: true,
-    startDate: '2025-01-01',
-    endDate: '2025-12-31',
-    createdAt: '2025-01-15T00:00:00Z',
-  },
-];
+// Data is now fetched from the API
 
 export default function ManageTestsPage() {
   const router = useRouter();
   const [tests, setTests] = useState<Test[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => {
-      setTests(MOCK_TESTS);
-      setLoading(false);
-    }, 500);
+    const fetchTests = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/admin/tests');
+        const result = await response.json();
+        if (result.success) {
+          setTests(result.data);
+        } else {
+          setError('Failed to load tests');
+        }
+      } catch (err) {
+        console.error('Error fetching tests:', err);
+        setError('Network error. Failed to load tests.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTests();
   }, []);
 
   const getStatusBadge = (status: Test['status']) => {

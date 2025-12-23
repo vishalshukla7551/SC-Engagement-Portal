@@ -50,9 +50,16 @@ export async function GET(
         }
 
         // Get available questions from all sources
+        const testName = submission.testName || '';
+        const isCertTest = testName.toLowerCase().includes('certification') || testName.toLowerCase().includes('protect max');
+
         const phone = submission.phone || submission.secId || '';
         const standardQuestions = phone ? getQuestionsForPhone(phone) : [];
-        const allPossibleQuestions = [...standardQuestions, ...SEC_CERT_QUESTIONS];
+
+        // Prioritize bank based on test type to avoid ID collisions (1, 2, 3...)
+        const allPossibleQuestions = isCertTest
+            ? [...SEC_CERT_QUESTIONS, ...standardQuestions]
+            : [...standardQuestions, ...SEC_CERT_QUESTIONS];
 
         // Enrich responses with question details
         const rawResponses = submission.responses as any;

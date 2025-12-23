@@ -144,8 +144,9 @@ export default function TrainingPage() {
   );
   const [selectedVideo, setSelectedVideo] = useState<typeof trainingVideos[0] | null>(null);
 
-  const [realTests, setRealTests] = useState(tests);
-  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [realTests, setRealTests] = useState<any[]>([]);
+  const [realDocs, setRealDocs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Get phone number from localStorage
   const getPhoneNumber = (): string => {
@@ -162,43 +163,61 @@ export default function TrainingPage() {
   };
 
   useEffect(() => {
-    const fetchRealStatus = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       const secId = getPhoneNumber();
-      if (!secId) {
-        setLoadingHistory(false);
-        return;
-      }
 
       try {
-        const response = await fetch(`/api/admin/test-submissions?secId=${encodeURIComponent(secId)}`);
-        const result = await response.json();
+        // 1. Fetch Tests
+        const testRes = await fetch('/api/admin/tests');
+        const testData = await testRes.json();
 
-        if (result.success && result.data && result.data.length > 0) {
-          // Find the latest submission for 'Samsung Protect Max Certification'
-          const certTest = result.data.find((s: any) => s.testName?.toLowerCase().includes('certification') || s.testName?.toLowerCase().includes('protect max'));
+        // 2. Fetch Documents
+        const docRes = await fetch('/api/admin/training/upload');
+        const docData = await docRes.json();
 
-          if (certTest) {
-            setRealTests(prev => prev.map(t => {
-              if (t.id === 1) { // Mapping the first card to the certification test
-                return {
-                  ...t,
-                  status: 'completed',
-                  score: certTest.score,
-                  attempts: result.data.filter((s: any) => s.testName === certTest.testName).length
-                };
-              }
-              return t;
-            }));
-          }
+        // 3. Fetch User Submissions for status enrichment
+        let submissions: any[] = [];
+        if (secId) {
+          const subRes = await fetch(`/api/admin/test-submissions?secId=${encodeURIComponent(secId)}`);
+          const subData = await subRes.json();
+          if (subData.success) submissions = subData.data;
+        }
+
+        if (testData.success) {
+          const enrichedTests = testData.data.map((test: any) => {
+            const userSubmissions = submissions.filter(s => s.testName === test.name);
+            const latestSub = userSubmissions.length > 0 ? userSubmissions[0] : null;
+
+            return {
+              id: test.id,
+              title: test.name,
+              testType: test.testType,
+              status: latestSub ? 'completed' : 'pending',
+              score: latestSub ? latestSub.score : null,
+              attempts: userSubmissions.length,
+              maxAttempts: test.maxAttempts
+            };
+          });
+          setRealTests(enrichedTests);
+        }
+
+        if (docData.success) {
+          setRealDocs(docData.data.map((d: any) => ({
+            id: d.id,
+            title: d.title,
+            size: d.size || '1.2 MB',
+            type: 'pdf'
+          })));
         }
       } catch (error) {
-        console.error('Error fetching test status:', error);
+        console.error('Error fetching training data:', error);
       } finally {
-        setLoadingHistory(false);
+        setLoading(false);
       }
     };
 
-    fetchRealStatus();
+    fetchData();
   }, []);
 
   const handleStartTest = (testId: number) => {
@@ -298,32 +317,38 @@ export default function TrainingPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${doc.type === 'pdf'
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-blue-100 text-blue-600'
-                        }`}
-                    >
-                      <FileText className="w-6 h-6" />
+              {realDocs.length > 0 ? (
+                realDocs.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${doc.type === 'pdf'
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-blue-100 text-blue-600'
+                          }`}
+                      >
+                        <FileText className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                          {doc.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">{doc.size}</p>
+                      </div>
+                      <button className="flex-shrink-0 w-9 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-colors">
+                        <Download className="w-4 h-4" />
+                      </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                        {doc.title}
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-1">{doc.size}</p>
-                    </div>
-                    <button className="flex-shrink-0 w-9 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-colors">
-                      <Download className="w-4 h-4" />
-                    </button>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-center bg-white rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
+                  No training documents found for this month.
                 </div>
-              ))}
+              )}
             </div>
           </section>
 
@@ -360,87 +385,80 @@ export default function TrainingPage() {
               <h2 className="text-2xl font-bold text-gray-900">Tests & Results</h2>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {realTests.map((test) => (
-                <div
-                  key={test.id}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
-                            {test.title}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>
-                              Attempts: {test.attempts}/{test.maxAttempts}
-                            </span>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Assignments...</p>
+              </div>
+            ) : realTests.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4">
+                {realTests.map((test) => (
+                  <div
+                    key={test.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
+                              {test.title}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>
+                                {test.testType} • Attempts: {test.attempts}/{test.maxAttempts}
+                              </span>
+                            </div>
                           </div>
+
+                          {test.status === 'completed' && test.score !== null && (
+                            <div className="flex-shrink-0">
+                              <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span className="font-semibold text-sm">{test.score}%</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
-                        {test.status === 'completed' && test.score !== null && (
-                          <div className="flex-shrink-0">
-                            <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
-                              <CheckCircle2 className="w-4 h-4" />
-                              <span className="font-semibold text-sm">{test.score}%</span>
-                            </div>
+                        {/* Progress bar */}
+                        {test.status === 'completed' && (
+                          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                            <div
+                              className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${test.score}%` }}
+                            ></div>
                           </div>
                         )}
                       </div>
 
-                      {/* Progress bar */}
-                      {test.status === 'completed' && (
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                          <div
-                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${test.score}%` }}
-                          ></div>
-                        </div>
-                      )}
-
-                      {test.status === 'pending' && test.attempts > 0 && (
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                          <div
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(test.attempts / test.maxAttempts) * 100}%` }}
-                          ></div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex-shrink-0">
-                      {test.status === 'completed' && (
-                        <button
-                          onClick={() => handleStartTest(test.id)}
-                          className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors text-sm"
-                        >
-                          Retake Test
-                        </button>
-                      )}
-                      {test.status === 'pending' && (
-                        <button
-                          onClick={() => handleStartTest(test.id)}
-                          className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
-                        >
-                          Start Test
-                        </button>
-                      )}
-                      {test.status === 'locked' && (
-                        <button
-                          disabled
-                          className="w-full sm:w-auto px-6 py-2.5 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed text-sm"
-                        >
-                          Locked
-                        </button>
-                      )}
+                      <div className="flex-shrink-0">
+                        {test.status === 'completed' ? (
+                          <button
+                            onClick={() => handleStartTest(test.id)}
+                            className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors text-sm"
+                          >
+                            Retake Test
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleStartTest(test.id)}
+                            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
+                          >
+                            Start Test
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center bg-white rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
+                No active tests or quizzes assigned to you.
+              </div>
+            )}
           </section>
         </div>
       </main>
@@ -453,7 +471,7 @@ export default function TrainingPage() {
           {/* Modal overlay */}
           <div className="fixed inset-0 bg-black/95 z-[9998] flex items-center justify-center p-4">
             {/* Background overlay - click to close */}
-            <div 
+            <div
               className="absolute inset-0"
               onClick={() => {
                 console.log('Background clicked');

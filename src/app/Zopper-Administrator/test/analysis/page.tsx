@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 
 interface QuestionAnalysis {
   id: string;
@@ -118,8 +118,8 @@ export default function QuestionAnalysisPage() {
   const sortedByDifficulty = [...analysis].sort((a, b) => a.correctPercentage - b.correctPercentage);
   const hardestQuestions = sortedByDifficulty.slice(0, 5);
   const easiestQuestions = [...sortedByDifficulty].reverse().slice(0, 5);
-  
-  const avgAccuracy = analysis.length > 0 
+
+  const avgAccuracy = analysis.length > 0
     ? Math.round(analysis.reduce((sum, q) => sum + q.correctPercentage, 0) / analysis.length)
     : 0;
 
@@ -203,8 +203,8 @@ export default function QuestionAnalysisPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {analysis.map(q => (
-                <>
-                  <tr key={q.id} className="hover:bg-gray-50">
+                <Fragment key={q.id}>
+                  <tr className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-bold text-gray-900">Q{q.questionNumber}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 max-w-md">
                       {q.questionText.slice(0, 80)}{q.questionText.length > 80 ? '...' : ''}
@@ -239,14 +239,12 @@ export default function QuestionAnalysisPage() {
                           {q.options.map(opt => (
                             <div
                               key={opt.option}
-                              className={`flex items-center justify-between p-3 rounded-lg ${
-                                opt.isCorrect ? 'bg-green-100 border border-green-300' : 'bg-white border border-gray-200'
-                              }`}
+                              className={`flex items-center justify-between p-3 rounded-lg ${opt.isCorrect ? 'bg-green-100 border border-green-300' : 'bg-white border border-gray-200'
+                                }`}
                             >
                               <div className="flex items-center gap-3">
-                                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                                  opt.isCorrect ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'
-                                }`}>
+                                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${opt.isCorrect ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'
+                                  }`}>
                                   {opt.option}
                                 </span>
                                 <span className="font-medium text-gray-900">{opt.text}</span>
@@ -262,7 +260,7 @@ export default function QuestionAnalysisPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>

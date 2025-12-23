@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getQuestionsForPhone } from '@/lib/testData';
+import { getQuestionsForPhone, SEC_CERT_QUESTIONS } from '@/lib/testData';
 
 /**
  * GET /api/admin/test-submissions
@@ -66,27 +66,57 @@ export async function GET(request: NextRequest) {
                     }
                 }
 
-                // Enrich responses with question data
-                const phone = submission.phone || submission.secId || '';
-                const questionsForPhone = phone ? getQuestionsForPhone(phone) : [];
+                // Get available questions from all sources
+                const testName = submission.testName || '';
+                const isCertTest = testName.toLowerCase().includes('certification') || testName.toLowerCase().includes('protect max');
 
-                const enrichedResponses = Array.isArray(submission.responses)
-                    ? (submission.responses as any[]).map((response: any) => {
-                        const question = questionsForPhone.find(
-                            (q) => q.id === response.questionId
+                const phone = submission.phone || submission.secId || '';
+                const standardQuestions = phone ? getQuestionsForPhone(phone) : [];
+
+                // Prioritize bank based on test type to avoid ID collisions (1, 2, 3...)
+                const allPossibleQuestions = isCertTest
+                    ? [...SEC_CERT_QUESTIONS, ...standardQuestions]
+                    : [...standardQuestions, ...SEC_CERT_QUESTIONS];
+
+                // Enrich responses with question data
+                const rawResponses = submission.responses as any;
+                let enrichedResponses: any[] = [];
+
+                if (Array.isArray(rawResponses)) {
+                    enrichedResponses = rawResponses.map((response: any) => {
+                        const question = allPossibleQuestions.find(
+                            (q) => String(q.id) === String(response.questionId)
                         );
 
                         return {
                             ...response,
-                            questionText: question?.question || '',
+                            questionText: question?.question || 'Question details unavailable',
                             options: question?.options || [],
                             correctAnswer: question?.correctAnswer || '',
                             isCorrect: question
                                 ? response.selectedAnswer === question.correctAnswer
                                 : false,
                         };
-                    })
-                    : [];
+                    });
+                } else if (rawResponses && typeof rawResponses === 'object') {
+                    // Handle case where responses is a map: { "1": "A", "2": "C" }
+                    enrichedResponses = Object.entries(rawResponses).map(([qId, selectedAnswer], index) => {
+                        const question = allPossibleQuestions.find(
+                            (q) => String(q.id) === String(qId)
+                        );
+
+                        return {
+                            questionNumber: index + 1,
+                            questionId: qId,
+                            questionText: question?.question || 'Question details unavailable',
+                            options: question?.options || [],
+                            selectedAnswer: selectedAnswer,
+                            correctAnswer: question?.correctAnswer || '',
+                            isCorrect: question ? selectedAnswer === question.correctAnswer : false,
+                            category: question?.category || 'Unknown',
+                        };
+                    });
+                }
 
                 return {
                     id: submission.id,

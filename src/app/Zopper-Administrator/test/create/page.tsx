@@ -7,6 +7,8 @@ interface TestForm {
   name: string;
   description: string;
   type: 'QUIZ' | 'ASSESSMENT';
+  testType: string;
+  totalQuestions: number;
   duration: number;
   passingPercentage: number;
   maxAttempts: number;
@@ -23,6 +25,8 @@ export default function CreateTestPage() {
     name: '',
     description: '',
     type: 'QUIZ',
+    testType: 'GENERAL',
+    totalQuestions: 10,
     duration: 15,
     passingPercentage: 60,
     maxAttempts: 3,
@@ -42,11 +46,26 @@ export default function CreateTestPage() {
 
     setSaving(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      alert('Test created successfully!');
-      router.push('/Zopper-Administrator/test/manage');
-    }, 1000);
+    try {
+      const response = await fetch('/api/admin/tests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Test created successfully!');
+        router.push('/Zopper-Administrator/test/manage');
+      } else {
+        alert('Failed to create test: ' + (result.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error creating test:', error);
+      alert('Network error. Failed to create test.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateForm = (field: keyof TestForm, value: any) => {
@@ -110,6 +129,35 @@ export default function CreateTestPage() {
               <option value="QUIZ">Quiz (Training)</option>
               <option value="ASSESSMENT">Assessment</option>
             </select>
+          </div>
+
+          {/* Question Bank Link */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-2">
+                Question Bank ID (Slug) *
+              </label>
+              <input
+                type="text"
+                value={form.testType}
+                onChange={e => updateForm('testType', e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g. CERTIFICATION"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-2">
+                Questions to Fetch *
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={form.totalQuestions}
+                onChange={e => updateForm('totalQuestions', Number(e.target.value))}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
 
           {/* Duration & Passing % */}

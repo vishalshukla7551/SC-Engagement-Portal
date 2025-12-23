@@ -384,4 +384,57 @@ model TestSubmission {
   @@index([secId])
   @@index([phone])
   @@index([createdAt])
-} 
+}
+
+model QuestionBank {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  questionId    Int      @unique // Sequential question ID or external reference
+  question      String   // Question text
+  options       String[] // Array of options (e.g., ["A) Option1", "B) Option2", ...])
+  correctAnswer String   // Correct answer letter (e.g., "A", "B", "C", "D")
+  category      String?  // Optional category (e.g., "Section A", "Section B")
+  testType      String   @default("GENERAL") // To distinguish between different tests (CERTIFICATION, PRODUCT, etc.)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+  @@index([testType])
+  @@index([isActive])
+}
+
+model Test {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  description       String?
+  type              String   @default("QUIZ") // QUIZ | ASSESSMENT
+  totalQuestions    Int      @default(10)
+  duration          Int      @default(15) // in minutes
+  maxAttempts       Int      @default(3)
+  passingPercentage Int      @default(60)
+  status            String   @default("ACTIVE") // DRAFT | ACTIVE | LOCKED
+  enableProctoring  Boolean  @default(true)
+  testType          String   @default("GENERAL") // Link to QuestionBank.testType
+  startDate         DateTime?
+  endDate           DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([testType])
+  @@index([status])
+}
+
+model TrainingMaterial {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  type      String   @default("pdf")
+  size      String?
+  url       String?  // Internal or external URL
+  testType  String   @default("GENERAL") // Link to QuestionBank/Test testType
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([testType, title])
+  @@index([isActive])
+}
