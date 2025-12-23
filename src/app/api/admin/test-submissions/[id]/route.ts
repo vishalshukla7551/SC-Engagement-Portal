@@ -7,6 +7,7 @@ import { getQuestionsForPhone, SEC_CERT_QUESTIONS } from '@/lib/testData';
  * Fetch a specific test submission with full answer details
  * Shows which questions were answered correctly/incorrectly
  */
+<<<<<<< HEAD
 export async function GET(
     request: NextRequest,
     props: { params: Promise<{ id: string }> }
@@ -14,6 +15,12 @@ export async function GET(
     try {
         const params = await props.params;
         const { id } = params;
+=======
+export async function GET(request: NextRequest, context: any) {
+    try {
+        const params = await (context?.params ?? {});
+        const { id } = params as { id: string };
+>>>>>>> de27e6d (Benepik api Integrated)
 
         // Fetch submission from database
         const submission = await prisma.testSubmission.findUnique({
@@ -64,30 +71,17 @@ export async function GET(
                     (q) => String(q.id) === String(response.questionId)
                 );
 
-                return {
-                    questionNumber: index + 1,
-                    questionId: response.questionId,
-                    questionText: question?.question || 'Question text not available',
-                    options: question?.options || [],
-                    selectedAnswer: response.selectedAnswer,
-                    correctAnswer: question?.correctAnswer || '',
-                    isCorrect: question ? response.selectedAnswer === question.correctAnswer : false,
-                    answeredAt: response.answeredAt,
-                    category: question?.category || 'Unknown',
-                };
-            });
-        } else if (rawResponses && typeof rawResponses === 'object') {
-            // Handle case where responses is a map: { "1": "A", "2": "C" }
-            enrichedResponses = Object.entries(rawResponses).map(([qId, selectedAnswer], index) => {
-                const question = allPossibleQuestions.find(
-                    (q) => String(q.id) === String(qId)
-                );
-
-                return {
-                    questionNumber: index + 1,
-                    questionId: qId,
-                    questionText: question?.question || 'Question text not available',
-                    options: question?.options || [],
+                /**
+                 * GET /api/admin/test-submissions/[id]
+                 * Fetch a specific test submission with full answer details
+                 * Shows which questions were answered correctly/incorrectly
+                 */
+                export async function GET(request: NextRequest, context: any) {
+                    try {
+                        // Support multiple Next.js handler shapes where `params` may be
+                        // provided directly or wrapped in a `props` object and may be a Promise.
+                        const params = await (context?.params ?? context?.props?.params ?? {});
+                        const { id } = params as { id: string };
                     selectedAnswer: selectedAnswer,
                     correctAnswer: question?.correctAnswer || '',
                     isCorrect: question ? selectedAnswer === question.correctAnswer : false,
