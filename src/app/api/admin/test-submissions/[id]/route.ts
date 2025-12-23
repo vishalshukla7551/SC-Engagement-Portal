@@ -71,29 +71,12 @@ export async function GET(
                     (q) => String(q.id) === String(response.questionId)
                 );
 
-                return {
-                    questionNumber: index + 1,
-                    questionId: response.questionId,
-                    questionText: question?.question || 'Question text not available',
-                    options: question?.options || [],
-                    selectedAnswer: response.selectedAnswer,
-                    correctAnswer: question?.correctAnswer || '',
-                    isCorrect: question ? response.selectedAnswer === question.correctAnswer : false,
-                    answeredAt: response.answeredAt,
-                    category: question?.category || 'Unknown',
-                };
-            });
-        } else if (rawResponses && typeof rawResponses === 'object') {
-            // Handle case where responses is a map: { "1": "A", "2": "C" }
-            enrichedResponses = Object.entries(rawResponses).map(([qId, selectedAnswer], index) => {
-                const question = allPossibleQuestions.find(
-                    (q) => String(q.id) === String(qId)
-                );
+                const selectedAnswer = response.selectedAnswer || '';
 
                 return {
                     questionNumber: index + 1,
-                    questionId: qId,
-                    questionText: question?.question || 'Question text not available',
+                    questionId: response.questionId,
+                    questionText: question?.question || 'Question not found',
                     options: question?.options || [],
                     selectedAnswer: selectedAnswer,
                     correctAnswer: question?.correctAnswer || '',
