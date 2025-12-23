@@ -619,7 +619,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)',
                 }}
               >
-                {isSubmitting ? '🎄 Submitting...' : '🎄 Submit 🎅'}
+                {isSubmitting ? '🎄 Submitting...' : 'Submit'}
               </button>
             </div>
             {/* OLD SUBMIT BUTTON - Uncomment after Christmas
