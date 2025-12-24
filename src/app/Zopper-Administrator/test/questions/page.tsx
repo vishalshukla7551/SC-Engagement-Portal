@@ -1,104 +1,73 @@
 'use client';
 
 import { useState } from 'react';
-import { FaFileUpload, FaFileExcel, FaFilePdf, FaTrash, FaCheckCircle, FaSpinner } from 'react-icons/fa';
-import * as XLSX from 'xlsx';
-
-type UploadTab = 'questions' | 'documents';
+import { FaFileUpload, FaInfo, FaCheckCircle, FaTrash, FaSpinner, FaBook, FaPuzzlePiece } from 'react-icons/fa';
 
 export default function InsertQuestionsPage() {
-  const [activeTab, setActiveTab] = useState<UploadTab>('questions');
-  const [excelFile, setExcelFile] = useState<File | null>(null);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [docTitle, setDocTitle] = useState('');
+  const [activeTab, setActiveTab] = useState<'questions' | 'training'>('questions');
   const [testType, setTestType] = useState('CERTIFICATION');
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const handleExcelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setExcelFile(e.target.files?.[0] || null);
-    setStatus(null);
-  };
+  // Question Bank PDF State
+  const [questionPdf, setQuestionPdf] = useState<File | null>(null);
 
-  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPdfFile(e.target.files?.[0] || null);
-    setStatus(null);
-  };
+  // Training Documents State
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [docTitle, setDocTitle] = useState('');
+  const [docBankId, setDocBankId] = useState('CERTIFICATION');
 
-  const handleUploadQuestions = async () => {
-    if (!excelFile) return;
+  const handleSyncPdfQuestions = async () => {
+    if (!questionPdf) return;
     setLoading(true);
     setStatus(null);
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(sheet);
+    const formData = new FormData();
+    formData.append('file', questionPdf);
+    formData.append('testType', testType);
 
-        if (json.length === 0) {
-          throw new Error('Excel sheet is empty');
-        }
-
-        // Validate structure
-        const firstRow = json[0] as any;
-        const required = ['questionId', 'question', 'correctAnswer'];
-        const missing = required.filter(key => !(key in firstRow));
-
-        if (missing.length > 0) {
-          throw new Error(`Missing columns: ${missing.join(', ')}`);
-        }
-
-        const response = await fetch('/api/admin/questions/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ questions: json, testType: testType })
-        });
-
-        const result = await response.json();
-        if (result.success) {
-          setStatus({ type: 'success', message: `Successfully synced ${result.count} questions!` });
-          setExcelFile(null);
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (err: any) {
-        setStatus({ type: 'error', message: err.message || 'Failed to process file' });
-      } finally {
-        setLoading(false);
-      }
-    };
-    reader.onerror = () => {
-      setStatus({ type: 'error', message: 'Failed to read file' });
-      setLoading(false);
-    };
-    reader.readAsBinaryString(excelFile);
-  };
-
-  const handleUploadDocument = async () => {
-    if (!pdfFile || !docTitle) {
-      alert('Please provide both a document title and a PDF file.');
-      return;
-    }
-    setLoading(true);
-    setStatus(null);
     try {
-      const response = await fetch('/api/admin/training/upload', {
+      const response = await fetch('/api/admin/questions/upload-pdf', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: docTitle,
-          testType: testType,
-          size: `${(pdfFile.size / (1024 * 1024)).toFixed(1)} MB`
-        })
+        body: formData
       });
 
       const result = await response.json();
       if (result.success) {
-        setStatus({ type: 'success', message: `Document "${docTitle}" synced successfully!` });
+        setStatus({ type: 'success', message: `Successfully synced ${result.count} questions from PDF!` });
+        setQuestionPdf(null);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err: any) {
+      setStatus({ type: 'error', message: err.message || 'Failed to process PDF' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUploadDocument = async () => {
+    if (!pdfFile || !docTitle) return;
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const response = await fetch('/api/admin/training/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: docTitle,
+          testType: docBankId,
+          size: `${(pdfFile.size / (1024 * 1024)).toFixed(1)} MB`,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setStatus({ type: 'success', message: 'Training document uploaded and quiz test created!' });
         setPdfFile(null);
         setDocTitle('');
       } else {
@@ -112,218 +81,229 @@ export default function InsertQuestionsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-gray-100">
-        {/* Tab Switcher */}
-        <div className="flex border-b border-gray-100">
-          <button
-            onClick={() => setActiveTab('questions')}
-            className={`flex-1 py-6 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'questions'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <FaFileExcel className="text-lg" />
-              <span>Test Questions</span>
+    <>
+      <div className="min-h-screen bg-[#0a0a0b] py-12 px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div>
+              <h1 className="text-4xl font-black text-white tracking-tight mb-2">Question Bank</h1>
+              <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-xs">Manage Assessment Content & Documents</p>
             </div>
-          </button>
-          <button
-            onClick={() => setActiveTab('documents')}
-            className={`flex-1 py-6 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'documents'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <FaFilePdf className="text-lg" />
-              <span>Training Docs</span>
-            </div>
-          </button>
-        </div>
+          </div>
 
-        <div className="p-8 sm:p-10">
-          {activeTab === 'questions' ? (
-            <div className="animate-in fade-in duration-500">
-              <div className="mb-8">
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Sync Question Bank</h2>
-                <p className="text-gray-500 font-medium italic">Upload an Excel file to update the SEC certification test questions.</p>
+          {/* Navigation Tabs */}
+          <div className="bg-[#151518] p-2 rounded-[32px] flex gap-2 mb-10 w-fit">
+            <button
+              onClick={() => setActiveTab('questions')}
+              className={`px-8 py-4 rounded-[24px] font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'questions' ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/20' : 'text-gray-500 hover:text-white'
+                }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <FaPuzzlePiece className="text-lg" />
+                <span>Test Questions</span>
               </div>
-
-              <div className="bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[1.5rem] p-6 mb-8 flex flex-col sm:flex-row gap-6 items-center">
-                <div className="flex-1">
-                  <h3 className="font-black text-blue-900 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <span className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">!</span>
-                    Sync Instructions
-                  </h3>
-                  <ul className="grid grid-cols-1 gap-y-2">
-                    <li className="text-xs text-blue-800 font-bold flex items-center gap-2">
-                      <span className="text-blue-400">•</span> Format: .xlsx / .xls
-                    </li>
-                    <li className="text-xs text-blue-800 font-bold flex items-center gap-2">
-                      <span className="text-blue-400">•</span> Sequential ID (1, 2, 3...)
-                    </li>
-                    <li className="text-xs text-blue-800 font-bold flex items-center gap-2">
-                      <span className="text-blue-400">•</span> Columns: question, option1, option2...
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="w-full sm:w-64 bg-white/50 p-4 rounded-2xl border border-blue-100">
-                  <label className="block text-[10px] font-black text-blue-900/40 uppercase tracking-widest mb-2">Target Bank ID</label>
-                  <input
-                    type="text"
-                    value={testType}
-                    onChange={(e) => setTestType(e.target.value.toUpperCase())}
-                    placeholder="e.g. CERTIFICATION"
-                    className="w-full px-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-600 transition-all text-xs font-black outline-none"
-                  />
-                </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('training')}
+              className={`px-8 py-4 rounded-[24px] font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'training' ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/20' : 'text-gray-500 hover:text-white'
+                }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <FaBook className="text-lg" />
+                <span>Training Docs</span>
               </div>
+            </button>
+          </div>
 
-              {status && (
-                <div className={`mb-8 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'
-                  }`}>
-                  {status.type === 'success' ? <FaCheckCircle /> : <FaTrash />}
-                  <p className="text-xs font-black uppercase tracking-widest">{status.message}</p>
-                </div>
-              )}
-
-              <div className="border-2 border-dashed border-gray-200 rounded-[2rem] p-12 text-center transition-all hover:border-blue-400 hover:bg-blue-50/10 group">
-                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-100 transition-colors">
-                  <FaFileExcel className="text-4xl text-gray-300 group-hover:text-blue-600" />
-                </div>
-
-                {excelFile ? (
-                  <div className="space-y-4">
-                    <div className="inline-block px-4 py-2 bg-green-50 text-green-700 rounded-full font-black text-[10px] uppercase tracking-widest border border-green-100">
-                      File Selected
-                    </div>
-                    <p className="font-bold text-gray-900 truncate max-w-xs mx-auto">{excelFile.name}</p>
-                    <button
-                      onClick={() => setExcelFile(null)}
-                      className="text-red-500 hover:text-red-700 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"
-                    >
-                      <FaTrash size={12} /> Remove File
-                    </button>
+          <div className="bg-white rounded-[48px] shadow-2xl overflow-hidden border border-gray-100">
+            {activeTab === 'questions' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Sync Question Bank</h2>
+                    <p className="text-gray-400 text-xs font-bold mt-1">Upload a PDF file to update the SEC certification test questions.</p>
                   </div>
-                ) : (
-                  <>
-                    <label className="cursor-pointer inline-block bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 mb-4">
-                      Select Excel File
-                      <input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={handleExcelChange}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest">or drag and drop here</p>
-                  </>
-                )}
-              </div>
-
-              {excelFile && (
-                <button
-                  onClick={handleUploadQuestions}
-                  disabled={loading}
-                  className="w-full mt-8 bg-black text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-gray-900 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? <FaSpinner className="animate-spin" /> : <FaFileUpload className="text-lg" />}
-                  {loading ? 'Processing...' : 'Sync Question Bank'}
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mb-8">
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Upload Training Material</h2>
-                <p className="text-gray-500 font-medium italic">Add new PDF guides, brochures, or manuals for SEC users.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Document Title</label>
-                  <input
-                    type="text"
-                    value={docTitle}
-                    onChange={(e) => setDocTitle(e.target.value)}
-                    placeholder="e.g. Q4 Sales Brochure"
-                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:border-blue-600 focus:bg-white transition-all text-sm font-bold outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Link to Bank ID</label>
-                  <input
-                    type="text"
-                    value={testType}
-                    onChange={(e) => setTestType(e.target.value.toUpperCase())}
-                    placeholder="e.g. CERTIFICATION"
-                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:border-blue-600 focus:bg-white transition-all text-sm font-bold outline-none"
-                  />
-                </div>
-              </div>
-
-              {status && (
-                <div className={`mb-8 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'
-                  }`}>
-                  {status.type === 'success' ? <FaCheckCircle /> : <FaTrash />}
-                  <p className="text-xs font-black uppercase tracking-widest">{status.message}</p>
-                </div>
-              )}
-
-              <div className="border-2 border-dashed border-gray-200 rounded-[2rem] p-12 text-center transition-all hover:border-red-400 hover:bg-red-50/10 group">
-                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-red-100 transition-colors">
-                  <FaFilePdf className="text-4xl text-gray-300 group-hover:text-red-600" />
-                </div>
-
-                {pdfFile ? (
-                  <div className="space-y-4">
-                    <div className="inline-block px-4 py-2 bg-red-50 text-red-700 rounded-full font-black text-[10px] uppercase tracking-widest border border-red-100">
-                      PDF Selected
-                    </div>
-                    <p className="font-bold text-gray-900 truncate max-w-xs mx-auto">{pdfFile.name}</p>
-                    <button
-                      onClick={() => setPdfFile(null)}
-                      className="text-gray-400 hover:text-red-700 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"
-                    >
-                      <FaTrash size={12} /> Replace File
-                    </button>
+                  <div className="bg-blue-50 px-4 py-2 rounded-xl">
+                    <span className="text-blue-600 font-black text-[10px] uppercase tracking-widest">Format: Assessment PDF</span>
                   </div>
-                ) : (
-                  <>
-                    <label className="cursor-pointer inline-block bg-red-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-red-100 hover:bg-red-700 transition-all hover:scale-105 active:scale-95 mb-4">
-                      Select PDF File
+                </div>
+
+                <div className="p-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div className="space-y-6">
+                      <div className="bg-blue-50/50 rounded-3xl p-8 border-2 border-dashed border-blue-100">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                            <FaInfo size={14} />
+                          </div>
+                          <h3 className="font-black text-xs uppercase tracking-widest text-blue-900">Sync Instructions</h3>
+                        </div>
+                        <ul className="space-y-4">
+                          {[
+                            'Format: .pdf only',
+                            'Sections: [SECTION A], [SECTION B]...',
+                            'Question: 1. Your question text',
+                            'Options: A) Option B) Option...',
+                            'Answer: Answer: C'
+                          ].map((text, i) => (
+                            <li key={i} className="flex items-center gap-3 text-blue-700/70 font-bold text-xs">
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                              {text}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-3xl p-8 border-2 border-transparent focus-within:border-blue-600 transition-all">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Target Bank ID</label>
+                        <input
+                          type="text"
+                          value={testType}
+                          onChange={(e) => setTestType(e.target.value.toUpperCase())}
+                          placeholder="e.g. CERTIFICATION"
+                          className="w-full px-6 py-4 bg-white rounded-2xl shadow-sm border-2 border-transparent focus:border-blue-600 transition-all text-sm font-bold outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group">
                       <input
                         type="file"
                         accept=".pdf"
-                        onChange={handlePdfChange}
-                        className="hidden"
+                        onChange={(e) => setQuestionPdf(e.target.files?.[0] || null)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
-                    </label>
-                    <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Format: Portable Document Format (.pdf)</p>
-                  </>
-                )}
-              </div>
+                      <div className={`h-full min-h-[300px] rounded-[40px] border-4 border-dashed transition-all flex flex-col items-center justify-center p-10 bg-gray-50/50 group-hover:bg-blue-50/30 ${questionPdf ? 'border-green-400 bg-green-50/30' : 'border-gray-200 group-hover:border-blue-400'
+                        }`}>
+                        <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 transition-all ${questionPdf ? 'bg-green-100 text-green-600 scale-110 shadow-xl' : 'bg-white text-gray-300 group-hover:text-blue-500 group-hover:scale-110 shadow-lg'
+                          }`}>
+                          <FaFileUpload size={40} />
+                        </div>
+                        <p className="text-sm font-black text-gray-900 uppercase tracking-widest mb-2">
+                          {questionPdf ? questionPdf.name : 'Select PDF File'}
+                        </p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">or drag and drop here</p>
+                      </div>
+                    </div>
+                  </div>
 
-              {pdfFile && (
-                <button
-                  onClick={handleUploadDocument}
-                  disabled={loading}
-                  className="w-full mt-8 bg-red-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-red-700 transition-all shadow-xl disabled:opacity-50"
-                >
-                  {loading ? <FaSpinner className="animate-spin" /> : <FaFileUpload className="text-lg" />}
-                  {loading ? 'Processing...' : 'Sync Training Doc'}
-                </button>
-              )}
-            </div>
-          )}
+                  {status && (
+                    <div className={`mt-8 p-6 rounded-[32px] flex items-center gap-4 animate-in fade-in slide-in-from-top-4 ${status.type === 'success' ? 'bg-green-50 text-green-700 border-2 border-green-100' : 'bg-red-50 text-red-700 border-2 border-red-100'
+                      }`}>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${status.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
+                        {status.type === 'success' ? <FaCheckCircle size={20} /> : <FaTrash size={20} />}
+                      </div>
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-widest leading-none mb-1">{status.type === 'success' ? 'Sync Successful' : 'Sync Error'}</p>
+                        <p className="text-sm font-bold opacity-80">{status.message}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {questionPdf && (
+                    <button
+                      onClick={handleSyncPdfQuestions}
+                      disabled={loading}
+                      className="w-full mt-10 bg-blue-600 text-white py-6 rounded-[32px] font-black text-sm uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                      {loading ? (
+                        <>
+                          <FaSpinner className="animate-spin text-xl" />
+                          <span>Processing PDF...</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="bg-white/20 p-2 rounded-xl group-hover:scale-110 transition-transform">
+                            <FaFileUpload className="text-lg" />
+                          </div>
+                          <span>Sync PDF Question Bank</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'training' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="p-8 border-b border-gray-100">
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">Upload Training Materials</h2>
+                  <p className="text-gray-400 text-xs font-bold mt-1">Add new PDF guides for SEC self-learning.</p>
+                </div>
+
+                <div className="p-10 max-w-2xl">
+                  <div className="space-y-8">
+                    <div className="flex flex-col gap-6">
+                      <div className="bg-gray-50 rounded-3xl p-8 border-2 border-transparent focus-within:border-blue-600 transition-all">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Document Title</label>
+                        <input
+                          type="text"
+                          value={docTitle}
+                          onChange={(e) => setDocTitle(e.target.value)}
+                          placeholder="e.g., Samsung Galaxy S24 Ultra Guide"
+                          className="w-full px-6 py-4 bg-white rounded-2xl shadow-sm border-2 border-transparent focus:border-blue-600 transition-all text-sm font-bold outline-none"
+                        />
+                      </div>
+
+                      <div className="bg-gray-50 rounded-3xl p-8 border-2 border-transparent focus-within:border-blue-600 transition-all">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Link to Bank ID (For Quiz)</label>
+                        <input
+                          type="text"
+                          value={docBankId}
+                          onChange={(e) => setDocBankId(e.target.value.toUpperCase())}
+                          placeholder="e.g. CERTIFICATION"
+                          className="w-full px-6 py-4 bg-white rounded-2xl shadow-sm border-2 border-transparent focus:border-blue-600 transition-all text-sm font-bold outline-none"
+                        />
+                      </div>
+
+                      <div className="relative group">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className={`p-10 rounded-[40px] border-4 border-dashed transition-all flex flex-col items-center justify-center bg-gray-50/50 group-hover:bg-blue-50/30 ${pdfFile ? 'border-green-400 bg-green-50/30' : 'border-gray-200 group-hover:border-blue-400'
+                          }`}>
+                          <FaFileUpload size={32} className={pdfFile ? 'text-green-500' : 'text-gray-300'} />
+                          <p className="mt-4 text-[10px] font-black text-gray-900 uppercase tracking-widest">
+                            {pdfFile ? pdfFile.name : 'Select PDF Document'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {status && activeTab === 'training' && (
+                      <div className={`p-6 rounded-[32px] flex items-center gap-4 ${status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                        }`}>
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${status.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                          }`}>
+                          {status.type === 'success' ? <FaCheckCircle size={20} /> : <FaTrash size={20} />}
+                        </div>
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-widest leading-none mb-1">{status.type === 'success' ? 'Upload Successful' : 'Upload Error'}</p>
+                          <p className="text-sm font-bold opacity-80">{status.message}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleUploadDocument}
+                      disabled={loading || !pdfFile || !docTitle}
+                      className="w-full bg-black text-white py-6 rounded-[32px] font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:translate-y-[-4px] transition-all shadow-2xl disabled:opacity-50"
+                    >
+                      {loading ? <FaSpinner className="animate-spin" /> : 'Upload Training Document'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      <div className="mt-8 text-center">
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Resource Management Portal • v2.0</p>
-      </div>
-    </div>
+    </>
   );
 }

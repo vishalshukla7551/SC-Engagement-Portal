@@ -18,17 +18,49 @@ export async function GET(request: NextRequest) {
         if (allQuestions.length === 0) {
             return NextResponse.json({
                 success: false,
-                message: 'No questions found in the bank'
+                message: 'No questions found for this test type'
             }, { status: 404 });
         }
 
-        // Shuffle and pick
-        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, Math.min(limit, allQuestions.length));
+        // Group questions by category
+        const categorized: Record<string, any[]> = {};
+        allQuestions.forEach((q: any) => {
+            const cat = q.category || 'General';
+            if (!categorized[cat]) categorized[cat] = [];
+            categorized[cat].push(q);
+        });
+
+        const categories = Object.keys(categorized);
+        let selected: any[] = [];
+        let remainingPool: any[] = [...allQuestions];
+
+        // 1. Pick one random question from each category
+        categories.forEach(cat => {
+            const questionsInCat = categorized[cat];
+            const randomIndex = Math.floor(Math.random() * questionsInCat.length);
+            const picked = questionsInCat[randomIndex];
+            selected.push(picked);
+
+            // Remove from remaining pool
+            remainingPool = remainingPool.filter(q => q.id !== picked.id);
+        });
+
+        // 2. If we need more questions, pick randomly from the remaining pool
+        if (selected.length < limit) {
+            const extraCount = limit - selected.length;
+            const shuffledRemaining = remainingPool.sort(() => 0.5 - Math.random());
+            selected = [...selected, ...shuffledRemaining.slice(0, extraCount)];
+        } else if (selected.length > limit) {
+            // If categories > limit (unlikely but possible), trim to limit
+            selected = selected.sort(() => 0.5 - Math.random()).slice(0, limit);
+        }
+
+        // 3. Final shuffle so section order isn't predictable
+        const finalQuestions = selected.sort(() => 0.5 - Math.random());
 
         return NextResponse.json({
             success: true,
-            data: selected.map((q: any) => ({
+            data: finalQuestions.map((q: any) => ({
                 id: q.questionId,
                 questionText: q.question,
                 options: q.options.map((opt: string, idx: number) => ({
