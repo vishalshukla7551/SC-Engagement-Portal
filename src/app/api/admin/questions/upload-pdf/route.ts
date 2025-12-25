@@ -1,6 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import pdf from 'pdf-parse';
+import { prisma } from '@/lib/prisma';
+// Polyfills for pdf-parse dependencies in Node environment
+if (typeof Promise.withResolvers === 'undefined') {
+    // @ts-ignore
+    Promise.withResolvers = function () {
+        let resolve, reject;
+        const promise = new Promise((res, rej) => {
+            resolve = res;
+            reject = rej;
+        });
+        return { promise, resolve, reject };
+    };
+}
+if (typeof global.DOMMatrix === 'undefined') {
+    // @ts-ignore
+    global.DOMMatrix = class DOMMatrix { };
+}
+if (typeof global.ImageData === 'undefined') {
+    // @ts-ignore
+    global.ImageData = class ImageData { };
+}
+if (typeof global.Path2D === 'undefined') {
+    // @ts-ignore
+    global.Path2D = class Path2D { };
+}
+
+const pdf = require('pdf-parse');
 
 export async function POST(request: NextRequest) {
     try {
@@ -17,7 +42,7 @@ export async function POST(request: NextRequest) {
         const text = data.text;
 
         const questions: any[] = [];
-        const lines = text.split('\n').filter(l => l.trim());
+        const lines = text.split('\n').filter((l: string) => l.trim());
 
         let currentCategory = 'General';
         let currentQ: any = null;
