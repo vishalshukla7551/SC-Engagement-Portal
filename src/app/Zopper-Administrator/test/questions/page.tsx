@@ -15,7 +15,7 @@ export default function InsertQuestionsPage() {
   // Training Documents State
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [docTitle, setDocTitle] = useState('');
-  const [docBankId, setDocBankId] = useState('CERTIFICATION');
+  const [docBankId, setDocBankId] = useState('');
 
   const handleSyncPdfQuestions = async () => {
     if (!questionPdf) return;
@@ -238,24 +238,24 @@ export default function InsertQuestionsPage() {
                   <div className="space-y-8">
                     <div className="flex flex-col gap-6">
                       <div className="bg-gray-50 rounded-3xl p-8 border-2 border-transparent focus-within:border-blue-600 transition-all">
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Document Title</label>
+                        <label className="block text-[10px] font-black text-black uppercase tracking-widest mb-4 ml-1">Document Title</label>
                         <input
                           type="text"
                           value={docTitle}
                           onChange={(e) => setDocTitle(e.target.value)}
                           placeholder="e.g., Samsung Galaxy S24 Ultra Guide"
-                          className="w-full px-6 py-4 bg-white rounded-2xl shadow-sm border-2 border-transparent focus:border-blue-600 transition-all text-sm font-bold outline-none"
+                          className="w-full px-6 py-4 bg-white rounded-2xl shadow-sm border-2 border-transparent focus:border-blue-600 transition-all text-sm font-bold outline-none text-black placeholder:text-gray-500"
                         />
                       </div>
 
                       <div className="bg-gray-50 rounded-3xl p-8 border-2 border-transparent focus-within:border-blue-600 transition-all">
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Link to Bank ID (For Quiz)</label>
+                        <label className="block text-[10px] font-black text-black uppercase tracking-widest mb-4 ml-1">Link to Bank ID (For Quiz)</label>
                         <input
                           type="text"
                           value={docBankId}
                           onChange={(e) => setDocBankId(e.target.value.toUpperCase())}
                           placeholder="e.g. CERTIFICATION"
-                          className="w-full px-6 py-4 bg-white rounded-2xl shadow-sm border-2 border-transparent focus:border-blue-600 transition-all text-sm font-bold outline-none"
+                          className="w-full px-6 py-4 bg-white rounded-2xl shadow-sm border-2 border-transparent focus:border-blue-600 transition-all text-sm font-bold outline-none text-black placeholder:text-gray-500"
                         />
                       </div>
 
