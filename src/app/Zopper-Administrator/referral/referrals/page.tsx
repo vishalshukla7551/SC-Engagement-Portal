@@ -34,25 +34,25 @@ export default function ViewReferralsPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="p-3 text-left">Referrer Phone</th>
-              <th className="p-3 text-left">Referee Phone</th>
-              <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Vouchers</th>
-              <th className="p-3 text-left">Created</th>
+              <th className="p-3 text-left font-bold text-black">Referrer Phone</th>
+              <th className="p-3 text-left font-bold text-black">Referee Phone</th>
+              <th className="p-3 text-left font-bold text-black">Status</th>
+              <th className="p-3 text-left font-bold text-black">Vouchers</th>
+              <th className="p-3 text-left font-bold text-black">Created</th>
             </tr>
           </thead>
           <tbody>
             {mockReferrals.map(r => (
               <tr key={r.id} className="border-t hover:bg-gray-50">
-                <td className="p-3 font-mono">{r.referrerPhone}</td>
-                <td className="p-3 font-mono">{r.refereePhone}</td>
+                <td className="p-3 font-mono font-bold text-black">{r.referrerPhone}</td>
+                <td className="p-3 font-mono font-bold text-black">{r.refereePhone}</td>
                 <td className="p-3">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
                     {r.status}
                   </span>
                 </td>
-                <td className="p-3 font-mono text-xs">{r.referrerVoucher || '—'} / {r.refereeVoucher || '—'}</td>
-                <td className="p-3 text-gray-600">{new Date(r.createdAt).toLocaleString()}</td>
+                <td className="p-3 font-mono text-xs font-bold text-black">{r.referrerVoucher || '—'} / {r.refereeVoucher || '—'}</td>
+                <td className="p-3 text-black font-bold">{new Date(r.createdAt).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
