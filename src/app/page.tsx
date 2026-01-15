@@ -1,4 +1,4 @@
-import AnimatedText from '@/components/AnimatedText';
+import RepublicLanding from '@/components/RepublicLanding';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 import { getHomePathForRole } from '@/lib/roleHomePath';
 import { redirect } from 'next/navigation';
@@ -14,8 +14,8 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black font-[family-name:var(--font-plus-jakarta-sans)]">
-      <AnimatedText />
+    <main className="min-h-screen bg-white font-[family-name:var(--font-plus-jakarta-sans)]">
+      <RepublicLanding />
     </main>
   );
 }
