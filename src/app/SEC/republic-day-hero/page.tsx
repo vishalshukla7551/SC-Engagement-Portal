@@ -108,7 +108,14 @@ const AmbientBackground = () => (
 const JetFlypast = () => {
     // Jets fly across periodically
     return (
-        <div className="absolute top-20 left-0 w-full h-40 z-0 pointer-events-none overflow-hidden">
+        <div
+            className="absolute top-20 left-0 w-full h-40 z-0 pointer-events-none overflow-hidden"
+            style={{
+                willChange: 'transform',
+                backfaceVisibility: 'hidden',
+                transform: 'translate3d(0,0,0)'
+            }}
+        >
             <motion.div
                 initial={{ x: '-20vw' }}
                 animate={{ x: '120vw' }}
@@ -118,7 +125,7 @@ const JetFlypast = () => {
                     repeatDelay: 2,
                     ease: "linear"
                 }}
-                className="relative w-full h-full"
+                className="relative w-full h-full transform-gpu"
             >
                 {/* Formation of 3 Jets */}
                 <div className="absolute top-0 left-0 flex flex-col gap-1 not-rotate">
@@ -247,21 +254,28 @@ export default function RepublicDayHeroPage() {
             onClick={handleGlobalInteraction}
         >
 
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0">
-                <Image
-                    src="/images/bg.png"
-                    alt="Republic Day Background"
-                    fill
-                    className="object-cover opacity-90"
-                    priority
-                />
-                {/* Gradient Overlay for readability - Reduced opacity */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/50" />
+            {/* SEPARATE ANIMATION LAYER */}
+            {/* This container handles all background animations and jets to isolate repaints */}
+            <div className="fixed inset-0 z-0 pointer-events-none transform-gpu" style={{ isolation: 'isolate' }}>
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                    <Image
+                        src="/images/bg.png"
+                        alt="Republic Day Background"
+                        fill
+                        className="object-cover opacity-90"
+                        priority
+                    />
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/50" />
+                </div>
+
+                <AmbientBackground />
+                <JetFlypast />
             </div>
 
-            <AmbientBackground />
-            <JetFlypast />
+            {/* SEPARATE CONTENT LAYER */}
+            {/* Main Content - Independent stacking context */}
 
             {/* Main Content */}
             <main className="relative z-10 container mx-auto px-4 py-2 flex flex-col h-screen max-w-5xl">
