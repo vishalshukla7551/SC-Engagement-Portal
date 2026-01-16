@@ -109,7 +109,7 @@ export const SEC_CERT_QUESTIONS: Question[] = [
 ];
 
 // Samsung Care+ Question Bank - All 40+ questions
-const allSamsungQuestions: Question[] = [
+export const allSamsungQuestions: Question[] = [
   // Section A: Situation-Based (Customer Scenarios)
   {
     id: 1,
