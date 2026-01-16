@@ -4,6 +4,8 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
+import Image from 'next/image';
+
 export default function RepublicLanding() {
     const router = useRouter();
 
@@ -83,9 +85,16 @@ export default function RepublicLanding() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.8, duration: 1 }}
-                        className="mt-4 text-slate-500 font-medium tracking-widest uppercase text-xs sm:text-sm text-center"
+                        className="mt-4 text-slate-500 font-medium tracking-widest uppercase text-xs sm:text-sm text-center flex items-center justify-center gap-2"
                     >
-                        Empowering India's Sales Force
+                        Powered By Zopper
+                        <Image
+                            src="/zopper-icon.png"
+                            alt="Zopper Logo"
+                            width={20}
+                            height={20}
+                            className="inline-block"
+                        />
                     </motion.p>
                 </motion.div>
             </div>
