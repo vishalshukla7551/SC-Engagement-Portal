@@ -101,7 +101,7 @@ function ReviewContent() {
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <span className="bg-gray-50 text-gray-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-gray-100">
-                  Submitted on: {new Date(submission.submittedAt).toLocaleDateString(undefined, { dateStyle: 'long', timeStyle: 'short' })}
+                  Submitted on: {new Date(submission.submittedAt).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}
                 </span>
               </div>
             </div>

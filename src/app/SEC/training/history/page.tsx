@@ -17,11 +17,7 @@ interface TestHistory {
   hasCertificate: boolean;
 }
 
-const MOCK_HISTORY: TestHistory[] = [
-  { id: '1', testId: '1', testName: 'Samsung Protect Max Certification', score: 80, totalQuestions: 10, passed: true, submittedAt: '2024-12-15T10:30:00', hasCertificate: true },
-  { id: '2', testId: '2', testName: 'Coverage & Benefits Quiz', score: 50, totalQuestions: 10, passed: false, submittedAt: '2024-12-14T14:20:00', hasCertificate: false },
-  { id: '3', testId: '1', testName: 'Samsung Protect Max Certification', score: 40, totalQuestions: 10, passed: false, submittedAt: '2024-12-13T09:15:00', hasCertificate: false },
-];
+
 
 export default function TestHistoryPage() {
   const router = useRouter();

@@ -14,14 +14,9 @@ interface Certificate {
   testName: string;
   score: number;
   issuedAt: string;
-  passed: boolean;
+  passed: boolean; // Keep for now as passing criteria
+  certificateUrl?: string | null;
 }
-
-// Mock certificates for now - will be replaced with real data later
-const MOCK_CERTIFICATES: Certificate[] = [
-  { id: '1', certificateNo: 'CERT-1702656000000-ABC123', testName: 'Samsung Protect Max Certification', score: 80, issuedAt: '2024-12-15', passed: true },
-  { id: '2', certificateNo: 'CERT-1702569600000-DEF456', testName: 'Coverage & Benefits Quiz', score: 90, issuedAt: '2024-12-14', passed: true },
-];
 
 // Animated Score Counter Component
 const AnimatedScore = ({ finalScore, delay = 0 }: { finalScore: number; delay?: number }) => {
@@ -49,7 +44,7 @@ const AnimatedScore = ({ finalScore, delay = 0 }: { finalScore: number; delay?: 
   }, [finalScore, delay]);
 
   return (
-    <motion.div 
+    <motion.div
       className="text-2xl font-bold text-green-600"
       animate={isAnimating ? {} : { scale: [1, 1.1, 1] }}
       transition={{ duration: 0.3, delay: delay / 1000 + 1 }}
@@ -83,7 +78,12 @@ export default function CertificatesPage() {
 
   // Handle viewing certificate
   const handleViewCertificate = (cert: Certificate) => {
-    // Create a new window/tab to show the certificate
+    if (cert.certificateUrl) {
+      window.open(cert.certificateUrl, '_blank');
+      return;
+    }
+
+    // Fallback: Create a new window/tab to show the generated certificate
     const certificateWindow = window.open('', '_blank', 'width=800,height=600');
     if (certificateWindow) {
       certificateWindow.document.write(generateCertificateHTML(cert));
@@ -93,15 +93,25 @@ export default function CertificatesPage() {
 
   // Handle downloading certificate
   const handleDownloadCertificate = (cert: Certificate) => {
+    if (cert.certificateUrl) {
+      // Create a temporary link to trigger download
+      const link = document.createElement('a');
+      link.href = cert.certificateUrl;
+      link.download = `Certificate-${cert.testName.replace(/\s+/g, '-')}.pdf`; // Suggest a filename
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
     // For now, open the certificate view
-    // In the future, this could generate a PDF
     handleViewCertificate(cert);
   };
 
   // Generate certificate HTML
   const generateCertificateHTML = (cert: Certificate) => {
     const secName = secUserName;
-    
+
     return `
       <!DOCTYPE html>
       <html>
@@ -128,69 +138,18 @@ export default function CertificatesPage() {
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             position: relative;
           }
-          .certificate::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            border: 2px solid #FFD700;
-            border-radius: 12px;
-          }
-          .header {
-            margin-bottom: 40px;
-          }
-          .title {
-            font-size: 48px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-          }
-          .subtitle {
-            font-size: 18px;
-            color: #666;
-            margin-bottom: 40px;
-          }
-          .recipient {
-            font-size: 36px;
-            color: #2563eb;
-            font-weight: bold;
-            margin: 30px 0;
-          }
-          .achievement {
-            font-size: 18px;
-            color: #333;
-            margin: 30px 0;
-          }
-          .score {
-            font-size: 72px;
-            color: #2563eb;
-            font-weight: bold;
-            margin: 30px 0;
-          }
-          .details {
-            font-size: 16px;
-            color: #666;
-            margin: 20px 0;
-          }
-          .footer {
-            margin-top: 50px;
-            font-style: italic;
-            color: #666;
-          }
-          .logo {
-            position: absolute;
-            top: 30px;
-            right: 40px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-          }
-          @media print {
-            body { background: white; padding: 0; }
-            .certificate { border: 8px solid #FFD700; box-shadow: none; }
-          }
+          /* ... styles truncated for brevity, same as before ... */
+          .certificate::before { content: ''; position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px; border: 2px solid #FFD700; border-radius: 12px; }
+          .header { margin-bottom: 40px; }
+          .title { font-size: 48px; font-weight: bold; color: #333; margin-bottom: 10px; }
+          .subtitle { font-size: 18px; color: #666; margin-bottom: 40px; }
+          .recipient { font-size: 36px; color: #2563eb; font-weight: bold; margin: 30px 0; }
+          .achievement { font-size: 18px; color: #333; margin: 30px 0; }
+          .score { font-size: 72px; color: #2563eb; font-weight: bold; margin: 30px 0; }
+          .details { font-size: 16px; color: #666; margin: 20px 0; }
+          .footer { margin-top: 50px; font-style: italic; color: #666; }
+          .logo { position: absolute; top: 30px; right: 40px; font-size: 24px; font-weight: bold; color: #2563eb; }
+          @media print { body { background: white; padding: 0; } .certificate { border: 8px solid #FFD700; box-shadow: none; } }
         </style>
       </head>
       <body>
@@ -213,7 +172,7 @@ export default function CertificatesPage() {
           
           <div class="details">
             <strong>Test:</strong> ${cert.testName}<br>
-            <strong>Certificate No:</strong> ${cert.certificateNo}<br>
+            <strong>Certificate No:</strong> ${cert.certificateNo || 'Pending'}<br>
             <strong>Issued on:</strong> ${new Date(cert.issuedAt).toLocaleDateString()}
           </div>
           
@@ -230,55 +189,71 @@ export default function CertificatesPage() {
   const triggerConfetti = () => {
     if (confettiTriggered.current) return;
     confettiTriggered.current = true;
-
     const duration = 2500;
     const end = Date.now() + duration;
 
     const frame = () => {
-      confetti({
-        particleCount: 5,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#FFD700', '#FFA500', '#FF6347', '#32CD32', '#1E90FF']
-      });
-
-      confetti({
-        particleCount: 3,
-        spread: 50,
-        origin: { x: 0.1, y: 0.6 },
-        colors: ['#FFD700', '#FFA500']
-      });
-
-      confetti({
-        particleCount: 3,
-        spread: 50,
-        origin: { x: 0.9, y: 0.6 },
-        colors: ['#FFD700', '#FFA500']
-      });
+      confetti({ particleCount: 5, spread: 70, origin: { y: 0.6 }, colors: ['#FFD700', '#FFA500', '#FF6347', '#32CD32', '#1E90FF'] });
+      confetti({ particleCount: 3, spread: 50, origin: { x: 0.1, y: 0.6 }, colors: ['#FFD700', '#FFA500'] });
+      confetti({ particleCount: 3, spread: 50, origin: { x: 0.9, y: 0.6 }, colors: ['#FFD700', '#FFA500'] });
 
       if (Date.now() < end) {
         requestAnimationFrame(frame);
       }
     };
-
     frame();
   };
 
   useEffect(() => {
-    // Get SEC user name from localStorage
-    const userName = getSecUserName();
-    setSecUserName(userName);
-    
-    // Set mock certificates for now
-    setCertificates(MOCK_CERTIFICATES);
-    setLoading(false);
-    
-    // Trigger confetti after certificates load
-    setTimeout(() => {
-      if (MOCK_CERTIFICATES.length > 0) {
-        triggerConfetti();
+    const fetchCertificates = async () => {
+      const userName = getSecUserName();
+      setSecUserName(userName);
+
+      try {
+        const authUser = localStorage.getItem('authUser');
+        if (!authUser) {
+          setLoading(false);
+          return;
+        }
+
+        const userData = JSON.parse(authUser);
+        const secId = userData.phone || userData.id;
+
+        if (!secId) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch submissions for this user that passed
+        const response = await fetch(`/api/admin/test-submissions?secId=${encodeURIComponent(secId)}&status=pass`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const apiCertificates: Certificate[] = result.data.map((item: any) => ({
+            id: item.id,
+            certificateNo: `CERT-${new Date(item.submittedAt).getTime()}-${item.id.slice(-6).toUpperCase()}`, // Generate a ID if not stored
+            testName: item.testName || 'Certification Test',
+            score: item.score,
+            issuedAt: item.submittedAt,
+            passed: true,
+            certificateUrl: item.certificateUrl
+          }));
+
+          setCertificates(apiCertificates);
+
+          // Trigger confetti if we have certificates
+          if (apiCertificates.length > 0) {
+            triggerConfetti();
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching certificates:', error);
+      } finally {
+        setLoading(false);
       }
-    }, 800);
+    };
+
+    fetchCertificates();
   }, []);
 
   return (
@@ -286,16 +261,16 @@ export default function CertificatesPage() {
       <FestiveHeader hideGreeting />
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
         <div className="max-w-2xl mx-auto px-4 py-6">
-          <motion.button 
+          <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            onClick={() => router.push('/SEC/training')} 
+            onClick={() => router.push('/SEC/training')}
             className="flex items-center gap-2 text-blue-600 mb-4 hover:text-blue-700 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" /> Back to Training
           </motion.button>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
@@ -311,7 +286,7 @@ export default function CertificatesPage() {
           </motion.div>
 
           {loading ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex justify-center py-12"
@@ -319,7 +294,7 @@ export default function CertificatesPage() {
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
             </motion.div>
           ) : certificates.length === 0 ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
@@ -333,10 +308,10 @@ export default function CertificatesPage() {
               </motion.div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">No Certificates Yet</h2>
               <p className="text-gray-600 mb-4">Complete tests to earn certificates</p>
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => router.push('/SEC/training')} 
+                onClick={() => router.push('/SEC/training')}
                 className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
               >
                 Go to Training
@@ -350,16 +325,16 @@ export default function CertificatesPage() {
                     key={cert.id}
                     initial={{ opacity: 0, scale: 0.95, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ 
-                      duration: 0.5, 
+                    transition={{
+                      duration: 0.5,
                       ease: "easeOut",
-                      delay: index * 0.1 
+                      delay: index * 0.1
                     }}
                     className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-yellow-400 hover:shadow-xl transition-shadow duration-300"
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <motion.h3 
+                        <motion.h3
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 + 0.2 }}
@@ -367,7 +342,7 @@ export default function CertificatesPage() {
                         >
                           {cert.testName}
                         </motion.h3>
-                        <motion.p 
+                        <motion.p
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 + 0.3 }}
@@ -375,7 +350,7 @@ export default function CertificatesPage() {
                         >
                           Certificate No: {cert.certificateNo}
                         </motion.p>
-                        <motion.p 
+                        <motion.p
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 + 0.4 }}
@@ -384,14 +359,14 @@ export default function CertificatesPage() {
                           Issued: {new Date(cert.issuedAt).toLocaleDateString()}
                         </motion.p>
                       </div>
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 + 0.5 }}
                         className="text-right"
                       >
                         <AnimatedScore finalScore={cert.score} delay={index * 100 + 600} />
-                        <motion.span 
+                        <motion.span
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.1 + 0.8 }}
@@ -401,13 +376,13 @@ export default function CertificatesPage() {
                         </motion.span>
                       </motion.div>
                     </div>
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 + 0.9 }}
                       className="flex gap-2 mt-4"
                     >
-                      <motion.button 
+                      <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleViewCertificate(cert)}
@@ -415,7 +390,7 @@ export default function CertificatesPage() {
                       >
                         <Award className="w-4 h-4" /> View Certificate
                       </motion.button>
-                      <motion.button 
+                      <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleDownloadCertificate(cert)}

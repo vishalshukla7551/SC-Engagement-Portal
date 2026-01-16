@@ -133,6 +133,7 @@ export async function GET(request: NextRequest) {
                     storeId: submission.storeId || '',
                     storeName: storeName || '',
                     storeCity: storeCity,
+                    certificateUrl: submission.certificateUrl || null,
                     screenshotUrls: [], // Placeholder - implement screenshot storage separately
                 };
             })

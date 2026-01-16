@@ -378,6 +378,7 @@ model TestSubmission {
   isProctoringFlagged Boolean  @default(false) // Proctoring violation flag
   storeId             String?  // Store identifier
   storeName           String?  // Store name
+  certificateUrl      String?  // URL to the generated certificate
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
