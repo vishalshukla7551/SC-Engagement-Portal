@@ -17,12 +17,11 @@ import Image from 'next/image';
 // Rank Data Configuration
 const RANKS = [
     { id: 'cadet', title: 'SALESVEER', minSales: 0, color: 'bg-stone-400', icon: Shield },
-    { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 50000, color: 'bg-emerald-500', icon: Star },
-    { id: 'captain', title: 'SALES CAPTAIN', minSales: 100000, color: 'bg-blue-500', icon: Award },
-    { id: 'major', title: 'SALES MAJOR', minSales: 200000, color: 'bg-indigo-600', icon: Award },
-    { id: 'colonel', title: 'SALES COLONEL', minSales: 400000, color: 'bg-purple-600', icon: Award },
-    { id: 'brigadier', title: 'SALES BRIGADIER', minSales: 600000, color: 'bg-orange-500', icon: Star },
-    { id: 'general', title: 'SALES GENERAL', minSales: 1000000, color: 'bg-rose-600', icon: Star },
+    { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 21000, color: 'bg-emerald-500', icon: Star },
+    { id: 'captain', title: 'SALES CAPTAIN', minSales: 51000, color: 'bg-blue-500', icon: Award },
+    { id: 'major', title: 'SALES MAJOR', minSales: 90000, color: 'bg-indigo-600', icon: Award },
+    { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
+    { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
 ];
 
 const IndianFlag = ({ size = 20 }: { size?: number }) => (
@@ -162,8 +161,8 @@ export default function RepublicDayHeroPage() {
 
     // Mock User Data - In a real app, this would come from your auth/user context
     const [currentSales, setCurrentSales] = useState(0);
-    // Let's assume user has done 2,50,000 sales (Major Level)
-    const userRealSales = 250000;
+    // Let's assume user has done 1,10,000 sales (Major Level)
+    const userRealSales = 110000;
 
     // Animation effect for sales count up
     useEffect(() => {
@@ -323,7 +322,7 @@ export default function RepublicDayHeroPage() {
                 <div className="flex-1 flex items-center justify-center relative w-full min-h-0 py-4">
 
                     {/* Scrollable Container */}
-                    <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-20 hide-scrollbar">
+                    <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-40 hide-scrollbar">
                         <div className="flex items-end gap-2 md:gap-4 px-2 md:px-6 min-w-max mx-auto justify-center" style={{ paddingBottom: '40px' }}>
                             {RANKS.map((rank, index) => {
                                 const isUnlocked = index <= currentRankIndex;
@@ -615,7 +614,7 @@ export default function RepublicDayHeroPage() {
                 </div>
 
                 {/* Footer/Action Section - Enhanced Design */}
-                <div className="mt-2 flex flex-col items-center pb-4 z-20 w-full shrink-0">
+                <div className="mt-16 flex flex-col items-center pb-4 z-20 w-full shrink-0">
                     <motion.div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
@@ -672,17 +671,28 @@ export default function RepublicDayHeroPage() {
                             </div>
                         )}
 
-                        <button
-                            onClick={handleContinue}
-                            className="w-full py-3 bg-[#000080] text-white rounded-xl font-bold text-base shadow-[0_10px_20px_-5px_rgba(0,0,128,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(0,0,128,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
-                            style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
-                        >
-                            <span className="relative z-10">Enter Dashboard</span>
-                            <ChevronRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
+                        <div className="flex flex-col gap-3 w-full">
+                            <button
+                                onClick={() => router.push('/SEC/incentive-form')}
+                                className="w-full py-3 bg-[#000080] text-white rounded-xl font-bold text-base shadow-[0_10px_20px_-5px_rgba(0,0,128,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(0,0,128,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
+                                style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
+                            >
+                                <span className="relative z-10 uppercase">Submit Your Sales</span>
+                                <ChevronRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
 
-                            {/* Button Hover Glow */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#000080] via-[#1a1a90] to-[#000080] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </button>
+                                {/* Button Hover Glow */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#000080] via-[#1a1a90] to-[#000080] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            </button>
+
+                            <button
+                                onClick={() => router.push('/SEC/republic-leaderboard')}
+                                className="w-full py-3 bg-white text-[#000080] border-2 border-[#000080] rounded-xl font-bold text-base shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
+                                style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
+                            >
+                                <span className="relative z-10 uppercase">View Leaderboard</span>
+                                <Award size={18} className="relative z-10 group-hover:scale-110 transition-transform" strokeWidth={2} />
+                            </button>
+                        </div>
                     </motion.div>
                     <motion.div
                         className="mt-6 flex items-center gap-2 sm:gap-3 w-full justify-center"
