@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -8,18 +8,56 @@ import Image from 'next/image';
 
 export default function RepublicLanding() {
     const router = useRouter();
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [hasStarted, setHasStarted] = useState(false);
 
     useEffect(() => {
-        // Redirect logic - keep the flow moving after a short delay
-        const timer = setTimeout(() => {
-            router.push('/login/sec');
-        }, 8000); // 8 seconds to enjoy the animation
+        // Only start redirect logic after user has clicked to start
+        if (hasStarted) {
+            const timer = setTimeout(() => {
+                router.push('/login/sec');
+            }, 8000); // 8 seconds to enjoy the animation
 
-        return () => clearTimeout(timer);
-    }, [router]);
+            return () => clearTimeout(timer);
+        }
+    }, [hasStarted, router]);
+
+    const handlePageClick = () => {
+        if (audioRef.current) {
+            if (!hasStarted) {
+                // First click - start everything
+                setHasStarted(true);
+                audioRef.current.play();
+                setIsPlaying(true);
+            } else {
+                // Subsequent clicks - toggle play/pause
+                if (isPlaying) {
+                    audioRef.current.pause();
+                    setIsPlaying(false);
+                } else {
+                    audioRef.current.play();
+                    setIsPlaying(true);
+                }
+            }
+        }
+    };
+
+    const handleAudioEnded = () => {
+        setIsPlaying(false);
+    };
 
     return (
         <div className="fixed inset-0 bg-white flex flex-col items-center justify-center overflow-hidden">
+            {/* Audio Element */}
+            <audio
+                ref={audioRef}
+                onEnded={handleAudioEnded}
+                preload="auto"
+            >
+                <source src="/audio track/Sare_Jahan_Se_Acha_Full_Song_-_Piano_-_Instrumental_128k.mp3" type="audio/mpeg" />
+                Your browser does not support the audio element.
+            </audio>
 
             {/* Tricolor Ambient Background */}
             <div className="absolute inset-0 z-0">
@@ -96,23 +134,65 @@ export default function RepublicLanding() {
                             className="inline-block"
                         />
                     </motion.p>
+
+                    {/* Click to Start Button */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.2, duration: 0.8 }}
+                        className="mt-32 flex justify-center"
+                    >
+                        <motion.button
+                            onClick={handlePageClick}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-gradient-to-r from-orange-500 via-blue-600 to-green-600 text-white px-8 py-3 rounded-full font-semibold text-sm tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3"
+                        >
+                            <motion.div
+                                animate={{ 
+                                    scale: isPlaying ? [1, 1.2, 1] : 1,
+                                }}
+                                transition={{ 
+                                    duration: 0.8, 
+                                    repeat: isPlaying ? Infinity : 0,
+                                    ease: "easeInOut" 
+                                }}
+                                className="w-4 h-4"
+                            >
+                                {isPlaying ? (
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                                    </svg>
+                                ) : (
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                )}
+                            </motion.div>
+                            <span>
+                                {!hasStarted ? 'Click to Start' : (isPlaying ? 'Playing...' : 'Play Audio')}
+                            </span>
+                        </motion.button>
+                    </motion.div>
                 </motion.div>
             </div>
 
-            {/* Loading Bar */}
-            <motion.div
-                className="absolute bottom-10 left-0 right-0 max-w-xs mx-auto h-1 bg-slate-100 rounded-full overflow-hidden"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-            >
+            {/* Loading Bar - Only show when started */}
+            {hasStarted && (
                 <motion.div
-                    className="h-full bg-gradient-to-r from-orange-500 via-blue-600 to-green-600"
-                    initial={{ width: "0%" }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 8, ease: "linear" }}
-                />
-            </motion.div>
+                    className="absolute bottom-10 left-0 right-0 max-w-xs mx-auto h-1 bg-slate-100 rounded-full overflow-hidden"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                >
+                    <motion.div
+                        className="h-full bg-gradient-to-r from-orange-500 via-blue-600 to-green-600"
+                        initial={{ width: "0%" }}
+                        animate={{ width: "100%" }}
+                        transition={{ duration: 8, ease: "linear" }}
+                    />
+                </motion.div>
+            )}
 
         </div>
     );
