@@ -16,13 +16,13 @@ import Image from 'next/image';
 
 // Rank Data Configuration
 const RANKS = [
-    { id: 'cadet', title: 'Cadet', minSales: 0, color: 'bg-stone-400', icon: Shield },
-    { id: 'lieutenant', title: 'Lieutenant', minSales: 50000, color: 'bg-emerald-500', icon: Star },
-    { id: 'captain', title: 'Captain', minSales: 100000, color: 'bg-blue-500', icon: Award },
-    { id: 'major', title: 'Major', minSales: 200000, color: 'bg-indigo-600', icon: Award },
-    { id: 'colonel', title: 'Colonel', minSales: 400000, color: 'bg-purple-600', icon: Award },
-    { id: 'brigadier', title: 'Brigadier', minSales: 600000, color: 'bg-orange-500', icon: Star },
-    { id: 'general', title: 'General', minSales: 1000000, color: 'bg-rose-600', icon: Star },
+    { id: 'cadet', title: 'SALESVEER', minSales: 0, color: 'bg-stone-400', icon: Shield },
+    { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 50000, color: 'bg-emerald-500', icon: Star },
+    { id: 'captain', title: 'SALES CAPTAIN', minSales: 100000, color: 'bg-blue-500', icon: Award },
+    { id: 'major', title: 'SALES MAJOR', minSales: 200000, color: 'bg-indigo-600', icon: Award },
+    { id: 'colonel', title: 'SALES COLONEL', minSales: 400000, color: 'bg-purple-600', icon: Award },
+    { id: 'brigadier', title: 'SALES BRIGADIER', minSales: 600000, color: 'bg-orange-500', icon: Star },
+    { id: 'general', title: 'SALES GENERAL', minSales: 1000000, color: 'bg-rose-600', icon: Star },
 ];
 
 const IndianFlag = ({ size = 20 }: { size?: number }) => (
@@ -195,7 +195,6 @@ export default function RepublicDayHeroPage() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
-
     const [hasInteracted, setHasInteracted] = useState(false);
 
     useEffect(() => {
@@ -292,7 +291,7 @@ export default function RepublicDayHeroPage() {
                             Honour & Glory <span className="text-[#FF9933]">Path</span>
                         </h1>
                         <p className="text-slate-600 font-medium mt-0.5 text-xs sm:text-base" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            Rise through the ranks: Cadet to General
+                            Rise through the ranks: SALESVEER to SALES GENERAL
                         </p>
                     </div>
 
@@ -320,120 +319,270 @@ export default function RepublicDayHeroPage() {
                     </div>
                 </header>
 
-                {/* Progression Path Visualization */}
-                <div className="flex-1 flex items-center justify-center relative w-full min-h-0">
+                {/* Progression Path Visualization - Ladder Style */}
+                <div className="flex-1 flex items-center justify-center relative w-full min-h-0 py-4">
 
-                    {/* Scrollable Container with Safe Centering */}
-                    <div ref={scrollContainerRef} className="w-full overflow-x-auto pb-4 pt-28 hide-scrollbar flex items-center">
-                        <div className="flex items-end gap-3 md:gap-6 px-4 md:px-12 min-w-max m-auto">
+                    {/* Scrollable Container */}
+                    <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-20 hide-scrollbar">
+                        <div className="flex items-end gap-2 md:gap-4 px-2 md:px-6 min-w-max mx-auto justify-center" style={{ paddingBottom: '40px' }}>
                             {RANKS.map((rank, index) => {
                                 const isUnlocked = index <= currentRankIndex;
                                 const isCurrent = index === currentRankIndex;
                                 const isLocked = index > currentRankIndex;
+
+                                // Calculate ladder height - each step goes higher (reduced for compact view)
+                                const ladderHeight = index * 24; // 24px increment per level (was 40px)
 
                                 return (
                                     <div
                                         key={rank.id}
                                         className="flex flex-col items-center group relative"
                                         ref={(el) => { itemsRef.current[index] = el; }}
+                                        style={{
+                                            marginBottom: `${ladderHeight}px`,
+                                            transition: 'margin-bottom 0.5s ease-out'
+                                        }}
                                     >
 
-                                        {/* Connector Line */}
+                                        {/* Diagonal Connector Line - Ladder Step */}
                                         {index > 0 && (
                                             <div
-                                                className={`absolute top-[45%] -left-[55%] w-[60%] h-2 z-0 rounded-full transition-all duration-1000
-                         ${isUnlocked ? 'bg-gradient-to-r from-orange-400 via-white to-green-400 shadow-sm opacity-80' : 'bg-slate-200'}`}
+                                                className={`absolute z-0 transition-all duration-1000`}
+                                                style={{
+                                                    bottom: '50%',
+                                                    right: '100%',
+                                                    width: '40px',
+                                                    height: '2px',
+                                                    transformOrigin: 'right center',
+                                                    transform: `rotate(-${Math.atan(24 / 40) * (180 / Math.PI)}deg) translateX(-12px)`,
+                                                    background: isUnlocked
+                                                        ? 'linear-gradient(90deg, #fb923c, #ffffff, #22c55e)'
+                                                        : '#e2e8f0',
+                                                    boxShadow: isUnlocked ? '0 2px 6px rgba(0,0,0,0.08)' : 'none',
+                                                    opacity: 0.8
+                                                }}
                                             />
                                         )}
 
                                         {/* Soldier Avatar (Current Level) */}
                                         {isCurrent && (
                                             <motion.div
-                                                initial={{ y: -30, opacity: 0, scale: 0.8 }}
-                                                animate={{ y: 0, opacity: 1, scale: 1 }}
-                                                transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                                                className="absolute -top-20 z-30 flex flex-col items-center"
+                                                initial={{ y: -100, opacity: 0, scale: 0.3, rotate: -20 }}
+                                                animate={{
+                                                    y: [0, -4, 0],
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                    rotate: 0
+                                                }}
+                                                transition={{
+                                                    type: "spring",
+                                                    stiffness: 300,
+                                                    damping: 15,
+                                                    y: {
+                                                        repeat: Infinity,
+                                                        duration: 3,
+                                                        ease: "easeInOut"
+                                                    }
+                                                }}
+                                                className="absolute -top-28 z-30 flex flex-col items-center"
                                             >
                                                 {/* Avatar Image */}
-                                                <div className="relative w-16 h-20 drop-shadow-2xl filter hover:scale-105 transition-transform duration-300">
-                                                    {/* Pulse Effect behind avatar */}
-                                                    <div className="absolute inset-0 bg-[#000080] rounded-full blur-xl opacity-20 animate-pulse"></div>
+                                                <motion.div
+                                                    whileHover={{
+                                                        scale: 1.1,
+                                                        rotate: [0, -5, 5, 0],
+                                                        transition: { duration: 0.5 }
+                                                    }}
+                                                    className="relative w-24 h-28 drop-shadow-2xl"
+                                                >
+                                                    {/* Enhanced Tricolor Pulse Effect */}
+                                                    <motion.div
+                                                        animate={{
+                                                            opacity: [0.2, 0.4, 0.2],
+                                                            scale: [1, 1.2, 1]
+                                                        }}
+                                                        transition={{
+                                                            duration: 2,
+                                                            repeat: Infinity,
+                                                            ease: "easeInOut"
+                                                        }}
+                                                        className="absolute inset-0 bg-gradient-to-r from-orange-500 via-white to-green-500 rounded-full blur-2xl"
+                                                    />
                                                     <Image
-                                                        src="/images/soilder-1.png"
-                                                        alt="Soldier Avatar"
+                                                        src="/images/samsung-salesperson.png"
+                                                        alt="Samsung Salesperson Avatar"
                                                         fill
-                                                        className="object-contain"
+                                                        className="object-contain relative z-10"
                                                         priority
                                                     />
-                                                </div>
-
-                                                {/* "YOU" Label */}
-                                                <div className="bg-[#000080] text-white text-[10px] px-2 py-0.5 rounded-full mt-1 font-bold shadow-lg flex items-center gap-1 animate-pulse">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> YOU
-                                                </div>
+                                                </motion.div>
                                             </motion.div>
                                         )}
 
-                                        {/* Platform Step */}
-                                        {/* Platform Step - Enhanced 3D Design */}
+                                        {/* Platform Step - Enhanced Attractive Design */}
                                         <motion.div
                                             initial={{ scale: 0.9, opacity: 0 }}
                                             animate={{
-                                                scale: isCurrent ? 1.05 : 1,
+                                                scale: isCurrent ? 1.12 : 1,
                                                 opacity: 1,
                                                 y: isCurrent ? -8 : 0
                                             }}
+                                            whileHover={{ scale: isUnlocked ? 1.05 : 1 }}
                                             transition={{ delay: index * 0.1 }}
                                             className={`
-                                                relative z-10 w-24 h-24 md:w-32 md:h-32 rounded-2xl flex flex-col items-center justify-center
-                                                transition-all duration-500
-                                                ${isUnlocked ? 'shadow-2xl' : 'grayscale opacity-70'}
-                                                bg-gradient-to-br from-white to-slate-50
+                                                relative z-10 w-24 h-24 md:w-28 md:h-28 rounded-3xl flex flex-col items-center justify-center
+                                                transition-all duration-500 cursor-pointer
+                                                ${isUnlocked ? 'shadow-2xl' : 'grayscale opacity-60'}
+                                                ${isCurrent ? 'ring-4 ring-orange-400 ring-offset-2' : ''}
                                             `}
                                             style={{
-                                                borderTop: isUnlocked ? '1px solid rgba(255,255,255,0.8)' : '1px solid rgba(0,0,0,0.05)',
+                                                background: isUnlocked
+                                                    ? isCurrent
+                                                        ? 'linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)'
+                                                        : index % 3 === 0
+                                                            ? 'linear-gradient(135deg, #FF9933, #FFB366)'
+                                                            : index % 3 === 1
+                                                                ? 'linear-gradient(135deg, #FFFFFF, #F0F0F0)'
+                                                                : 'linear-gradient(135deg, #138808, #1AAA0A)'
+                                                    : 'linear-gradient(135deg, #E5E7EB, #D1D5DB)',
                                                 boxShadow: isUnlocked
-                                                    ? '0 15px 35px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.05), inset 0 -4px 6px -1px rgba(0,0,0,0.05)'
+                                                    ? isCurrent
+                                                        ? '0 20px 40px -10px rgba(255, 153, 51, 0.4), 0 0 30px rgba(255, 153, 51, 0.3), inset 0 -4px 8px rgba(0,0,0,0.1)'
+                                                        : '0 15px 35px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1), inset 0 -4px 6px -1px rgba(0,0,0,0.08)'
                                                     : 'none'
                                             }}
                                         >
-                                            {/* Decorative Background Pattern */}
+                                            {/* Animated Glow Effect for Current Rank */}
+                                            {isCurrent && (
+                                                <motion.div
+                                                    animate={{
+                                                        opacity: [0.3, 0.6, 0.3],
+                                                        scale: [1, 1.1, 1]
+                                                    }}
+                                                    transition={{
+                                                        duration: 2,
+                                                        repeat: Infinity,
+                                                        ease: "easeInOut"
+                                                    }}
+                                                    className="absolute inset-0 rounded-3xl bg-gradient-to-r from-orange-400 via-yellow-300 to-green-400 blur-xl"
+                                                    style={{ zIndex: -1 }}
+                                                />
+                                            )}
+
+                                            {/* Decorative Shine Effect */}
                                             {isUnlocked && (
-                                                <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-30">
-                                                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-orange-100 to-transparent rounded-bl-full -mr-4 -mt-4"></div>
-                                                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-green-50 to-transparent rounded-tr-full -ml-2 -mb-2"></div>
+                                                <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                                                    <motion.div
+                                                        animate={{
+                                                            x: ['-100%', '100%']
+                                                        }}
+                                                        transition={{
+                                                            duration: 3,
+                                                            repeat: Infinity,
+                                                            repeatDelay: 2,
+                                                            ease: "easeInOut"
+                                                        }}
+                                                        className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                                                        style={{ transform: 'skewX(-20deg)' }}
+                                                    />
                                                 </div>
                                             )}
 
-                                            {/* Heavy 3D Border Effects */}
-                                            <div className="absolute inset-0 rounded-2xl border-2 border-transparent"
+                                            {/* Border with Tricolor Theme */}
+                                            <div className="absolute inset-0 rounded-3xl border-2"
                                                 style={{
                                                     borderColor: isUnlocked
-                                                        ? (index % 3 === 0 ? '#FF9933' : index % 3 === 1 ? '#CBD5E1' : '#138808')
-                                                        : '#e2e8f0',
-                                                    borderBottomWidth: '6px',
-                                                    opacity: 0.8
+                                                        ? isCurrent
+                                                            ? '#FF9933'
+                                                            : (index % 3 === 0 ? '#FF9933' : index % 3 === 1 ? '#FFFFFF' : '#138808')
+                                                        : '#D1D5DB',
+                                                    borderBottomWidth: '4px',
+                                                    opacity: 0.9
                                                 }}
                                             />
 
-                                            {/* Rank Icon Badge - Medal Style */}
-                                            <div className={`
-                                                w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-1.5 z-10
-                                                ${isUnlocked ? `bg-gradient-to-tr ${rank.color} to-white` : 'bg-slate-200'}
-                                                relative shadow-lg border-2 border-white ring-2 ring-offset-0
-                                            `} style={{ '--tw-ring-color': isUnlocked ? '#FFD700' : 'transparent' } as React.CSSProperties}>
+                                            {/* Rank Icon Badge - Medal Style with Animations */}
+                                            <motion.div
+                                                animate={isCurrent ? {
+                                                    rotate: [0, -10, 10, -10, 10, 0],
+                                                    scale: [1, 1.1, 1]
+                                                } : {}}
+                                                transition={isCurrent ? {
+                                                    rotate: {
+                                                        duration: 2,
+                                                        repeat: Infinity,
+                                                        repeatDelay: 3,
+                                                        ease: "easeInOut"
+                                                    },
+                                                    scale: {
+                                                        duration: 1.5,
+                                                        repeat: Infinity,
+                                                        ease: "easeInOut"
+                                                    }
+                                                } : {}}
+                                                className={`
+                                                    w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-1.5 z-10
+                                                    ${isUnlocked ? `bg-gradient-to-tr ${rank.color} to-white` : 'bg-slate-200'}
+                                                    relative shadow-lg border-2 border-white ring-2 ring-offset-0
+                                                `}
+                                                style={{ '--tw-ring-color': isUnlocked ? '#FFD700' : 'transparent' } as React.CSSProperties}
+                                            >
+                                                {/* Animated Golden Ring for Current */}
+                                                {isCurrent && (
+                                                    <motion.div
+                                                        animate={{
+                                                            scale: [1, 1.3, 1],
+                                                            opacity: [0.5, 0.8, 0.5]
+                                                        }}
+                                                        transition={{
+                                                            duration: 2,
+                                                            repeat: Infinity,
+                                                            ease: "easeInOut"
+                                                        }}
+                                                        className="absolute inset-0 rounded-full border-2 border-yellow-400"
+                                                        style={{ filter: 'blur(2px)' }}
+                                                    />
+                                                )}
+
                                                 {/* Inner Circle for depth */}
                                                 <div className={`absolute inset-1 rounded-full border border-white/30 ${isUnlocked ? rank.color : ''}`}></div>
 
-                                                {isLocked ? <Lock size={16} className="text-slate-500" /> : <rank.icon size={20} className="text-white drop-shadow-md" />}
+                                                {/* Animated Icon */}
+                                                <motion.div
+                                                    animate={isCurrent ? {
+                                                        scale: [1, 1.2, 1]
+                                                    } : {}}
+                                                    transition={{
+                                                        duration: 1.5,
+                                                        repeat: Infinity,
+                                                        ease: "easeInOut"
+                                                    }}
+                                                >
+                                                    {isLocked ? <Lock size={14} className="text-slate-500" /> : <rank.icon size={18} className="text-white drop-shadow-md" />}
+                                                </motion.div>
 
-                                                {/* Success Check */}
+                                                {/* Animated Success Check */}
                                                 {isUnlocked && !isCurrent && (
-                                                    <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-white shadow-sm z-20">
+                                                    <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        transition={{
+                                                            type: "spring",
+                                                            stiffness: 500,
+                                                            damping: 15,
+                                                            delay: index * 0.15 + 0.3
+                                                        }}
+                                                        whileHover={{
+                                                            scale: 1.3,
+                                                            rotate: 360,
+                                                            transition: { duration: 0.5 }
+                                                        }}
+                                                        className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-white shadow-sm z-20"
+                                                    >
                                                         <CheckCircle size={10} className="text-white" />
-                                                    </div>
+                                                    </motion.div>
                                                 )}
-                                            </div>
+                                            </motion.div>
 
                                             {/* Rank Title */}
                                             <p className={`
@@ -446,7 +595,7 @@ export default function RepublicDayHeroPage() {
 
                                             {/* Sales Milestone */}
                                             <div className={`
-                                                mt-1 px-1.5 py-0.5 rounded-full text-[9px] md:text-[10px] font-bold z-10
+                                                mt-1 px-2 py-1 rounded-full text-[9px] md:text-[10px] font-bold z-10
                                                 ${isUnlocked ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-500'}
                                             `}>
                                                 {rank.minSales === 0 ? 'Start' : `₹${rank.minSales.toLocaleString('en-IN')}+`}
