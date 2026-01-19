@@ -285,22 +285,23 @@ export default function RepublicDayHeroPage() {
                     <div>
                         <div className="flex items-center gap-2 mb-1 bg-orange-50 w-fit px-3 py-1 rounded-full border border-orange-100">
                             <IndianFlag size={18} />
-                            <span className="text-xs font-bold tracking-wider text-[#000080] uppercase">Republic Day Special</span>
+                            <span className="text-xs font-bold tracking-wider text-[#000080] uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>Republic Day Special</span>
                             <IndianFlag size={18} />
                         </div>
-                        <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
+                        <h1 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.03em' }}>
                             Honour & Glory <span className="text-[#FF9933]">Path</span>
                         </h1>
-                        <p className="text-slate-600 font-medium mt-0.5 text-xs sm:text-base">
+                        <p className="text-slate-600 font-medium mt-0.5 text-xs sm:text-base" style={{ fontFamily: 'Inter, sans-serif' }}>
                             Rise through the ranks: Cadet to General
                         </p>
                     </div>
 
                     <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm p-2 sm:p-3 rounded-2xl border border-white shadow-sm">
                         <div className="text-right">
-                            <p className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wide">Current Sales</p>
+                            <p className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wide" style={{ fontFamily: 'Poppins, sans-serif' }}>Current Sales</p>
                             <motion.p
                                 className="text-lg sm:text-2xl font-extrabold bg-gradient-to-r from-orange-500 via-blue-700 to-green-600 bg-clip-text text-transparent bg-[length:200%_auto]"
+                                style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}
                                 animate={{
                                     backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                                     y: [0, -2, 0]
@@ -439,7 +440,7 @@ export default function RepublicDayHeroPage() {
                                                 text-xs md:text-sm font-extrabold text-center px-1 leading-tight z-10
                                                 ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}
                                                 uppercase tracking-tight
-                                            `}>
+                                            `} style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800 }}>
                                                 {rank.title}
                                             </p>
 
@@ -476,19 +477,27 @@ export default function RepublicDayHeroPage() {
                         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-orange-500 via-white to-green-600 p-[1px] rounded-full shadow-md">
                             <div className="bg-white px-3 py-0.5 rounded-full flex items-center gap-1.5">
                                 <Star size={10} className="text-orange-500 fill-orange-500" />
-                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Next Mission</span>
+                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}>Next Mission</span>
                                 <Star size={10} className="text-green-600 fill-green-600" />
                             </div>
                         </div>
 
                         <div className="mt-2 mb-4">
-                            <h3 className="text-xl font-black text-slate-800 mb-0.5">{nextRank ? nextRank.title : 'Mission Accomplished!'}</h3>
-                            <div className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
-                                <span>Target: ₹{nextRank?.minSales.toLocaleString('en-IN')}</span>
-                                <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                <span className={`${(currentSales / (nextRank?.minSales || 1)) >= 0.5 ? 'text-green-600' : 'text-orange-500'}`}>
-                                    {Math.min(100, Math.round((currentSales / (nextRank?.minSales || 1)) * 100))}% Done
-                                </span>
+                            <h3 className="text-xl font-black text-slate-800 mb-0.5" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}>{nextRank ? nextRank.title : 'Mission Accomplished!'}</h3>
+                            <div className="flex flex-col items-center justify-center gap-1.5">
+                                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold" style={{ fontFamily: 'Poppins, sans-serif' }}>Target</p>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-black bg-gradient-to-r from-orange-500 via-purple-600 to-green-600 bg-clip-text text-transparent" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900, letterSpacing: '-0.02em' }}>
+                                        ₹{nextRank?.minSales.toLocaleString('en-IN')}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="h-px w-8 bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+                                    <span className={`text-sm font-bold ${(currentSales / (nextRank?.minSales || 1)) >= 0.5 ? 'text-green-600' : 'text-orange-500'}`} style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}>
+                                        {Math.min(100, Math.round((currentSales / (nextRank?.minSales || 1)) * 100))}% Done
+                                    </span>
+                                    <div className="h-px w-8 bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -517,6 +526,7 @@ export default function RepublicDayHeroPage() {
                         <button
                             onClick={handleContinue}
                             className="w-full py-3 bg-[#000080] text-white rounded-xl font-bold text-base shadow-[0_10px_20px_-5px_rgba(0,0,128,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(0,0,128,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
+                            style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
                         >
                             <span className="relative z-10">Enter Dashboard</span>
                             <ChevronRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
@@ -538,6 +548,7 @@ export default function RepublicDayHeroPage() {
                         />
                         <motion.p
                             className="text-[10px] sm:text-xs font-black tracking-[0.15em] sm:tracking-[0.2em] uppercase bg-gradient-to-r from-orange-600 via-[#000080] to-green-700 bg-clip-text text-transparent bg-[length:200%_auto] whitespace-nowrap"
+                            style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}
                             animate={{
                                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                             }}
