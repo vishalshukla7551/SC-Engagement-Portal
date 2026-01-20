@@ -2,49 +2,54 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import FestiveHeader from '@/components/FestiveHeader';
-import FestiveFooter from '@/components/FestiveFooter';
+// import FestiveHeader from '@/components/FestiveHeader';
+// import FestiveFooter from '@/components/FestiveFooter';
+import RepublicHeader from '@/components/RepublicHeader';
+import RepublicFooter from '@/components/RepublicFooter';
+
 
 export default function LandingPage({ userName = '' }) {
   const [activeSlide, setActiveSlide] = useState(0);
 
-  // Banner data - can be fetched from API
+  // Republican Day Banner data
   const banners = [
     {
       id: 1,
-      title: 'GOOD NEWS TEAM! 🎉',
-      subtitle: 'SPOT INCENTIVE LIVE',
-      description: 'GET YOUR INCENTIVE INSTANT',
+      title: 'REPUBLIC DAY SPECIAL �🇳',
+      subtitle: 'SALES DOST SALUTES',
+      description: 'CELEBRATE WITH SUPER INCENTIVES',
       highlights: [
-        '💰 ₹100 VOUCHER on every ADLD sold',
-        '🎁 ₹300 VOUCHER on every Combo sold',
+        '🪁 Special 26th Jan Rewards',
+        '�🇳 Earn Extra on every Sale',
       ],
-      validity: 'Valid for 18 Oct to 26 Oct',
-      gradient: 'from-red-400 via-orange-300 to-yellow-300',
+      validity: 'Valid till 28th Jan',
+      gradient: 'from-[#FF9933] to-[#FFB366]', // Saffron gradient
     },
     {
       id: 2,
-      title: 'INCENTIVE ALERT! 🔔',
-      subtitle: 'NEW REWARDS',
-      description: 'EARN MORE THIS MONTH',
+      title: 'JAI HIND TEAM! 🫡',
+      subtitle: 'HEROES OF SALES',
+      description: 'BE A LEADER LIKE A SOLDIER',
       highlights: [
-        '🎯 Bonus on target achievement',
-        '⭐ Special rewards unlocked',
+        '�️ Rank up to General',
+        '🎯 Double points on Targets',
       ],
       validity: 'Limited time offer',
-      gradient: 'from-purple-400 via-pink-300 to-orange-300',
+      gradient: 'from-[#000080] to-[#1a1a5e]', // Navy Blue gradient
+      textColor: 'text-white'
     },
     {
       id: 3,
-      title: 'SPECIAL BONUS! 💎',
-      subtitle: 'EXCLUSIVE OFFER',
-      description: 'MAXIMIZE YOUR EARNINGS',
+      title: 'CELEBRATE FREEDOM 🪁',
+      subtitle: 'FINANCIAL FREEDOM',
+      description: 'UNLEASH YOUR EARNING POTENTIAL',
       highlights: [
-        '🚀 Double points this week',
-        '💪 Beat your best record',
+        '🚀 Skyrocket your Income',
+        '� Green zone Incentives',
       ],
       validity: 'Ends this weekend',
-      gradient: 'from-blue-400 via-teal-300 to-green-300',
+      gradient: 'from-[#138808] to-[#1a990a]', // Green gradient
+      textColor: 'text-white'
     },
   ];
 
@@ -63,37 +68,37 @@ export default function LandingPage({ userName = '' }) {
       id: 'sec-incentive',
       title: 'SEC Incentive Form',
       description: 'Submit your sales IMEI wise',
-      icon: '⭐',
+      icon: '📝',
       bgGradient: 'from-[#5B6FD8] to-[#8B7FE8]',
       iconBg: 'bg-[#7B8FE8]/30',
       link: '/SEC/incentive-form',
     },
     {
-      id: 'incentive-passbook',
-      title: 'Incentive Passbook',
-      description: 'Track Your Earning',
-      icon: '💼',
+      id: 'ranking',
+      title: 'Ranking',
+      description: 'View Your Progress',
+      icon: '�',
       bgGradient: 'from-[#4CAF93] to-[#5FD4B3]',
       iconBg: 'bg-[#5CC4A3]/30',
-      link: '/SEC/passbook',
+      link: '/SEC/republic-day-hero',
     },
     {
       id: 'claim-raise',
       title: 'SC+ Claim Raise Procedure',
       description: 'Learn More',
-      icon: '🛒',
+      icon: '�',
       bgGradient: 'from-[#C96E6E] via-[#D8926E] to-[#E8B86E]',
       iconBg: 'bg-[#D88E6E]/30',
       link: '/SEC/claim-procedure',
     },
     {
-      id: 'training',
-      title: 'ProtectMax Training',
-      description: 'Learn More',
-      icon: '⭐',
-      bgGradient: 'from-[#A86638] to-[#D89038]',
-      iconBg: 'bg-[#C88638]/30',
-      link: '/SEC/training',
+      id: 'hall-of-fame',
+      title: 'Hall of Fame',
+      description: 'View Top Performers',
+      icon: '🏆',
+      bgGradient: 'from-[#D4AF37] to-[#AA6C39]', // Gold/Bronze gradient
+      iconBg: 'bg-[#FFD700]/20',
+      link: '/SEC/republic-leaderboard',
     },
   ];
 
@@ -103,14 +108,15 @@ export default function LandingPage({ userName = '' }) {
 
   return (
     <div className="min-h-screen md:h-auto h-screen bg-gray-50 flex flex-col md:overflow-visible overflow-hidden">
-      <FestiveHeader userName={userName || 'Guest'} />
+      <RepublicHeader userName={userName || 'Guest'} />
+      {/* <FestiveHeader userName={userName || 'Guest'} /> */}
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
 
         {/* Banner Carousel */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mb-4 sm:mb-5 md:mb-6">
-          <div className="relative overflow-hidden rounded-xl md:rounded-2xl">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mb-4 sm:mb-5 md:mb-6 pt-4">
+          <div className="relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg">
             <div
               className="flex transition-transform duration-500 ease-in-out"
               style={{ transform: `translateX(-${activeSlide * 100}%)` }}
@@ -121,28 +127,33 @@ export default function LandingPage({ userName = '' }) {
                   className="w-full flex-shrink-0"
                 >
                   <div
-                    className={`bg-gradient-to-br ${banner.gradient} px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 lg:py-8 rounded-xl md:rounded-2xl min-h-[160px] sm:min-h-[180px] md:min-h-[220px] lg:min-h-[260px] flex flex-col justify-center items-center text-center`}
+                    className={`bg-gradient-to-br ${banner.gradient} px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 lg:py-8 min-h-[160px] sm:min-h-[180px] md:min-h-[220px] lg:min-h-[260px] flex flex-col justify-center items-center text-center relative overflow-hidden`}
                   >
-                    <p className="text-[10px] sm:text-xs md:text-sm font-bold text-gray-800 mb-0.5 sm:mb-1">
+                    {/* Watermark/Background decoration */}
+                    <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
+                      <span className="text-[150px]">🇮🇳</span>
+                    </div>
+
+                    <p className={`text-[10px] sm:text-xs md:text-sm font-bold mb-0.5 sm:mb-1 uppercase tracking-wider ${banner.textColor || 'text-gray-900'}`}>
                       {banner.title}
                     </p>
-                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-gray-900 mb-0.5 sm:mb-1 md:mb-2">
-                      {banner.subtitle.replace('SPOT', 'SC')}
+                    <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold mb-0.5 sm:mb-1 md:mb-2 ${banner.textColor || 'text-gray-900'}`}>
+                      {banner.subtitle}
                     </h2>
-                    <p className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-800 mb-2 sm:mb-3 md:mb-4">
+                    <p className={`text-[10px] sm:text-xs md:text-sm font-semibold mb-2 sm:mb-3 md:mb-4 ${banner.textColor || 'text-gray-800'}`}>
                       {banner.description}
                     </p>
-                    <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px]">
+                    <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px] relative z-10">
                       {banner.highlights.map((highlight, idx) => (
                         <div
                           key={idx}
-                          className="bg-white/95 rounded-full px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm font-semibold text-gray-900"
+                          className="bg-white/95 rounded-full px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm font-bold text-gray-900 shadow-sm"
                         >
                           {highlight}
                         </div>
                       ))}
                     </div>
-                    <p className="text-[9px] sm:text-[10px] md:text-xs font-medium text-gray-800 mt-2 sm:mt-3 md:mt-4">
+                    <p className={`text-[9px] sm:text-[10px] md:text-xs font-medium mt-2 sm:mt-3 md:mt-4 opacity-80 ${banner.textColor || 'text-gray-800'}`}>
                       {banner.validity}
                     </p>
                   </div>
@@ -151,17 +162,21 @@ export default function LandingPage({ userName = '' }) {
             </div>
           </div>
 
-          {/* Dots Indicator */}
+          {/* Dots Indicator - Tricolor */}
           <div className="flex justify-center gap-1.5 sm:gap-2 mt-2.5 sm:mt-3 md:mt-4">
             {banners.map((_, index) => (
               <button
                 key={index}
                 onClick={() => handleSlideChange(index)}
-                className={`h-1.5 sm:h-2 md:h-2.5 rounded-full transition-all duration-300 ${
-                  activeSlide === index
-                    ? 'w-6 sm:w-8 md:w-10 bg-gray-900'
-                    : 'w-1.5 sm:w-2 md:w-2.5 bg-gray-300'
-                }`}
+                className={`h-1.5 sm:h-2 md:h-2.5 rounded-full transition-all duration-300 ${activeSlide === index
+                  ? 'w-6 sm:w-8 md:w-10'
+                  : 'w-1.5 sm:w-2 md:w-2.5 bg-gray-300'
+                  }`}
+                style={{
+                  backgroundColor: activeSlide === index
+                    ? (index === 0 ? '#FF9933' : index === 1 ? '#000080' : '#138808')
+                    : undefined
+                }}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
@@ -199,7 +214,8 @@ export default function LandingPage({ userName = '' }) {
         </div>
       </main>
 
-      <FestiveFooter />
+      <RepublicFooter />
+      {/* <FestiveFooter /> */}
     </div>
   );
 }

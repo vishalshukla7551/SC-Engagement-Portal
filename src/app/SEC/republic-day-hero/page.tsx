@@ -159,30 +159,43 @@ const JetFlypast = () => {
 export default function RepublicDayHeroPage() {
     const router = useRouter();
 
-    // Mock User Data - In a real app, this would come from your auth/user context
     const [currentSales, setCurrentSales] = useState(0);
-    // Let's assume user has done 1,10,000 sales (Major Level)
-    const userRealSales = 110000;
+    const [loading, setLoading] = useState(true);
 
-    // Animation effect for sales count up
     useEffect(() => {
-        let start = 0;
-        const duration = 2000;
-        const stepTime = 20;
-        const steps = duration / stepTime;
-        const increment = userRealSales / steps;
+        const fetchSales = async () => {
+            try {
+                const res = await fetch('/api/sec/republic-hero');
+                const data = await res.json();
 
-        const timer = setInterval(() => {
-            start += increment;
-            if (start >= userRealSales) {
-                setCurrentSales(userRealSales);
-                clearInterval(timer);
-            } else {
-                setCurrentSales(Math.floor(start));
+                if (data.success) {
+                    const userRealSales = data.data.totalSales;
+
+                    // Animate count up
+                    let start = 0;
+                    const duration = 2000;
+                    const stepTime = 20;
+                    const steps = duration / stepTime;
+                    const increment = userRealSales / steps;
+
+                    const timer = setInterval(() => {
+                        start += increment;
+                        if (start >= userRealSales) {
+                            setCurrentSales(userRealSales);
+                            clearInterval(timer);
+                        } else {
+                            setCurrentSales(Math.floor(start));
+                        }
+                    }, stepTime);
+                }
+            } catch (error) {
+                console.error("Failed to fetch republic hero sales", error);
+            } finally {
+                setLoading(false);
             }
-        }, stepTime);
+        };
 
-        return () => clearInterval(timer);
+        fetchSales();
     }, []);
 
     // Determine Current Rank Index
@@ -394,18 +407,21 @@ export default function RepublicDayHeroPage() {
                                                     }}
                                                     className="relative w-24 h-28 drop-shadow-2xl"
                                                 >
-                                                    {/* Enhanced Tricolor Pulse Effect */}
+                                                    {/* Blue Flicker Glow - Tightened & Sharpened */}
                                                     <motion.div
                                                         animate={{
-                                                            opacity: [0.2, 0.4, 0.2],
-                                                            scale: [1, 1.2, 1]
+                                                            opacity: [0.6, 0.9, 0.6],
+                                                            scale: [1, 1.1, 1]
                                                         }}
                                                         transition={{
-                                                            duration: 2,
+                                                            duration: 1.5,
                                                             repeat: Infinity,
                                                             ease: "easeInOut"
                                                         }}
-                                                        className="absolute inset-0 bg-gradient-to-r from-orange-500 via-white to-green-500 rounded-full blur-2xl"
+                                                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-blue-500 rounded-full blur-[20px]"
+                                                        style={{
+                                                            boxShadow: '0 0 15px rgba(59, 130, 246, 0.6)'
+                                                        }}
                                                     />
                                                     <Image
                                                         src="/images/samsung-salesperson.png"

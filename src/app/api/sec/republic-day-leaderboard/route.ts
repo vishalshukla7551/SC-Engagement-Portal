@@ -5,14 +5,14 @@ import { Role } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
+// RANKS Updated to match Republic Day Hero Page thresholds
 const RANKS = [
-    { id: 'general', title: 'General', minSales: 1000000 },
-    { id: 'brigadier', title: 'Brigadier', minSales: 600000 },
-    { id: 'colonel', title: 'Colonel', minSales: 400000 },
-    { id: 'major', title: 'Major', minSales: 200000 },
-    { id: 'captain', title: 'Captain', minSales: 100000 },
-    { id: 'lieutenant', title: 'Lieutenant', minSales: 50000 },
-    { id: 'cadet', title: 'Cadet', minSales: 0 },
+    { id: 'brigadier', title: 'Sales Chief Marshal', minSales: 150000 },
+    { id: 'colonel', title: 'Sales Commander', minSales: 120000 },
+    { id: 'major', title: 'Sales Major', minSales: 90000 },
+    { id: 'captain', title: 'Sales Captain', minSales: 51000 },
+    { id: 'lieutenant', title: 'Sales Lieutenant', minSales: 21000 },
+    { id: 'cadet', title: 'Salesveer', minSales: 0 },
 ];
 
 function getRank(sales: number) {
@@ -21,8 +21,7 @@ function getRank(sales: number) {
 
 function getNextRank(currentRankId: string) {
     const currentIndex = RANKS.findIndex(r => r.id === currentRankId);
-    // RANKS is ordered descending (General first), so next rank (higher sales) is index - 1
-    if (currentIndex <= 0) return null; // Already General
+    if (currentIndex <= 0) return null;
     return RANKS[currentIndex - 1];
 }
 
@@ -46,8 +45,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'SEC profile not found' }, { status: 404 });
         }
 
-        // 3. Fetch Sales Data (Republic Day Campaign - e.g., from Jan 1, 2026)
-        // Adjust start date as needed.
+        // 3. Fetch Sales Data
         const startDate = new Date('2026-01-01T00:00:00.000Z');
 
         const reports = await prisma.spotIncentiveReport.findMany({
@@ -69,7 +67,7 @@ export async function GET(req: NextRequest) {
                         employeeId: true,
                         store: {
                             select: {
-                                city: true
+                                name: true // Changed from city to name
                             }
                         }
                     }
@@ -81,12 +79,12 @@ export async function GET(req: NextRequest) {
         const userSalesMap = new Map<string, {
             secId: string,
             name: string,
-            city: string,
+            storeName: string,
             salesAmount: number
         }>();
 
         reports.forEach(report => {
-            if (!report.secUser) return; // Skip if no user attached (shouldn't happen)
+            if (!report.secUser) return;
 
             const { secId } = report;
             const sales = report.plan?.price || 0;
@@ -95,7 +93,7 @@ export async function GET(req: NextRequest) {
                 userSalesMap.set(secId, {
                     secId: secId,
                     name: report.secUser.fullName || 'Unknown',
-                    city: report.secUser.store?.city || '',
+                    storeName: report.secUser.store?.name || '', // Using store name
                     salesAmount: 0
                 });
             }
@@ -117,29 +115,23 @@ export async function GET(req: NextRequest) {
 
         // 6. Build Response Structure
         const leaderboards: Record<string, any[]> = {};
-
-        // Initialize empty arrays
         RANKS.forEach(r => leaderboards[r.id] = []);
 
-        // Group users
         allUsers.forEach(user => {
             leaderboards[user.rankId].push(user);
         });
 
-        // Sort and Top 3
         Object.keys(leaderboards).forEach(rankId => {
             leaderboards[rankId].sort((a, b) => b.salesAmount - a.salesAmount);
-            // We keep strictly Top 3 for display
-            leaderboards[rankId] = leaderboards[rankId].slice(0, 3);
+            // Limit to Top 50 instead of Top 3 for scrollable list
+            leaderboards[rankId] = leaderboards[rankId].slice(0, 50);
         });
 
-        // 7. Get Current User Stats forms THE FULL LIST (before slice)
-        // We need to find the user in `allUsers` to know their exact global stats
+        // 7. Get Current User Stats
         const currentUserData = allUsers.find(u => u.secId === currentSec.id);
 
         let userResponse = null;
         if (currentUserData) {
-            // Find position in their rank
             const rankUsers = allUsers.filter(u => u.rankId === currentUserData.rankId)
                 .sort((a, b) => b.salesAmount - a.salesAmount);
             const position = rankUsers.findIndex(u => u.secId === currentSec.id) + 1;
@@ -149,10 +141,11 @@ export async function GET(req: NextRequest) {
             userResponse = {
                 secId: currentUserData.secId,
                 name: currentUserData.name,
+                storeName: currentUserData.storeName,
                 salesAmount: currentUserData.salesAmount,
                 rankId: currentUserData.rankId,
                 rankTitle: currentUserData.rankTitle,
-                positionInRank: position, // e.g. 5th in Captain
+                positionInRank: position,
                 nextRank: nextRank ? {
                     title: nextRank.title,
                     targetSales: nextRank.minSales,
@@ -160,18 +153,18 @@ export async function GET(req: NextRequest) {
                 } : null
             };
         } else {
-            // User has no sales yet
             userResponse = {
                 secId: currentSec.id,
                 name: currentSec.fullName,
+                storeName: '',
                 salesAmount: 0,
                 rankId: 'cadet',
-                rankTitle: 'Cadet',
+                rankTitle: 'Salesveer',
                 positionInRank: 0,
                 nextRank: {
-                    title: 'Lieutenant',
-                    targetSales: 50000,
-                    remaining: 50000
+                    title: 'Sales Lieutenant',
+                    targetSales: 21000,
+                    remaining: 21000
                 }
             };
         }

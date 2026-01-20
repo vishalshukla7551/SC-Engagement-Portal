@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { Award, Download, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import FestiveHeader from '@/components/FestiveHeader';
-import FestiveFooter from '@/components/FestiveFooter';
+// import FestiveHeader from '@/components/FestiveHeader';
+// import FestiveFooter from '@/components/FestiveFooter';
+import RepublicHeader from '@/components/RepublicHeader';
+import RepublicFooter from '@/components/RepublicFooter';
 
 interface Certificate {
   id: string;
@@ -258,7 +260,7 @@ export default function CertificatesPage() {
 
   return (
     <div className="h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col overflow-hidden">
-      <FestiveHeader hideGreeting />
+      <RepublicHeader hideGreeting />
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <motion.button
@@ -406,7 +408,7 @@ export default function CertificatesPage() {
           )}
         </div>
       </main>
-      <FestiveFooter />
+      <RepublicFooter />
     </div>
   );
 }

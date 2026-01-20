@@ -15,7 +15,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-// Rank Configuration (Updated Titles)
+// Rank Configuration (Updated Titles matching Backend)
 const RANKS = [
     { id: 'brigadier', title: 'Sales Chief Marshal', color: 'from-orange-500 to-orange-700', icon: Star, min: '₹1.5L' },
     { id: 'colonel', title: 'Sales Commander', color: 'from-purple-500 to-purple-700', icon: Award, min: '₹1.2L' },
@@ -24,47 +24,6 @@ const RANKS = [
     { id: 'lieutenant', title: 'Sales Lieutenant', color: 'from-emerald-500 to-emerald-700', icon: Star, min: '₹21k' },
     { id: 'cadet', title: 'Salesveer', color: 'from-stone-400 to-stone-600', icon: Shield, min: '₹0' },
 ];
-
-// Mock Data fallbacks if API fails or is empty for demo
-const MOCK_DATA = {
-    brigadier: [
-        { name: "Rohan Das", city: "Bangalore", salesAmount: 850000 },
-        { name: "Amit Verma", city: "Pune", salesAmount: 720000 }
-    ],
-    colonel: [
-        { name: "Priya Sharma", city: "Jaipur", salesAmount: 550000 },
-        { name: "Suresh Raina", city: "Chennai", salesAmount: 480000 },
-        { name: "Deepak Hooda", city: "Lucknow", salesAmount: 420000 }
-    ],
-    major: [
-        { name: "Kavita Gill", city: "Chandigarh", salesAmount: 320000 },
-        { name: "Rahul Dravid", city: "Indore", salesAmount: 290000 },
-        { name: "Manish Pandey", city: "Mysore", salesAmount: 240000 }
-    ],
-    captain: [
-        { name: "Hardik Pandya", city: "Surat", salesAmount: 180000 },
-        { name: "Ravindra Jadeja", city: "Rajkot", salesAmount: 150000 },
-        { name: "Shikhar Dhawan", city: "Delhi", salesAmount: 120000 },
-        { name: "Ishant Sharma", city: "Noida", salesAmount: 110000 }
-    ],
-    lieutenant: [
-        { name: "Rishabh Pant", city: "Roorkee", salesAmount: 90000 },
-        { name: "Shreyas Iyer", city: "Mumbai", salesAmount: 750000 },
-        { name: "KL Rahul", city: "Bangalore", salesAmount: 60000 }
-    ],
-    cadet: [
-        { name: "Shubman Gill", city: "Fazilka", salesAmount: 40000 },
-        { name: "Prithvi Shaw", city: "Thane", salesAmount: 25000 }
-    ]
-};
-
-// Demo User for Animation
-const DEMO_USER = {
-    name: "Arjun Singh",
-    city: "New Delhi",
-    salesAmount: 450000,
-    isPromoting: true
-};
 
 const IndianFlag = ({ size = 24 }: { size?: number }) => (
     <div className="relative overflow-hidden rounded-[2px] shadow-sm border border-black/5 bg-white isolate" style={{ width: size, height: (size * 2) / 3 }}>
@@ -99,8 +58,6 @@ const IndianFlag = ({ size = 24 }: { size?: number }) => (
         </svg>
     </div>
 );
-
-
 
 const JetFlypast = () => {
     // Jets fly across periodically
@@ -190,59 +147,40 @@ const BackgroundEffects = () => (
 
 export default function RepublicLeaderboardPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [leaderboardData, setLeaderboardData] = useState<Record<string, any[]>>({});
+    const [currentUser, setCurrentUser] = useState<any>(null);
 
     // Refs for Rank Blocks
     const rankRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-    const [simulating, setSimulating] = useState(false);
-    const [demoRankIndex, setDemoRankIndex] = useState(5); // Start at lowest (Cadet/Salesveer is index 5)
-    const TARGET_RANK_INDEX = 1; // Target: Colonel/Commander (Index 1)
 
-    // Simulation Loop
     useEffect(() => {
-        if (!simulating) return;
+        const fetchLeaderboard = async () => {
+            try {
+                const res = await fetch('/api/sec/republic-day-leaderboard');
+                const data = await res.json();
+                if (data.success) {
+                    setLeaderboardData(data.leaderboards);
+                    setCurrentUser(data.currentUser);
 
-        const interval = setInterval(() => {
-            setDemoRankIndex(prev => {
-                const next = prev - 1;
-
-                // Auto-scroll to follow the action
-                if (next >= 0 && next < RANKS.length) {
-                    const nextRankId = RANKS[next].id;
-                    const element = rankRefs.current[nextRankId];
-                    if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    // Auto-scroll to user's rank after a short delay
+                    setTimeout(() => {
+                        const userRankId = data.currentUser?.rankId;
+                        if (userRankId && rankRefs.current[userRankId]) {
+                            rankRefs.current[userRankId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 500);
                 }
+            } catch (error) {
+                console.error("Failed to fetch leaderboard", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-                if (prev <= TARGET_RANK_INDEX) {
-                    setSimulating(false); // Stop when reached
-                    return prev;
-                }
-                return next; // Move UP the list
-            });
-        }, 400); // 0.4s per level - Very Fast!
-
-        return () => clearInterval(interval);
-    }, [simulating]);
-
-    const startSimulation = () => {
-        setDemoRankIndex(5); // Reset to bottom
-        setSimulating(true);
-        // Scroll to bottom to start
-        setTimeout(() => {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }, 100);
-    };
-
-    // Auto-start on load
-    useEffect(() => {
-        const timer = setTimeout(startSimulation, 1000);
-        return () => clearTimeout(timer);
+        fetchLeaderboard();
     }, []);
 
-    // In a real app, use the data prop or fetch. Merging MOCK_DATA for display.
-    const leaderboardData = MOCK_DATA;
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -300,119 +238,112 @@ export default function RepublicLeaderboardPage() {
                 {/* Vertical Hierarchy Stack */}
                 <div className="flex flex-col items-center">
 
-                    {RANKS.map((rank, rankIndex) => {
-                        let players: any[] = (leaderboardData as any)[rank.id] || [];
-                        const Icon = rank.icon;
-                        const isLast = rankIndex === RANKS.length - 1;
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <RefreshCcw className="w-8 h-8 text-orange-500 animate-spin mb-4" />
+                            <p className="text-slate-500 font-medium">Loading Ranks...</p>
+                        </div>
+                    ) : (
+                        RANKS.map((rank, rankIndex) => {
+                            const players: any[] = leaderboardData[rank.id] || [];
+                            const Icon = rank.icon;
+                            const isLast = rankIndex === RANKS.length - 1;
+                            const isEmpty = players.length === 0;
 
-                        // Inject Demo User if this is the active rank during simulation
-                        // OR if simulation ended and this is the target rank
-                        const isDemoUserHere = (simulating && rankIndex === demoRankIndex) ||
-                            (!simulating && demoRankIndex === rankIndex && demoRankIndex !== 6 && rankIndex === TARGET_RANK_INDEX);
-
-                        if (isDemoUserHere) {
-                            // Add to top of list for visibility
-                            players = [DEMO_USER, ...players];
-                        }
-
-                        if (players.length === 0 && !isDemoUserHere) return null;
-
-                        return (
-                            <div
-                                key={rank.id}
-                                ref={el => { rankRefs.current[rank.id] = el }}
-                                className="w-full flex flex-col items-center relative transition-all duration-500"
-                            >
-
-                                {/* Connector Line (Top) - except for first item */}
-                                {rankIndex !== 0 && (
-                                    <div className="h-8 w-0.5 border-l-2 border-dashed border-slate-300 my-1"></div>
-                                )}
-
-                                {/* Rank Block */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: rankIndex * 0.1 }}
-                                    className={`
-                                        w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative z-10
-                                        ${isDemoUserHere ? 'ring-2 ring-orange-500 shadow-orange-100' : ''}
-                                    `}
+                            return (
+                                <div
+                                    key={rank.id}
+                                    ref={el => { rankRefs.current[rank.id] = el }}
+                                    className="w-full flex flex-col items-center relative transition-all duration-500"
                                 >
-                                    {/* Rank Header */}
-                                    <div className={`p-4 bg-gradient-to-r ${rank.color} text-white flex items-center justify-between relative overflow-hidden transition-all duration-500`}>
-                                        <div className="flex items-center gap-3 relative z-10">
-                                            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
-                                                <Icon size={20} className="text-white drop-shadow-sm" />
+
+                                    {/* Connector Line (Top) - except for first item */}
+                                    {rankIndex !== 0 && (
+                                        <div className="h-8 w-0.5 border-l-2 border-dashed border-slate-300 my-1"></div>
+                                    )}
+
+                                    {/* Rank Block */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.5, delay: rankIndex * 0.1 }}
+                                        className={`
+                                            w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative z-10
+                                            ${currentUser?.rankId === rank.id ? 'ring-2 ring-orange-500 shadow-orange-100' : ''}
+                                            ${isEmpty ? 'opacity-90 grayscale-[0.3]' : ''} 
+                                        `}
+                                    >
+                                        {/* Rank Header */}
+                                        <div className={`p-4 bg-gradient-to-r ${rank.color} text-white flex items-center justify-between relative overflow-hidden transition-all duration-500`}>
+                                            <div className="flex items-center gap-3 relative z-10">
+                                                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
+                                                    <Icon size={20} className="text-white drop-shadow-sm" />
+                                                </div>
+                                                <div>
+                                                    <h2 className="font-black text-lg uppercase tracking-wider font-poppins text-shadow-sm">{rank.title}</h2>
+                                                    <p className="text-[10px] font-medium opacity-90 uppercase tracking-widest">{rank.min}+ Revenue</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h2 className="font-black text-lg uppercase tracking-wider font-poppins text-shadow-sm">{rank.title}</h2>
-                                                <p className="text-[10px] font-medium opacity-90 uppercase tracking-widest">{rank.min}+ Revenue</p>
-                                            </div>
+
+                                            {/* Decorative Background Icon */}
+                                            <Icon className="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rotate-12" />
                                         </div>
 
-                                        {/* Decorative Background Icon */}
-                                        <Icon className="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rotate-12" />
-                                    </div>
-
-                                    {/* Salespersons List */}
-                                    <div className="p-2 space-y-2 bg-slate-50/50">
-                                        {players.map((player, pIndex) => (
-                                            <motion.div
-                                                key={player.name}
-                                                layoutId={player.name === DEMO_USER.name ? 'demo-user-card' : undefined}
-                                                className={`
-                                                    border p-3 rounded-xl flex items-center justify-between shadow-sm hover:shadow-md transition-shadow
-                                                    ${player.name === DEMO_USER.name
-                                                        ? 'bg-orange-50 border-orange-200 z-20 relative'
-                                                        : 'bg-white border-slate-100'}
-                                                `}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`
-                                                        w-8 h-8 rounded-full flex items-center justify-center border
-                                                        ${player.name === DEMO_USER.name ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-slate-100 text-slate-400 border-slate-200'}
-                                                    `}>
-                                                        {player.name === DEMO_USER.name ? <Crown size={14} /> : <User size={14} />}
-                                                    </div>
-                                                    <div>
-                                                        <p className={`font-bold text-sm ${player.name === DEMO_USER.name ? 'text-orange-900' : 'text-slate-700'}`}>
-                                                            {player.name}
-                                                            {player.name === DEMO_USER.name && <span className="ml-2 text-[10px] bg-orange-200 text-orange-800 px-1 rounded">YOU</span>}
-                                                        </p>
-                                                        <p className="text-[10px] text-slate-400 font-medium uppercase">{player.city}</p>
-                                                    </div>
+                                        {/* Salespersons List or Empty State */}
+                                        <div className="p-2 space-y-2 bg-slate-50/50">
+                                            {isEmpty ? (
+                                                <div className="py-6 text-center text-slate-400 flex flex-col items-center gap-2">
+                                                    <Lock size={20} className="opacity-50" />
+                                                    <p className="text-xs font-medium italic">No officers at this rank yet.</p>
+                                                    <p className="text-[10px] uppercase tracking-wide font-bold text-orange-500/80">Be the first!</p>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className={`font-bold text-sm ${player.name === DEMO_USER.name ? 'text-orange-700' : 'text-slate-800'}`}>₹{player.salesAmount.toLocaleString('en-IN')}</p>
-                                                </div>
+                                            ) : (
+                                                players.map((player, pIndex) => {
+                                                    const isMe = currentUser && currentUser.secId === player.secId;
+                                                    return (
+                                                        <motion.div
+                                                            key={player.secId || pIndex}
+                                                            className={`
+                                                                border p-3 rounded-xl flex items-center justify-between shadow-sm hover:shadow-md transition-shadow
+                                                                ${isMe
+                                                                    ? 'bg-orange-50 border-orange-200 z-20 relative'
+                                                                    : 'bg-white border-slate-100'}
+                                                            `}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`
+                                                                    w-8 h-8 rounded-full flex items-center justify-center border
+                                                                    ${isMe ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-slate-100 text-slate-400 border-slate-200'}
+                                                                `}>
+                                                                    {isMe ? <Crown size={14} /> : <User size={14} />}
+                                                                </div>
+                                                                <div>
+                                                                    <p className={`font-bold text-sm ${isMe ? 'text-orange-900' : 'text-slate-700'}`}>
+                                                                        {player.name}
+                                                                        {isMe && <span className="ml-2 text-[10px] bg-orange-200 text-orange-800 px-1 rounded">YOU</span>}
+                                                                    </p>
+                                                                    <p className="text-[10px] text-slate-400 font-medium uppercase">{player.storeName}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className={`font-bold text-sm ${isMe ? 'text-orange-700' : 'text-slate-800'}`}>₹{player.salesAmount.toLocaleString('en-IN')}</p>
+                                                            </div>
+                                                        </motion.div>
+                                                    )
+                                                })
+                                            )}
+                                        </div>
+                                    </motion.div>
 
-                                                {/* Promotion particles for demo user */}
-                                                {player.name === DEMO_USER.name && simulating && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        className="absolute -right-2 -top-2"
-                                                    >
-                                                        <span className="flex h-3 w-3">
-                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-                                                        </span>
-                                                    </motion.div>
-                                                )}
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-
-                                {/* Connector Line (Bottom) - To connect to next block */}
-                                {!isLast && (
-                                    <div className="h-0" /> // Spacer handled by margin
-                                )}
-                            </div>
-                        );
-                    })}
+                                    {/* Connector Line (Bottom) - To connect to next block */}
+                                    {!isLast && (
+                                        <div className="h-0" /> // Spacer handled by margin
+                                    )}
+                                </div>
+                            );
+                        })
+                    )}
 
                 </div>
 
