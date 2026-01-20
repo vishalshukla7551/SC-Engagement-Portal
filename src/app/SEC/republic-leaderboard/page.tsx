@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     Shield,
@@ -192,7 +192,8 @@ export default function RepublicLeaderboardPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
-    // Animation State
+    // Refs for Rank Blocks
+    const rankRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
     const [simulating, setSimulating] = useState(false);
     const [demoRankIndex, setDemoRankIndex] = useState(5); // Start at lowest (Cadet/Salesveer is index 5)
     const TARGET_RANK_INDEX = 1; // Target: Colonel/Commander (Index 1)
@@ -208,7 +209,7 @@ export default function RepublicLeaderboardPage() {
                 // Auto-scroll to follow the action
                 if (next >= 0 && next < RANKS.length) {
                     const nextRankId = RANKS[next].id;
-                    const element = document.getElementById(`rank-${nextRankId}`);
+                    const element = rankRefs.current[nextRankId];
                     if (element) {
                         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
@@ -242,9 +243,17 @@ export default function RepublicLeaderboardPage() {
 
     // In a real app, use the data prop or fetch. Merging MOCK_DATA for display.
     const leaderboardData = MOCK_DATA;
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        setIsMobile(window.innerWidth < 640);
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     return (
-        <div className="min-h-screen relative flex flex-col font-sans mb-10 overflow-hidden bg-slate-50">
+        <div className="min-h-screen h-auto relative flex flex-col font-sans mb-0 overflow-x-hidden bg-slate-50">
             <BackgroundEffects />
 
             {/* Header */}
@@ -268,12 +277,12 @@ export default function RepublicLeaderboardPage() {
                     <div className="w-10" /> {/* Spacer */}
                 </div>
 
-                <div className="text-center relative mb-8 mt-6">
-                    {/* Tactical Brackets */}
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-stone-300"></div>
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-stone-300"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-stone-300"></div>
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-stone-300"></div>
+                <div className="text-center relative mb-6 mt-4 sm:mb-8 sm:mt-6">
+                    {/* Tactical Brackets - Scale with screen size */}
+                    <div className="absolute top-0 left-0 w-4 h-4 sm:w-8 sm:h-8 border-t-2 border-l-2 border-stone-300"></div>
+                    <div className="absolute top-0 right-0 w-4 h-4 sm:w-8 sm:h-8 border-t-2 border-r-2 border-stone-300"></div>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 sm:w-8 sm:h-8 border-b-2 border-l-2 border-stone-300"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 sm:w-8 sm:h-8 border-b-2 border-r-2 border-stone-300"></div>
 
                     <div className="py-6 border-x border-stone-100">
                         <h1 className="text-4xl sm:text-5xl font-black text-slate-800 tracking-tight mb-2 uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>
@@ -309,7 +318,11 @@ export default function RepublicLeaderboardPage() {
                         if (players.length === 0 && !isDemoUserHere) return null;
 
                         return (
-                            <div key={rank.id} id={`rank-${rank.id}`} className="w-full flex flex-col items-center relative transition-all duration-500">
+                            <div
+                                key={rank.id}
+                                ref={el => { rankRefs.current[rank.id] = el }}
+                                className="w-full flex flex-col items-center relative transition-all duration-500"
+                            >
 
                                 {/* Connector Line (Top) - except for first item */}
                                 {rankIndex !== 0 && (

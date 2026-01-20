@@ -319,10 +319,10 @@ export default function RepublicDayHeroPage() {
                 </header>
 
                 {/* Progression Path Visualization - Ladder Style */}
-                <div className="flex-1 flex items-center justify-center relative w-full min-h-0 py-4">
+                <div className="flex-1 flex items-center justify-center relative w-full min-h-0 pt-6 sm:pt-20 pb-4">
 
                     {/* Scrollable Container */}
-                    <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-40 hide-scrollbar">
+                    <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-28 sm:pt-40 hide-scrollbar">
                         <div className="flex items-end gap-2 md:gap-4 px-2 md:px-6 min-w-max mx-auto justify-center" style={{ paddingBottom: '40px' }}>
                             {RANKS.map((rank, index) => {
                                 const isUnlocked = index <= currentRankIndex;
@@ -614,12 +614,12 @@ export default function RepublicDayHeroPage() {
                 </div>
 
                 {/* Footer/Action Section - Enhanced Design */}
-                <div className="mt-16 flex flex-col items-center pb-4 z-20 w-full shrink-0">
+                <div className="mt-16 sm:mt-52 flex flex-col items-center pb-4 z-20 w-full shrink-0">
                     <motion.div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.5 }}
-                        className="bg-white/95 backdrop-blur-2xl p-5 rounded-[1.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-white/50 max-w-sm w-full text-center relative overflow-visible ring-1 ring-slate-900/5 items-center mx-auto"
+                        className="bg-white/95 backdrop-blur-2xl p-4 rounded-[1.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-white/50 max-w-[280px] w-full text-center relative overflow-visible ring-1 ring-slate-900/5 items-center mx-auto"
                     >
                         {/* Decorative Badge at Top Center */}
                         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-orange-500 via-white to-green-600 p-[1px] rounded-full shadow-md">
@@ -630,12 +630,12 @@ export default function RepublicDayHeroPage() {
                             </div>
                         </div>
 
-                        <div className="mt-2 mb-4">
-                            <h3 className="text-xl font-black text-slate-800 mb-0.5" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}>{nextRank ? nextRank.title : 'Mission Accomplished!'}</h3>
+                        <div className="mt-1 mb-3">
+                            <h3 className="text-lg font-black text-slate-800 mb-0.5" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}>{nextRank ? nextRank.title : 'Mission Accomplished!'}</h3>
                             <div className="flex flex-col items-center justify-center gap-1.5">
                                 <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold" style={{ fontFamily: 'Poppins, sans-serif' }}>Target</p>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-black bg-gradient-to-r from-orange-500 via-purple-600 to-green-600 bg-clip-text text-transparent" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900, letterSpacing: '-0.02em' }}>
+                                    <span className="text-xl font-black bg-gradient-to-r from-orange-500 via-purple-600 to-green-600 bg-clip-text text-transparent" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900, letterSpacing: '-0.02em' }}>
                                         ₹{nextRank?.minSales.toLocaleString('en-IN')}
                                     </span>
                                 </div>
@@ -650,7 +650,7 @@ export default function RepublicDayHeroPage() {
                         </div>
 
                         {nextRank && (
-                            <div className="w-full relative h-3 bg-slate-100 rounded-full mb-5 shadow-inner overflow-hidden ring-1 ring-slate-900/5">
+                            <div className="w-full relative h-2 bg-slate-100 rounded-full mb-4 shadow-inner overflow-hidden ring-1 ring-slate-900/5">
                                 {/* Tricolor Progress Bar */}
                                 <motion.div
                                     initial={{ width: 0 }}
@@ -674,7 +674,7 @@ export default function RepublicDayHeroPage() {
                         <div className="flex flex-col gap-3 w-full">
                             <button
                                 onClick={() => router.push('/SEC/incentive-form')}
-                                className="w-full py-3 bg-[#000080] text-white rounded-xl font-bold text-base shadow-[0_10px_20px_-5px_rgba(0,0,128,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(0,0,128,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
+                                className="w-full py-2.5 bg-[#000080] text-white rounded-xl font-bold text-sm shadow-[0_10px_20px_-5px_rgba(0,0,128,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(0,0,128,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
                                 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
                             >
                                 <span className="relative z-10 uppercase">Submit Your Sales</span>
@@ -686,10 +686,10 @@ export default function RepublicDayHeroPage() {
 
                             <button
                                 onClick={() => router.push('/SEC/republic-leaderboard')}
-                                className="w-full py-3 bg-white text-[#000080] border-2 border-[#000080] rounded-xl font-bold text-base shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
+                                className="w-full py-2.5 bg-white text-[#000080] border-2 border-[#000080] rounded-xl font-bold text-sm shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
                                 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
                             >
-                                <span className="relative z-10 uppercase">View Leaderboard</span>
+                                <span className="relative z-10 uppercase">HALL OF FAME</span>
                                 <Award size={18} className="relative z-10 group-hover:scale-110 transition-transform" strokeWidth={2} />
                             </button>
                         </div>
