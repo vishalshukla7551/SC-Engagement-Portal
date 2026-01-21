@@ -160,16 +160,23 @@ export default function RepublicDayHeroPage() {
     const router = useRouter();
 
     const [currentSales, setCurrentSales] = useState(0);
+    const [rankSales, setRankSales] = useState(0); // New state for stable rank positioning
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
+        let timer: NodeJS.Timeout | null = null;
+
         const fetchSales = async () => {
             try {
                 const res = await fetch('/api/sec/republic-hero');
                 const data = await res.json();
 
-                if (data.success) {
+                if (data.success && isMounted) {
                     const userRealSales = data.data.totalSales;
+
+                    // Set rank sales immediately to avoid avatar jumping during count animation
+                    setRankSales(userRealSales);
 
                     // Animate count up
                     let start = 0;
@@ -178,11 +185,15 @@ export default function RepublicDayHeroPage() {
                     const steps = duration / stepTime;
                     const increment = userRealSales / steps;
 
-                    const timer = setInterval(() => {
+                    timer = setInterval(() => {
+                        if (!isMounted) {
+                            if (timer) clearInterval(timer);
+                            return;
+                        }
                         start += increment;
                         if (start >= userRealSales) {
                             setCurrentSales(userRealSales);
-                            clearInterval(timer);
+                            if (timer) clearInterval(timer);
                         } else {
                             setCurrentSales(Math.floor(start));
                         }
@@ -191,15 +202,20 @@ export default function RepublicDayHeroPage() {
             } catch (error) {
                 console.error("Failed to fetch republic hero sales", error);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
 
         fetchSales();
+
+        return () => {
+            isMounted = false;
+            if (timer) clearInterval(timer);
+        };
     }, []);
 
-    // Determine Current Rank Index
-    const currentRankIndex = RANKS.findLastIndex(rank => currentSales >= rank.minSales);
+    // Determine Current Rank Index based on STABLE rankSales, not animating currentSales
+    const currentRankIndex = RANKS.findLastIndex(rank => rankSales >= rank.minSales);
     const nextRank = RANKS[currentRankIndex + 1];
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -423,13 +439,15 @@ export default function RepublicDayHeroPage() {
                                                             boxShadow: '0 0 15px rgba(59, 130, 246, 0.6)'
                                                         }}
                                                     />
-                                                    <Image
-                                                        src="/images/samsung-salesperson.png"
-                                                        alt="Samsung Salesperson Avatar"
-                                                        fill
-                                                        className="object-contain relative z-10"
-                                                        priority
-                                                    />
+                                                    <div className="relative w-full h-full"> {/* Wrapped Image in div to avoid motion prop issues if any */}
+                                                        <Image
+                                                            src="/images/samsung-salesperson.png"
+                                                            alt="Samsung Salesperson Avatar"
+                                                            fill
+                                                            className="object-contain relative z-10"
+                                                            priority
+                                                        />
+                                                    </div>
                                                 </motion.div>
                                             </motion.div>
                                         )}
