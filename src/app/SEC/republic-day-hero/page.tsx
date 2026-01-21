@@ -12,7 +12,8 @@ import {
     CheckCircle,
     Gift,
     FileText,
-    X
+    X,
+    Crown
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -25,6 +26,7 @@ const RANKS = [
     { id: 'major', title: 'SALES MAJOR', minSales: 90000, color: 'bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
+    { id: 'general', title: 'SALES GENERAL', minSales: 200000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
 ];
 
 const IndianFlag = ({ size = 20 }: { size?: number }) => (
@@ -451,7 +453,7 @@ export default function RepublicDayHeroPage() {
                             Honour & Glory <span className="text-[#FF9933]">Path</span>
                         </h1>
                         <p className="text-slate-600 font-medium mt-0.5 text-[10px] sm:text-xs" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            Climb the ranks: SALESVEER to SALESGENERAL
+                            Climb the ranks: SALESVEER to <span className="text-red-600 font-bold">SALESGENERAL</span>
                         </p>
                     </div>
 
@@ -483,8 +485,9 @@ export default function RepublicDayHeroPage() {
                 <div className="flex-1 flex items-center justify-center relative w-full min-h-0 pt-6 sm:pt-20 pb-4">
 
                     {/* Scrollable Container */}
-                    <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-28 sm:pt-40 hide-scrollbar">
-                        <div className="flex items-end gap-2 md:gap-4 px-2 md:px-6 min-w-max mx-auto justify-center" style={{ paddingBottom: '40px' }}>
+                    {/* Scrollable Container */}
+                    <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-28 sm:pt-40 hide-scrollbar snap-x snap-mandatory flex md:justify-start md:pl-20">
+                        <div className="flex items-end gap-2 md:gap-4 px-2 md:px-6 min-w-max mx-auto md:mx-0 justify-center" style={{ paddingBottom: '40px' }}>
                             {RANKS.map((rank, index) => {
                                 const isUnlocked = index <= currentRankIndex;
                                 const isCurrent = index === currentRankIndex;
@@ -494,18 +497,33 @@ export default function RepublicDayHeroPage() {
                                 const ladderHeight = index * 24; // 24px increment per level (was 40px)
 
                                 return (
-                                    <div
+                                    <motion.div
                                         key={rank.id}
-                                        className="flex flex-col items-center group relative"
+                                        className={`flex flex-col items-center group relative snap-center ${rank.id === 'general' ? 'ml-24' : ''}`}
                                         ref={(el) => { itemsRef.current[index] = el; }}
                                         style={{
-                                            marginBottom: `${ladderHeight}px`,
+                                            marginBottom: rank.id === 'general' ? '50px' : `${ladderHeight}px`,
                                             transition: 'margin-bottom 0.5s ease-out'
                                         }}
+                                        initial={rank.id === 'general' ? { opacity: 0, scale: 0.5, x: 100, rotate: 15 } : {}}
+                                        whileInView={rank.id === 'general' ? {
+                                            opacity: 1,
+                                            scale: 1,
+                                            x: 0,
+                                            rotate: 0,
+                                            transition: {
+                                                type: "spring",
+                                                stiffness: 60,
+                                                damping: 10,
+                                                mass: 1.2,
+                                                delay: 0.2
+                                            }
+                                        } : {}}
+                                        viewport={{ once: false, amount: 0.6 }}
                                     >
 
-                                        {/* Diagonal Connector Line - Ladder Step */}
-                                        {index > 0 && (
+                                        {/* Diagonal Connector Line - Hide for General to make it standalone */}
+                                        {index > 0 && rank.id !== 'general' && (
                                             <div
                                                 className={`absolute z-0 transition-all duration-1000`}
                                                 style={{
@@ -595,8 +613,9 @@ export default function RepublicDayHeroPage() {
                                             whileHover={{ scale: isUnlocked ? 1.05 : 1 }}
                                             transition={{ delay: index * 0.1 }}
                                             className={`
-                                                relative z-10 w-24 h-24 md:w-28 md:h-28 rounded-3xl flex flex-col items-center justify-center
+                                                relative z-10 rounded-3xl flex flex-col items-center justify-center
                                                 transition-all duration-500 cursor-pointer
+                                                ${rank.id === 'general' ? 'w-40 h-40 md:w-48 md:h-48' : 'w-24 h-24 md:w-28 md:h-28'}
                                                 ${isUnlocked ? 'shadow-2xl' : 'grayscale opacity-60'}
                                                 ${isCurrent ? 'ring-4 ring-orange-400 ring-offset-2' : ''}
                                             `}
@@ -634,9 +653,54 @@ export default function RepublicDayHeroPage() {
                                                 />
                                             )}
 
+                                            {/* Special Effects for General Rank - Heavenly Ascension */}
+                                            {rank.id === 'general' && (
+                                                <>
+                                                    {/* Rotating Sunburst */}
+                                                    <motion.div
+                                                        animate={{ rotate: 360 }}
+                                                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                                        className="absolute inset-[-100%] z-0 opacity-20"
+                                                        style={{
+                                                            background: 'conic-gradient(from 0deg, transparent 0deg, #FFD700 20deg, transparent 40deg, transparent 360deg)',
+                                                            filter: 'blur(20px)'
+                                                        }}
+                                                    />
+
+                                                    {/* Legendary Badge */}
+                                                    <div className="absolute -top-6 bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg z-20 animate-pulse border border-yellow-200">
+                                                        Legendary
+                                                    </div>
+
+                                                    {/* Floating Particles */}
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <motion.div
+                                                            key={i}
+                                                            className="absolute w-2 h-2 bg-yellow-400 rounded-full"
+                                                            animate={{
+                                                                y: [0, -40, -80],
+                                                                opacity: [0, 1, 0],
+                                                                x: Math.random() * 40 - 20
+                                                            }}
+                                                            transition={{
+                                                                duration: 2 + Math.random(),
+                                                                repeat: Infinity,
+                                                                delay: Math.random() * 2,
+                                                                ease: "easeOut"
+                                                            }}
+                                                            style={{
+                                                                left: `${20 + Math.random() * 60}%`,
+                                                                bottom: '10%'
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </>
+                                            )}
+
                                             {/* Decorative Shine Effect */}
+                                            {/* Generic Shine for unlocked ranks (modified to respect general styling) */}
                                             {isUnlocked && (
-                                                <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                                                <div className="absolute inset-0 rounded-3xl overflow-hidden z-0">
                                                     <motion.div
                                                         animate={{
                                                             x: ['-100%', '100%']
@@ -686,7 +750,7 @@ export default function RepublicDayHeroPage() {
                                                     }
                                                 } : {}}
                                                 className={`
-                                                    w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-1.5 z-10
+                                                    ${rank.id === 'general' ? 'w-16 h-16 md:w-20 md:h-20 mb-3' : 'w-10 h-10 md:w-12 md:h-12 mb-1.5'} rounded-full flex items-center justify-center z-10
                                                     ${isUnlocked ? `bg-gradient-to-tr ${rank.color} to-white` : 'bg-slate-200'}
                                                     relative shadow-lg border-2 border-white ring-2 ring-offset-0
                                                 `}
@@ -723,7 +787,7 @@ export default function RepublicDayHeroPage() {
                                                         ease: "easeInOut"
                                                     }}
                                                 >
-                                                    {isLocked ? <Lock size={14} className="text-slate-500" /> : <rank.icon size={18} className="text-white drop-shadow-md" />}
+                                                    {isLocked ? <Lock size={rank.id === 'general' ? 24 : 14} className="text-slate-500" /> : <rank.icon size={rank.id === 'general' ? 32 : 18} className="text-white drop-shadow-md" />}
                                                 </motion.div>
 
                                                 {/* Animated Success Check */}
@@ -751,20 +815,22 @@ export default function RepublicDayHeroPage() {
 
                                             {/* Rank Title */}
                                             <p className={`
-                                                text-xs md:text-sm font-extrabold text-center px-1 leading-tight z-10
-                                                ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}
+                                                ${rank.id === 'general' ? 'text-sm md:text-lg' : 'text-xs md:text-sm'} font-extrabold text-center px-1 leading-tight z-10
+                                                ${rank.id === 'general' ? 'text-red-600' : isUnlocked ? 'text-slate-800' : 'text-slate-400'}
                                                 uppercase tracking-tight
                                             `} style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800 }}>
                                                 {rank.title}
                                             </p>
 
                                             {/* Sales Milestone */}
-                                            <div className={`
-                                                mt-1 px-2 py-1 rounded-full text-[9px] md:text-[10px] font-bold z-10
-                                                ${isUnlocked ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-500'}
-                                            `}>
-                                                {rank.minSales === 0 ? 'Start' : `₹${rank.minSales.toLocaleString('en-IN')}+`}
-                                            </div>
+                                            {rank.id !== 'general' && (
+                                                <div className={`
+                                                    mt-1 px-2 py-1 rounded-full text-[9px] md:text-[10px] font-bold z-10
+                                                    ${isUnlocked ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-500'}
+                                                `}>
+                                                    {rank.minSales === 0 ? 'Start' : `₹${rank.minSales.toLocaleString('en-IN')}+`}
+                                                </div>
+                                            )}
                                         </motion.div>
 
                                         {/* Floor Reflection/Shadow */}
@@ -772,7 +838,7 @@ export default function RepublicDayHeroPage() {
                         w-16 h-2 rounded-[100%] blur-sm mt-3 transition-colors duration-500
                         ${isCurrent ? 'bg-[#000080]/30' : 'bg-slate-200/50'}
                      `}></div>
-                                    </div>
+                                    </motion.div>
                                 )
                             })}
                         </div>
