@@ -16,34 +16,33 @@ export default function LandingPage({ userName = '' }) {
       title: 'REPUBLIC DAY SPECIAL 🇮🇳',
       subtitle: 'SALES DOST SALUTES',
       description: 'CELEBRATE WITH SUPER INCENTIVES',
+      highlights: [
+        '🪁 Special 26th Jan Rewards',
+        '🇮🇳 Earn Extra on every Sale',
+      ],
+      validity: 'Valid till 31st Jan',
       isImageBanner: true,
       imageSrc: '/images/banner1.jpeg',
       imageAlt: 'Republic Day Banner 1',
+      showTextOverlay: true,
     },
     {
       id: 2,
       title: 'JAI HIND TEAM! 🫡',
       subtitle: 'HEROES OF SALES',
       description: 'BE A LEADER LIKE A SOLDIER',
+      highlights: [
+        '⚔️ Rank up to General',
+        '🎯 Double points on Targets',
+      ],
+      validity: 'Limited time offer',
       isImageBanner: true,
       imageSrc: '/images/banner 2.jpeg',
       imageAlt: 'Jai Hind Banner 2',
+      showTextOverlay: true,
     },
     {
       id: 3,
-      title: 'CELEBRATE FREEDOM 🪁',
-      subtitle: 'FINANCIAL FREEDOM',
-      description: 'UNLEASH YOUR EARNING POTENTIAL',
-      highlights: [
-        '🚀 Skyrocket your Income',
-        '💚 Green zone Incentives',
-      ],
-      validity: 'Ends this weekend',
-      gradient: 'from-[#138808] to-[#1a990a]',
-      textColor: 'text-white'
-    },
-    {
-      id: 4,
       title: 'PITCH SULTAN',
       subtitle: 'SPECIAL PROMOTION',
       description: 'EXCLUSIVE OFFER',
@@ -143,6 +142,36 @@ export default function LandingPage({ userName = '' }) {
                         alt={banner.imageAlt}
                         className="w-full h-full object-cover object-top"
                       />
+                      
+                      {/* Text Overlay for banners with showTextOverlay flag */}
+                      {banner.showTextOverlay && (
+                        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 sm:px-6 md:px-8 bg-black/20">
+                          <p className="text-[10px] sm:text-xs md:text-sm font-bold mb-0.5 sm:mb-1 uppercase tracking-wider text-gray-900">
+                            {banner.title}
+                          </p>
+                          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold mb-0.5 sm:mb-1 md:mb-2 text-gray-900">
+                            {banner.subtitle}
+                          </h2>
+                          <p className="text-[10px] sm:text-xs md:text-sm font-semibold mb-2 sm:mb-3 md:mb-4 text-gray-800">
+                            {banner.description}
+                          </p>
+                          <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px]">
+                            {banner.highlights && banner.highlights.map((highlight, idx) => (
+                              <div
+                                key={idx}
+                                className="bg-white/95 rounded-full px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm font-bold text-gray-900 shadow-sm"
+                              >
+                                {highlight}
+                              </div>
+                            ))}
+                          </div>
+                          {banner.validity && (
+                            <p className="text-[9px] sm:text-[10px] md:text-xs font-medium mt-2 sm:mt-3 md:mt-4 text-gray-800">
+                              {banner.validity}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </a>
                   ) : (
                     // Gradient Banner
@@ -195,7 +224,7 @@ export default function LandingPage({ userName = '' }) {
                   }`}
                 style={{
                   backgroundColor: activeSlide === index
-                    ? (index === 0 ? '#FF9933' : index === 1 ? '#000080' : index === 2 ? '#138808' : '#FFD700')
+                    ? (index === 0 ? '#FF9933' : index === 1 ? '#000080' : '#FFD700')
                     : undefined
                 }}
                 aria-label={`Go to slide ${index + 1}`}
