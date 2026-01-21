@@ -88,7 +88,7 @@ export default function RepublicSuccessModal({
 
                 {/* Subtext */}
                 <p className="text-gray-600 text-sm font-medium mb-1 uppercase tracking-wide">
-                    You've earned a reward of
+                    Honor Points Earned
                 </p>
 
                 {/* Amount */}
@@ -98,7 +98,7 @@ export default function RepublicSuccessModal({
                         color: '#000080' /* Navy Blue */
                     }}
                 >
-                    ₹{earnedIncentive}
+                    {earnedIncentive}
                 </p>
 
                 <p className="text-gray-500 text-xs mb-6 italic">
@@ -121,7 +121,7 @@ export default function RepublicSuccessModal({
                         boxShadow: '0 4px 15px rgba(0, 0, 128, 0.2)',
                     }}
                 >
-                    View My Report 📜
+                    View Hall of Fame 🏆
                 </button>
 
                 {/* Bottom decorative border */}

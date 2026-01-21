@@ -197,7 +197,9 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       }
 
       // Success - Show celebration modal
-      setEarnedIncentive(data.salesReport.incentiveEarned);
+      // User Request: Show Plan Price as Honor Points
+      const selectedPlan = plans.find(p => p.id === planId);
+      setEarnedIncentive(selectedPlan?.price || 0);
       setShowSuccessModal(true);
 
       // OLD CONFETTI CODE - Uncomment after Christmas
@@ -228,7 +230,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
     setShowSuccessModal(false);
     // OLD CONFETTI CODE - Uncomment after Christmas
     // setShowConfetti(false);
-    router.push('/SEC/passbook');
+    router.push('/SEC/republic-leaderboard');
   };
 
   const handleCancelConfirm = () => {

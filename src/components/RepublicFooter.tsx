@@ -12,6 +12,7 @@ export default function RepublicFooter() {
         if (pathname.includes('/passbook') || pathname.includes('/incentive-passbook')) return 'passbook';
         if (pathname.includes('/training')) return 'training';
         if (pathname.includes('/leaderboard')) return 'leaderboard';
+        if (pathname.includes('/republic-leaderboard')) return 'hall-of-fame';
         if (pathname.includes('/home')) return 'home';
         return 'home';
     };
@@ -49,13 +50,23 @@ export default function RepublicFooter() {
                 </svg>
             ),
         },
+        // {
+        //     id: 'leaderboard',
+        //     label: 'Leaderboard',
+        //     href: '/SEC/leaderboard',
+        //     icon: (
+        //         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        //             <path strokeLinecap="round" strokeLinejoin="round" d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        //         </svg>
+        //     ),
+        // },
         {
-            id: 'leaderboard',
-            label: 'Leaderboard',
-            href: '/SEC/leaderboard',
+            id: 'hall-of-fame',
+            label: 'Hall of\nFame',
+            href: '/SEC/republic-leaderboard',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172V5.25a7.454 7.454 0 005.656 2.664M9.497 14.25a7.454 7.454 0 00.981-3.172V5.25a7.454 7.454 0 01-5.656 2.664M13.5 10.5h-3" />
                 </svg>
             ),
         },

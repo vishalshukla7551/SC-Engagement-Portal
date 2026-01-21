@@ -91,14 +91,23 @@ export default function LandingPage({ userName = '' }) {
       iconBg: 'bg-[#D88E6E]/30',
       link: '/SEC/claim-procedure',
     },
+    // {
+    //   id: 'hall-of-fame',
+    //   title: 'Hall of Fame',
+    //   description: 'View Top Performers',
+    //   icon: '🏆',
+    //   bgGradient: 'from-[#D4AF37] to-[#AA6C39]', // Gold/Bronze gradient
+    //   iconBg: 'bg-[#FFD700]/20',
+    //   link: '/SEC/republic-leaderboard',
+    // },
     {
-      id: 'hall-of-fame',
-      title: 'Hall of Fame',
-      description: 'View Top Performers',
-      icon: '🏆',
-      bgGradient: 'from-[#D4AF37] to-[#AA6C39]', // Gold/Bronze gradient
-      iconBg: 'bg-[#FFD700]/20',
-      link: '/SEC/republic-leaderboard',
+      id: 'regiments',
+      title: 'Regiments',
+      description: 'View Your Regiment',
+      icon: '🎖️',
+      bgGradient: 'from-[#4a6741] to-[#6d8c5e]', // Army Green gradient
+      iconBg: 'bg-[#ffffff]/20',
+      link: '/SEC/republic-regiments',
     },
   ];
 
