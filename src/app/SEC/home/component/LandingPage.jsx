@@ -145,7 +145,7 @@ export default function LandingPage({ userName = '' }) {
                       
                       {/* Text Overlay for banners with showTextOverlay flag */}
                       {banner.showTextOverlay && (
-                        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 sm:px-6 md:px-8 bg-black/20">
+                        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 sm:px-6 md:px-8">
                           <p className="text-[10px] sm:text-xs md:text-sm font-bold mb-0.5 sm:mb-1 uppercase tracking-wider text-gray-900">
                             {banner.title}
                           </p>
