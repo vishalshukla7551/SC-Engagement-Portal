@@ -191,8 +191,35 @@ export default function RepublicLeaderboardPage() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [hasInteracted, setHasInteracted] = useState(false);
+
+    useEffect(() => {
+        const audio = new Audio('/audio%20track/URI%20BGM%20and%20ringtone.mp3');
+        audio.loop = true;
+        audio.volume = 0.5;
+        audioRef.current = audio;
+
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, []);
+
+    const handleGlobalInteraction = () => {
+        if (!hasInteracted && audioRef.current) {
+            audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+            setHasInteracted(true);
+        }
+    };
+
     return (
-        <div className="min-h-screen h-auto relative flex flex-col font-sans mb-0 overflow-x-hidden bg-slate-50">
+        <div
+            className="min-h-screen h-auto relative flex flex-col font-sans mb-0 overflow-x-hidden bg-slate-50"
+            onClick={handleGlobalInteraction}
+        >
             <BackgroundEffects />
 
             {/* Header */}

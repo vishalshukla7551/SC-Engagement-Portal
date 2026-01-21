@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion'; // Added framer-motion
 import { getHomePathForRole } from '@/lib/roleHomePath';
 import ButtonLoader from '@/components/ButtonLoader';
 
@@ -185,316 +186,336 @@ export default function SECLogin() {
 
   return (
     <div
-      className="h-screen flex flex-col md:flex-row items-center justify-center p-4 relative overflow-x-hidden overflow-y-auto"
-      style={{ backgroundColor: '#F5F6F8' }}
+      className="h-screen flex flex-col md:flex-row items-center justify-center p-4 relative overflow-x-hidden overflow-y-auto bg-white"
     >
-      {/* Card Wrapper - Anchors Santa hat and Gift box to the card */}
-      <div className="relative w-full max-w-[450px] mx-auto overflow-visible">
-        {/* Santa Hat - Anchored to Card Top Left - Responsive positioning
-        <Image
-          src="/images/santa-hat.png"
-          alt="Santa Hat"
-          width={130}
-          height={130}
-          className="absolute pointer-events-none z-20 w-[80px] h-[80px] sm:w-[90px] sm:h-[90px] md:w-[100px] md:h-[100px] lg:w-[130px] lg:h-[130px] -top-[35px] -left-[30px] sm:-top-[60px] sm:-left-[35px] md:-top-[60px] md:-left-[40px] lg:-top-[80px] lg:-left-[60px]"
-          style={{
-            transform: 'rotate(-18deg)',
-            filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18))',
+      {/* --- REPUBLIC DAY BACKGROUND START --- */}
+      {/* Tricolor Ambient Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            x: [-100, 100, -100],
+            y: [-50, 50, -50],
+            scale: [1, 1.2, 1]
           }}
-          priority
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-1/4 -left-1/4 w-[80vw] h-[80vw] bg-orange-400/20 rounded-full blur-[100px] mix-blend-multiply"
         />
-        */}
-
-        {/* Gift Box - Anchored to Card Right Side (Desktop only)
-        <Image
-          src="/images/gift-box.png"
-          alt="Christmas Gift"
-          width={500}
-          height={500}
-          className="absolute pointer-events-none z-10 hidden md:block w-[240px] h-[240px] md:w-[300px] md:h-[300px] lg:w-[360px] lg:h-[360px]"
-          style={{
-            top: '300px',
-            right: '-250px',
-            transform: 'rotate(8deg)',
-            filter: 'drop-shadow(0 12px 24px rgba(0, 0, 0, 0.12))',
+        <motion.div
+          animate={{
+            x: [100, -100, 100],
+            y: [50, -50, 50],
+            scale: [1.2, 1, 1.2]
           }}
-          priority
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute top-1/2 -right-1/4 w-[70vw] h-[70vw] bg-green-400/20 rounded-full blur-[120px] mix-blend-multiply"
         />
-        */}
+        <motion.div
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] bg-blue-300/20 rounded-full blur-[100px] mix-blend-multiply"
+        />
 
-        {/* Login Card */}
-        <div
-          className="w-full bg-white rounded-2xl p-6 sm:p-8 md:p-10 relative"
-          style={{ boxShadow: 'rgba(0,0,0,0.08) 0px 4px 12px' }}
+        {/* Ashoka Chakra Rotating softly in background */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vmin] h-[90vmin] opacity-[0.03] pointer-events-none"
         >
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">SEC Login</h1>
-            <p className="text-gray-500">Login with your phone number</p>
-          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-blue-900">
+            <circle cx="12" cy="12" r="10" strokeWidth="0.5" />
+            <path d="M12 2L12 22" strokeWidth="0.5" />
+            <path d="M2 12L22 12" strokeWidth="0.5" />
+            <path d="M4.93 4.93L19.07 19.07" strokeWidth="0.5" />
+            <path d="M19.07 4.93L4.93 19.07" strokeWidth="0.5" />
+            <circle cx="12" cy="12" r="2" strokeWidth="0.5" />
+          </svg>
+        </motion.div>
 
-          <form
-            onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}
-            className="space-y-6"
-            autoComplete="off"
-          >
-            <div>
-              <label
-                htmlFor="phone"
-                className={labelBaseClasses}
-              >
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="sec-phone"
-                autoComplete="off"
-                inputMode="tel"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                placeholder="Enter your phone number"
-                className={inputBaseClasses}
-                style={{
-                  backgroundColor: '#e8f0fe',
-                  border: '1px solid #d1d5db',
-                  outline: 'none',
-                  transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
-                }}
-                onFocus={(e) => {
-                  e.target.style.setProperty('border-color', 'rgb(120, 164, 235)', 'important');
-                  e.target.style.setProperty('box-shadow', 'rgba(59, 130, 246, 0.06) 0px 0px 0px 1.77453px', 'important');
-                  e.target.style.setProperty('outline', 'none', 'important');
-                }}
-                onBlur={(e) => {
-                  e.target.style.setProperty('border-color', '#d1d5db', 'important');
-                  e.target.style.setProperty('box-shadow', 'none', 'important');
-                }}
-              />
-              {validationMessage && (
-                <p
-                  className={`mt-2 text-sm ${isValidNumber ? 'text-green-600' : 'text-red-600'
-                    }`}
-                >
-                  {validationMessage}
-                </p>
-              )}
-              {error && !otpSent && (
-                <p className="mt-2 text-sm text-red-600">
-                  {error}
-                </p>
-              )}
-            </div>
+        {/* Floating Kites */}
+        <motion.div
+          animate={{ y: [-10, 10, -10], rotate: [5, 10, 5] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-10 left-10 w-16 h-16 opacity-60 hidden md:block"
+        >
+          <svg viewBox="0 0 24 24" fill="url(#kiteGradientOrange)">
+            <defs>
+              <linearGradient id="kiteGradientOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FF9933" />
+                <stop offset="100%" stopColor="#FF7700" />
+              </linearGradient>
+            </defs>
+            <path d="M12 2L2 12l10 10 10-10L12 2z" />
+          </svg>
+        </motion.div>
 
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  checked={agreed}
-                  onChange={(e) => setAgreed(e.target.checked)}
-                  className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer"
-                />
-              </div>
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                I have read and agree to the{' '}
-                <Link
-                  href="/terms"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link
-                  href="/privacy"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Privacy Policy
-                </Link>
-              </label>
-            </div>
-
-
-
-            <button
-              type="button"
-              onClick={handleSendOTP}
-              disabled={loading || otpSent}
-              className="w-full text-white font-semibold py-2.5 transition-colors text-base disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{
-                background:
-                  loading || otpSent ? '#d1d5db' : 'linear-gradient(135deg, #E53935 0%, #FF4D4D 100%)',
-                borderRadius: '12px',
-                boxShadow: loading || otpSent ? 'none' : 'rgba(229, 57, 53, 0.2) 0px 4px 12px',
-              }}
-              onMouseEnter={(e) => {
-                if (!loading && !otpSent) {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #C62828 0%, #E53935 100%)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading && !otpSent) {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #E53935 0%, #FF4D4D 100%)';
-                }
-              }}
-            >
-              {loading && !otpSent && <ButtonLoader variant="light" size="md" />}
-              {loading && !otpSent ? 'Sending...' : 'Send OTP'}
-            </button>
-
-            {otpSent && (
-              <>
-                {/* Divider */}
-                <div style={{
-                  height: '1px',
-                  background: 'linear-gradient(90deg, transparent, #e5e7eb, transparent)',
-                  marginBottom: '24px'
-                }} />
-
-                <div>
-                  <p className="text-center mb-3" style={{ fontSize: '14px', color: '#374151', fontWeight: 500 }}>
-                    OTP sent to registered whatsapp number
-                  </p>
-                  <input
-                    type="text"
-                    id="otp"
-                    name="otp"
-                    autoComplete="off"
-                    inputMode="numeric"
-                    pattern="\d{6}"
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="Enter OTP"
-                    className={inputBaseClasses}
-                    style={{
-                      backgroundColor: 'transparent',
-                      border: '1px solid #d1d5db',
-                      outline: 'none',
-                      textAlign: 'center',
-                      transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.setProperty('border-color', 'rgb(120, 164, 235)', 'important');
-                      e.target.style.setProperty('box-shadow', 'rgba(59, 130, 246, 0.06) 0px 0px 0px 1.77453px', 'important');
-                      e.target.style.setProperty('outline', 'none', 'important');
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.setProperty('border-color', '#d1d5db', 'important');
-                      e.target.style.setProperty('box-shadow', 'none', 'important');
-                    }}
-                  />
-                  {error && (
-                    <p className="mt-2 text-sm text-red-600 text-center">
-                      {error}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={handleVerifyOTP}
-                    disabled={loading}
-                    className="flex-1 text-white font-semibold py-2.5 rounded-xl transition-colors text-base disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    style={{
-                      backgroundColor: loading ? '#d1d5db' : '#10b981'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!loading) {
-                        e.currentTarget.style.backgroundColor = '#059669';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!loading) {
-                        e.currentTarget.style.backgroundColor = '#10b981';
-                      }
-                    }}
-                  >
-                    {loading && <ButtonLoader variant="light" size="md" />}
-                    {loading ? 'Verifying...' : 'Verify'}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOtpSent(false);
-                      setOtp('');
-                      setError(null);
-                    }}
-                    disabled={loading}
-                    className="flex-1 text-white font-semibold py-2.5 rounded-xl transition-colors text-base disabled:cursor-not-allowed"
-                    style={{ backgroundColor: '#6b7280' }}
-                    onMouseEnter={(e) => {
-                      if (!loading) {
-                        e.currentTarget.style.backgroundColor = '#4b5563';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!loading) {
-                        e.currentTarget.style.backgroundColor = '#6b7280';
-                      }
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            )}
-          </form>
-
-          <div className="mt-6 text-center space-y-3">
-            <p className="text-sm text-gray-600">
-              Different Role?{' '}
-              <Link
-                href="/login/role"
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Go to Role Login
-              </Link>
-            </p>
-            <p className="text-sm text-gray-600">
-              Need an account?{' '}
-              <Link
-                href="/signup"
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Sign up for different roles
-              </Link>
-            </p>
-          </div>
-
-          <div className="mt-8 text-center">
-            <div className="flex items-center justify-center text-gray-500 gap-1">
-              <span className="text-base">Powered by</span>
-              <Image
-                src="/zopper-icon.png"
-                alt="Zopper icon"
-                width={24}
-                height={24}
-                className="inline-block"
-              />
-              <span className="text-base font-semibold text-gray-900">Zopper</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Gift Box - Mobile: touching the bottom of the card */}
-        {/*
-        <div className="md:hidden flex justify-center -mt-6 relative z-10">
-          <Image
-            src="/images/gift-box.png"
-            alt="Christmas Gift"
-            width={100}
-            height={100}
-            className="pointer-events-none"
-            style={{
-              filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12))',
-            }}
-            priority
-          />
-        </div>
-        */}
+        <motion.div
+          animate={{ y: [10, -10, 10], rotate: [-5, -10, -5] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-20 right-10 w-20 h-20 opacity-60 hidden md:block"
+        >
+          <svg viewBox="0 0 24 24" fill="url(#kiteGradientGreen)">
+            <defs>
+              <linearGradient id="kiteGradientGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#138808" />
+                <stop offset="100%" stopColor="#0E6005" />
+              </linearGradient>
+            </defs>
+            <path d="M12 2L2 12l10 10 10-10L12 2z" />
+          </svg>
+        </motion.div>
       </div>
+      {/* --- REPUBLIC DAY BACKGROUND END --- */}
+
+      {/* Card Wrapper - Anchors Santa hat and Gift box to the card */}
+
+
+      {/* Login Card */}
+      <div
+        className="w-full max-w-[450px] mx-auto bg-white/90 backdrop-blur-sm rounded-2xl p-6 sm:p-8 md:p-10 relative border border-white/50"
+        style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
+      >
+        <div className="text-center mb-8">
+
+          <h1 className="text-3xl font-black mb-2 bg-gradient-to-r from-[#FF9933] via-[#000080] to-[#138808] bg-clip-text text-transparent">
+            SEC Login
+          </h1>
+          <p className="text-gray-500">Login with your phone number</p>
+        </div>
+
+        <form
+          onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}
+          className="space-y-6"
+          autoComplete="off"
+        >
+          <div>
+            <label
+              htmlFor="phone"
+              className={labelBaseClasses}
+            >
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="sec-phone"
+              autoComplete="off"
+              inputMode="tel"
+              value={phoneNumber}
+              onChange={handlePhoneChange}
+              placeholder="Enter your phone number"
+              className={inputBaseClasses}
+              style={{
+                backgroundColor: '#e8f0fe',
+                border: '1px solid #d1d5db',
+                outline: 'none',
+                transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+              }}
+              onFocus={(e) => {
+                e.target.style.setProperty('border-color', 'rgb(120, 164, 235)', 'important');
+                e.target.style.setProperty('box-shadow', 'rgba(59, 130, 246, 0.06) 0px 0px 0px 1.77453px', 'important');
+                e.target.style.setProperty('outline', 'none', 'important');
+              }}
+              onBlur={(e) => {
+                e.target.style.setProperty('border-color', '#d1d5db', 'important');
+                e.target.style.setProperty('box-shadow', 'none', 'important');
+              }}
+            />
+            {validationMessage && (
+              <p
+                className={`mt-2 text-sm ${isValidNumber ? 'text-green-600' : 'text-red-600'
+                  }`}
+              >
+                {validationMessage}
+              </p>
+            )}
+            {error && !otpSent && (
+              <p className="mt-2 text-sm text-red-600">
+                {error}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer"
+              />
+            </div>
+            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+              I have read and agree to the{' '}
+              <Link
+                href="/terms"
+                className="text-blue-600 hover:underline font-medium"
+              >
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link
+                href="/privacy"
+                className="text-blue-600 hover:underline font-medium"
+              >
+                Privacy Policy
+              </Link>
+            </label>
+          </div>
+
+
+
+          <button
+            type="button"
+            onClick={handleSendOTP}
+            disabled={loading || otpSent}
+            className="w-full text-white font-semibold py-2.5 transition-all text-base disabled:cursor-not-allowed flex items-center justify-center gap-2 transform active:scale-[0.98]"
+            style={{
+              backgroundImage:
+                loading || otpSent ? 'none' : 'linear-gradient(90deg, #FF9933 0%, #2563EB 50%, #138808 100%)',
+              backgroundColor: loading || otpSent ? '#d1d5db' : 'transparent',
+              borderRadius: '12px',
+              boxShadow: loading || otpSent ? 'none' : 'rgba(37, 99, 235, 0.2) 0px 8px 16px -4px',
+              backgroundSize: '200% 100%',
+              backgroundPosition: '0 0', // Explicitly set initial position
+            }}
+            onMouseEnter={(e) => {
+              if (!loading && !otpSent) {
+                e.currentTarget.style.backgroundPosition = '100% 0';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading && !otpSent) {
+                e.currentTarget.style.backgroundPosition = '0 0';
+              }
+            }}
+          >
+            {loading && !otpSent && <ButtonLoader variant="light" size="md" />}
+            {loading && !otpSent ? 'Sending...' : 'Send OTP'}
+          </button>
+
+          {otpSent && (
+            <>
+              {/* Divider */}
+              <div style={{
+                height: '1px',
+                background: 'linear-gradient(90deg, transparent, #e5e7eb, transparent)',
+                marginBottom: '24px'
+              }} />
+
+              <div>
+                <p className="text-center mb-3" style={{ fontSize: '14px', color: '#374151', fontWeight: 500 }}>
+                  OTP sent to registered whatsapp number
+                </p>
+                <input
+                  type="text"
+                  id="otp"
+                  name="otp"
+                  autoComplete="off"
+                  inputMode="numeric"
+                  pattern="\d{6}"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="Enter OTP"
+                  className={inputBaseClasses}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: '1px solid #d1d5db',
+                    outline: 'none',
+                    textAlign: 'center',
+                    transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.setProperty('border-color', 'rgb(120, 164, 235)', 'important');
+                    e.target.style.setProperty('box-shadow', 'rgba(59, 130, 246, 0.06) 0px 0px 0px 1.77453px', 'important');
+                    e.target.style.setProperty('outline', 'none', 'important');
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.setProperty('border-color', '#d1d5db', 'important');
+                    e.target.style.setProperty('box-shadow', 'none', 'important');
+                  }}
+                />
+                {error && (
+                  <p className="mt-2 text-sm text-red-600 text-center">
+                    {error}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleVerifyOTP}
+                  disabled={loading}
+                  className="flex-1 text-white font-semibold py-2.5 rounded-xl transition-all text-base disabled:cursor-not-allowed flex items-center justify-center gap-2 transform active:scale-[0.98]"
+                  style={{
+                    background: loading ? '#d1d5db' : 'linear-gradient(90deg, #138808 0%, #059669 100%)', // Green gradient for verify
+                    boxShadow: loading ? 'none' : 'rgba(19, 136, 8, 0.2) 0px 4px 12px'
+                  }}
+                >
+                  {loading && <ButtonLoader variant="light" size="md" />}
+                  {loading ? 'Verifying...' : 'Verify'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpSent(false);
+                    setOtp('');
+                    setError(null);
+                  }}
+                  disabled={loading}
+                  className="flex-1 text-gray-700 font-semibold py-2.5 rounded-xl transition-colors text-base disabled:cursor-not-allowed border-2 border-gray-200"
+                  style={{ backgroundColor: 'white' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </form>
+
+        <div className="mt-6 text-center space-y-3">
+          <p className="text-sm text-gray-600">
+            Different Role?{' '}
+            <Link
+              href="/login/role"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Go to Role Login
+            </Link>
+          </p>
+          <p className="text-sm text-gray-600">
+            Need an account?{' '}
+            <Link
+              href="/signup"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Sign up for different roles
+            </Link>
+          </p>
+        </div>
+
+        <div className="mt-8 text-center">
+          <div className="flex items-center justify-center text-gray-500 gap-1">
+            <span className="text-base">Powered by</span>
+            <Image
+              src="/zopper-icon.png"
+              alt="Zopper icon"
+              width={24}
+              height={24}
+              className="inline-block"
+            />
+            <span className="text-base font-semibold text-gray-900">Zopper</span>
+          </div>
+        </div>
+      </div>
+
+
     </div>
   );
 }
