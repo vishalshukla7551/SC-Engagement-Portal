@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import RepublicFooter from '@/components/RepublicFooter';
 
 // Rank Configuration (Updated Titles matching Backend)
 const RANKS = [
@@ -354,6 +355,7 @@ export default function RepublicLeaderboardPage() {
                 </div>
 
             </main>
+            <RepublicFooter />
         </div>
     );
 }

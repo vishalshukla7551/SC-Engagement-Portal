@@ -15,6 +15,7 @@ import {
     Compass
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import RepublicFooter from '@/components/RepublicFooter';
 
 // --- Shared Components ---
 
@@ -364,6 +365,7 @@ export default function RegimentsPage() {
                 <TacticalCompass />
 
             </div>
+            <RepublicFooter />
         </div>
     );
 }
