@@ -124,6 +124,10 @@ export default function RepublicSuccessModal({
                     View Hall of Fame 🏆
                 </button>
 
+                <p className="mt-3 text-[10px] text-gray-400 font-medium">
+                    *Points will reflect after admin review
+                </p>
+
                 {/* Bottom decorative border */}
                 <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-[#138808] via-[#FFFFFF] to-[#FF9933]" />
             </div>

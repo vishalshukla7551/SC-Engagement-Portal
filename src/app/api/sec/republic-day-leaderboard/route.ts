@@ -52,7 +52,8 @@ export async function GET(req: NextRequest) {
             where: {
                 Date_of_sale: {
                     gte: startDate
-                }
+                },
+                spotincentivepaidAt: { not: null },
             },
             select: {
                 secId: true,

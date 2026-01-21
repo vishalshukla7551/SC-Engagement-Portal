@@ -23,7 +23,10 @@ export async function GET(req: NextRequest) {
 
         // specific status check logic? Assuming all reports are valid sales.
         const reports = await prisma.spotIncentiveReport.findMany({
-            where: { secId: sec.id },
+            where: {
+                secId: sec.id,
+                spotincentivepaidAt: { not: null },
+            },
             include: {
                 plan: {
                     select: { price: true, planType: true }

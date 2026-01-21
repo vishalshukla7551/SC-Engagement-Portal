@@ -69,45 +69,45 @@ export default function LandingPage({ userName = '' }) {
       title: 'SEC Incentive Form',
       description: 'Submit your sales IMEI wise',
       icon: '📝',
-      bgGradient: 'from-[#5B6FD8] to-[#8B7FE8]',
-      iconBg: 'bg-[#7B8FE8]/30',
+      bgGradient: 'from-[#2563eb] via-[#3b82f6] to-[#06b6d4]', // Vivid Blue -> Cyan
+      iconBg: 'bg-white/20',
       link: '/SEC/incentive-form',
+      badge: 'SUBMIT ⚡'
     },
     {
       id: 'ranking',
-      title: 'Ranking',
+      title: 'Battle Standings',
       description: 'View Your Progress',
-      icon: '�',
-      bgGradient: 'from-[#4CAF93] to-[#5FD4B3]',
-      iconBg: 'bg-[#5CC4A3]/30',
+      icon: '⚔️',
+      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]', // Indigo -> Purple -> Pink
+      iconBg: 'bg-white/20',
       link: '/SEC/republic-day-hero',
+      badge: 'LIVE 🔴'
     },
     {
       id: 'claim-raise',
       title: 'SC+ Claim Raise Procedure',
       description: 'Learn More',
-      icon: '�',
-      bgGradient: 'from-[#C96E6E] via-[#D8926E] to-[#E8B86E]',
-      iconBg: 'bg-[#D88E6E]/30',
+      icon: '📢',
+      bgGradient: 'from-[#ea580c] via-[#f97316] to-[#fbbf24]', // Orange -> Amber
+      iconBg: 'bg-white/20',
       link: '/SEC/claim-procedure',
+      badge: 'GUIDE 📘'
     },
     // {
     //   id: 'hall-of-fame',
     //   title: 'Hall of Fame',
-    //   description: 'View Top Performers',
-    //   icon: '🏆',
-    //   bgGradient: 'from-[#D4AF37] to-[#AA6C39]', // Gold/Bronze gradient
-    //   iconBg: 'bg-[#FFD700]/20',
-    //   link: '/SEC/republic-leaderboard',
+    //   ...
     // },
     {
       id: 'regiments',
       title: 'Regiments',
       description: 'View Your Regiment',
       icon: '🎖️',
-      bgGradient: 'from-[#4a6741] to-[#6d8c5e]', // Army Green gradient
-      iconBg: 'bg-[#ffffff]/20',
+      bgGradient: 'from-[#166534] via-[#15803d] to-[#4ade80]', // Deep Green -> Bright Green
+      iconBg: 'bg-white/20',
       link: '/SEC/republic-regiments',
+      badge: 'YOUR SQUAD 🪖'
     },
   ];
 
@@ -207,6 +207,13 @@ export default function LandingPage({ userName = '' }) {
                 <div className={`${feature.iconBg} w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-lg sm:text-xl md:text-2xl lg:text-3xl transition-transform group-hover:scale-110`}>
                   {feature.icon}
                 </div>
+
+                {/* Badge if present */}
+                {feature.badge && (
+                  <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-2 py-0.5 text-[8px] sm:text-[10px] font-bold text-white shadow-sm animate-pulse">
+                    {feature.badge}
+                  </div>
+                )}
 
                 {/* Content */}
                 <div className="flex-1 mt-2 sm:mt-3 md:mt-4">

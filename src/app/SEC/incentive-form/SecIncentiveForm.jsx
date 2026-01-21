@@ -11,6 +11,16 @@ import RepublicFooter from '@/components/RepublicFooter';
 import RepublicSuccessModal from '@/components/RepublicSuccessModal';
 import ChristmasSuccessModal from '@/components/ChristmasSuccessModal';
 
+const IndianFlag = ({ size = 20 }) => (
+  <svg width={size} height={(size * 2) / 3} viewBox="0 0 30 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="shadow-sm rounded-[1px] inline-block">
+    <rect width="30" height="20" fill="white" />
+    <rect width="30" height="6.66" fill="#FF9933" />
+    <rect y="13.33" width="30" height="6.67" fill="#138808" />
+    <circle cx="15" cy="10" r="3" stroke="#000080" strokeWidth="1" />
+    <path d="M15 10L15 7M15 10L15 13M15 10L18 10M15 10L12 10M15 10L17.12 7.88M15 10L12.88 12.12M15 10L17.12 12.12M15 10L12.88 7.88" stroke="#000080" strokeWidth="0.5" />
+  </svg>
+);
+
 export default function SecIncentiveForm({ initialSecId = '' }) {
   const router = useRouter();
   const [secPhone, setSecPhone] = useState('');
@@ -378,16 +388,16 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   };
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="h-screen bg-slate-50 flex flex-col overflow-hidden font-sans">
       <RepublicHeader hideGreeting />
       {/* <FestiveHeader hideGreeting /> */}
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-32">
-        <div className="px-5 pt-4 pb-6">
+        <div className="px-5 pt-6 pb-6">
           {/* SEC ID Alert */}
           {showSecAlert && (
-            <div className="mb-4 rounded-xl bg-[#FFF8C5] px-4 py-3 flex items-center justify-between gap-3 text-[13px] text-black">
+            <div className="mb-4 rounded-xl bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 px-4 py-3 flex items-center justify-between gap-3 text-[13px] text-[#000080]">
               <span className="font-medium">
                 Please set up your SEC ID to continue
               </span>
@@ -398,28 +408,32 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   setSecError('');
                   setShowSecModal(true);
                 }}
-                className="shrink-0 px-3 py-1.5 rounded-full bg-black text-white text-xs font-semibold"
+                className="shrink-0 px-3 py-1.5 rounded-full bg-[#000080] text-white text-xs font-semibold shadow-sm"
               >
                 Set Now
               </button>
             </div>
           )}
 
-          {/* Page Heading */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
-              Sales Submission Form
-            </h1>
-            <p className="text-sm text-gray-500">
+          {/* Page Heading - Republic Theme */}
+          <div className="mb-8 relative pl-3">
+            <div className="absolute left-0 top-1 bottom-1 w-1 rounded-full bg-gradient-to-b from-[#FF9933] via-white to-[#138808] shadow-sm"></div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <h1 className="text-2xl font-black text-[#000080] tracking-tight uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                Sales Submission
+              </h1>
+              <IndianFlag size={20} />
+            </div>
+            <p className="text-xs font-bold text-orange-600 uppercase tracking-wider">
               Submit your plan sales below
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* SEC ID - Disabled */}
             <div>
-              <label htmlFor="secId" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="secId" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 SEC ID
               </label>
               <input
@@ -427,14 +441,14 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 id="secId"
                 value={secId}
                 disabled
-                className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-500 text-sm"
+                className="w-full px-4 py-3 bg-slate-200/50 border border-slate-200 rounded-xl text-slate-500 text-sm font-medium"
                 placeholder="SEC Phone Number"
               />
             </div>
 
             {/* Date of Sale */}
             <div>
-              <label htmlFor="dateOfSale" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="dateOfSale" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 Date of Sale
               </label>
               <div className="relative">
@@ -451,12 +465,12 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                     return istDate.toISOString().split('T')[0];
                   })()}
                   onClick={(e) => e.target.showPicker?.()}
-                  className="w-full pl-4 pr-12 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   placeholder="dd/mm/yyyy"
                 />
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                   <svg
-                    className="w-5 h-5 text-gray-400"
+                    className="w-5 h-5 text-orange-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -474,7 +488,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
             {/* Store Name - Always disabled, loaded from authUser */}
             <div>
-              <label htmlFor="storeId" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="storeId" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 Store Name
               </label>
               <input
@@ -486,78 +500,77 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   return `${store.name}${store.city ? ` - ${store.city}` : ''}`;
                 })()}
                 disabled
-                className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm"
+                className="w-full px-4 py-3 bg-slate-200/50 border border-slate-200 rounded-xl text-slate-600 text-sm font-medium"
               />
               <a
                 href="/SEC/profile?from=incentive-form"
-                className="inline-block mt-2 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-orange-600 hover:text-orange-700 hover:underline"
               >
                 Want to change store?
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </a>
             </div>
 
             {/* Device Name */}
             <div>
-              <label htmlFor="deviceId" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="deviceId" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 Device Name
               </label>
-              <select
-                id="deviceId"
-                value={deviceId}
-                onChange={(e) => {
-                  setDeviceId(e.target.value);
-                  setPlanId(''); // Reset plan when device changes
-                }}
-                disabled={loadingDevices}
-                className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none disabled:opacity-50"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 1rem center',
-                  backgroundSize: '1.25rem',
-                }}
-              >
-                <option value="">{loadingDevices ? 'Loading devices...' : 'Select Device'}</option>
-                {devices.map((device) => (
-                  <option key={device.id} value={device.id}>
-                    {device.Category} - {device.ModelName}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="deviceId"
+                  value={deviceId}
+                  onChange={(e) => {
+                    setDeviceId(e.target.value);
+                    setPlanId(''); // Reset plan when device changes
+                  }}
+                  disabled={loadingDevices}
+                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
+                >
+                  <option value="">{loadingDevices ? 'Loading devices...' : 'Select Device'}</option>
+                  {devices.map((device) => (
+                    <option key={device.id} value={device.id}>
+                      {device.Category} - {device.ModelName}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
             </div>
 
             {/* Plan Type */}
             <div>
-              <label htmlFor="planId" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="planId" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 Plan Type
               </label>
-              <select
-                id="planId"
-                value={planId}
-                onChange={(e) => setPlanId(e.target.value)}
-                disabled={!deviceId || loadingPlans}
-                className="w-full px-4 py-3 bg-gray-100 border-0 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none disabled:opacity-50"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 1rem center',
-                  backgroundSize: '1.25rem',
-                }}
-              >
-                <option value="">
-                  {!deviceId ? 'Select device first' : loadingPlans ? 'Loading plans...' : 'Select Plan'}
-                </option>
-                {plans.map((plan) => (
-                  <option key={plan.id} value={plan.id}>
-                    {plan.label} - ₹{plan.price}
+              <div className="relative">
+                <select
+                  id="planId"
+                  value={planId}
+                  onChange={(e) => setPlanId(e.target.value)}
+                  disabled={!deviceId || loadingPlans}
+                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
+                >
+                  <option value="">
+                    {!deviceId ? 'Select device first' : loadingPlans ? 'Loading plans...' : 'Select Plan'}
                   </option>
-                ))}
-              </select>
+                  {plans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.label} - ₹{plan.price}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
             </div>
 
             {/* IMEI Number */}
             <div>
-              <label htmlFor="imeiNumber" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="imeiNumber" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 IMEI Number
               </label>
               <div className="relative">
@@ -569,16 +582,16 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   placeholder="Enter IMEI Number"
                   inputMode="numeric"
                   maxLength="15"
-                  className={`w-full pl-4 pr-24 py-3 bg-white border rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 placeholder:text-gray-400 ${imeiError || duplicateError || imeiExists
+                  className={`w-full pl-4 pr-24 py-3.5 bg-white border rounded-xl text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 placeholder:text-slate-400 shadow-sm transition-all ${imeiError || duplicateError || imeiExists
                     ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-blue-500'
+                    : 'border-slate-200 focus:ring-orange-500 focus:border-orange-500'
                     }`}
                 />
                 <button
                   type="button"
                   onClick={handleScan}
                   disabled={isScanning}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#000080] hover:bg-[#1a1a90] disabled:opacity-50 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -593,7 +606,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
                     />
                   </svg>
-                  {isScanning ? 'Scanning...' : 'Scan'}
+                  {isScanning ? 'Scanning...' : 'SCAN'}
                 </button>
               </div>
               {isCheckingDuplicate && !imeiError && (
@@ -607,37 +620,38 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 </p>
               )}
               {!imeiError && !duplicateError && !isCheckingDuplicate && (
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-[10px] text-slate-500 font-medium">
                   Any incorrect sales reported will impact your future incentives.
                 </p>
               )}
             </div>
 
             {/* Submit Button - Republic Day Theme */}
-            <div className="pt-4 pb-6">
+            <div className="pt-6 pb-6">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full text-white font-semibold py-4 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all text-base hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full text-white font-bold py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all text-base shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
                 style={{
                   background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)',
-                  boxShadow: '0 4px 15px rgba(0, 0, 128, 0.4)',
                 }}
               >
-                {isSubmitting ? '🇮🇳 Submitting...' : 'Submit Jai Hind 🇮🇳'}
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>SUBMITTING...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>SUBMIT</span>
+                      <IndianFlag size={16} />
+                    </>
+                  )}
+                </div>
               </button>
             </div>
-            {/* OLD SUBMIT BUTTON - Uncomment after Christmas/Republic Day
-            <div className="pt-4 pb-6">
-              <button
-                type="submit"
-                disabled={!!imeiError || !!duplicateError || imeiExists || !imeiNumber || imeiNumber.length !== 15 || isCheckingDuplicate || isSubmitting || !storeId || !deviceId || !planId}
-                className="w-full bg-black text-white font-semibold py-4 rounded-2xl hover:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all text-base"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit'}
-              </button>
-            </div>
-            */}
           </form>
         </div>
       </main>
