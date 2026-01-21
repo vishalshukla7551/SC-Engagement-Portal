@@ -35,6 +35,7 @@ model Store {
   id    String  @id @map("_id")
   name  String
   city  String?
+  region String? // Added region field
   numberOfSec Int?  // Number of SECs associated with the store (nullable)
   periodicAttachRates periodicAttachRate[]
   samsungIncentiveInfo Json?  // Array<Object>: { month: String(MM-YYYY), samsungIncentiveAmount: Int, samsungIncentivePaidAt: Date | null }    
@@ -260,7 +261,7 @@ model SEC {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   fullName    String?
   phone       String    @unique
-  employeeId      String?  @unique // Unique employee identifier
+  employeeId      String? // Unique employee identifier
   email       String?
   kycInfo     Json?
   lastLoginAt DateTime?

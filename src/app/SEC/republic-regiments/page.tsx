@@ -12,7 +12,8 @@ import {
     X,
     User,
     Store,
-    Compass
+    Compass,
+    Crown
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import RepublicFooter from '@/components/RepublicFooter';
@@ -151,16 +152,17 @@ const JetFlypast = () => {
     );
 };
 
-// --- Mock Data ---
+// --- Mock Data (will be replaced with real data) ---
 
 const ZONES = [
-    { id: 'north', label: 'NORTH ZONE', shortLabel: 'N', color: 'text-orange-600' },
-    { id: 'south', label: 'SOUTH ZONE', shortLabel: 'S', color: 'text-blue-600' },
-    { id: 'west', label: 'WEST ZONE', shortLabel: 'W', color: 'text-stone-600' },
-    { id: 'east', label: 'EAST ZONE', shortLabel: 'E', color: 'text-emerald-600' }
+    { id: 'NORTH', label: 'NORTH ZONE', shortLabel: 'N', color: 'text-orange-600' },
+    { id: 'SOUTH', label: 'SOUTH ZONE', shortLabel: 'S', color: 'text-blue-600' },
+    { id: 'WEST', label: 'WEST ZONE', shortLabel: 'W', color: 'text-stone-600' },
+    { id: 'EAST', label: 'EAST ZONE', shortLabel: 'E', color: 'text-emerald-600' }
 ];
 
 const RANKS = [
+    { title: 'Sales General', shortTitle: 'General', icon: Crown },
     { title: 'Sales Chief Marshal', shortTitle: 'Chief Marshal', icon: Star },
     { title: 'Sales Commander', shortTitle: 'Commander', icon: Target },
     { title: 'Sales Major', shortTitle: 'Major', icon: Shield },
@@ -169,31 +171,12 @@ const RANKS = [
     { title: 'Salesveer', shortTitle: 'Salesveer', icon: Shield }
 ];
 
-const MATRIX_DATA = RANKS.map(rank => ({
-    rank: rank.title,
-    shortRank: rank.shortTitle,
-    icon: rank.icon,
-    counts: {
-        north: Math.floor(Math.random() * 40) + 5,
-        south: Math.floor(Math.random() * 40) + 5,
-        west: Math.floor(Math.random() * 40) + 5,
-        east: Math.floor(Math.random() * 40) + 5,
-    }
-}));
-
 // --- Mock Names for Detail View ---
 const NAMES = ["Vikram Singh", "Aditi Rao", "Rohan Gupta", "Priya Sharma", "Amit Patel", "Sneha Reddy", "Rahul Verma", "Kavita Das", "Arjun Nair", "Pooja Mehta", "Suresh Raina", "Deepak Hooda", "Manish Pandey", "Hardik Pandya"];
 const STORES = ["Reliance Digital - MG Road", "Croma - Sector 18", "Vijay Sales - Mall of India", "Sargam Electronics - Dwarka", "DigiWorld - CP", "Girias - Indiranagar", "Adishwar - Jayanagar", "Viveks - T Nagar"];
 
 const PersonnelListModal = ({ data, onClose }: { data: any, onClose: () => void }) => {
-    // Generate mock personnel based on count (limit to 15 for demo)
-    const displayCount = Math.min(data.count, 20);
-    const personnel = Array.from({ length: displayCount }, (_, i) => ({
-        id: i,
-        name: NAMES[Math.floor(Math.random() * NAMES.length)],
-        idCode: `SEC-${1000 + i}`,
-        storeName: STORES[Math.floor(Math.random() * STORES.length)]
-    }));
+    const personnel = data.personnel || [];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -217,27 +200,36 @@ const PersonnelListModal = ({ data, onClose }: { data: any, onClose: () => void 
 
                 {/* List */}
                 <div className="overflow-y-auto p-2 space-y-2 flex-1 bg-stone-50/50">
-                    {personnel.map((person, i) => (
-                        <div key={i} className="bg-white border border-stone-200 p-3 rounded-lg flex items-center justify-between shadow-sm hover:border-orange-300 transition-colors">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
-                                    <User size={14} />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-stone-700 text-sm">{person.name}</p>
-                                    <p className="text-[10px] text-stone-400 font-mono uppercase">{person.idCode}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1.5 bg-stone-50 px-2 py-1 rounded border border-stone-100">
-                                <Store size={10} className="text-stone-400" />
-                                <span className="text-[10px] font-bold text-stone-600 uppercase tracking-tight">{person.storeName}</span>
-                            </div>
+                    {personnel.length === 0 ? (
+                        <div className="text-center py-8 text-stone-400">
+                            <p className="text-sm font-bold">No personnel in this category</p>
                         </div>
-                    ))}
+                    ) : (
+                        personnel.map((person: any, i: number) => (
+                            <div key={i} className="bg-white border border-stone-200 p-3 rounded-lg flex items-center justify-between shadow-sm hover:border-orange-300 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+                                        <User size={14} />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-stone-700 text-sm">{person.fullName}</p>
+                                        <p className="text-[10px] text-stone-400 font-mono uppercase">{person.employeeId || person.phone}</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-1.5 bg-stone-50 px-2 py-1 rounded border border-stone-100">
+                                        <Store size={10} className="text-stone-400" />
+                                        <span className="text-[10px] font-bold text-stone-600 uppercase tracking-tight max-w-[120px] truncate">{person.storeName}</span>
+                                    </div>
+                                    <span className="text-[9px] text-stone-400">{person.city}</span>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
 
                 <div className="p-3 bg-stone-100 border-t border-stone-200 text-center">
-                    <p className="text-[10px] text-stone-400 font-mono uppercase">CONFIDENTIAL PERSONNEL LIST</p>
+                    <p className="text-[10px] text-stone-400 font-mono uppercase">CONFIDENTIAL PERSONNEL LIST • {personnel.length} TOTAL</p>
                 </div>
             </motion.div>
         </div>
@@ -247,6 +239,47 @@ const PersonnelListModal = ({ data, onClose }: { data: any, onClose: () => void 
 export default function RegimentsPage() {
     const router = useRouter();
     const [selectedCell, setSelectedCell] = useState<any>(null);
+    const [matrixData, setMatrixData] = useState<any[]>([]);
+    const [personnelData, setPersonnelData] = useState<any>({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch data from API
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('/api/sec/regiments');
+                const data = await response.json();
+
+                if (data.success) {
+                    // Transform matrix data for display
+                    const transformedData = RANKS.map(rank => ({
+                        rank: rank.title,
+                        shortRank: rank.shortTitle,
+                        icon: rank.icon,
+                        counts: {
+                            NORTH: data.matrix[rank.title]?.NORTH || 0,
+                            SOUTH: data.matrix[rank.title]?.SOUTH || 0,
+                            WEST: data.matrix[rank.title]?.WEST || 0,
+                            EAST: data.matrix[rank.title]?.EAST || 0,
+                        }
+                    }));
+
+                    setMatrixData(transformedData);
+                    setPersonnelData(data.personnel);
+                } else {
+                    setError(data.error || 'Failed to fetch data');
+                }
+            } catch (err: any) {
+                setError(err.message || 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#f0f0e8] relative overflow-hidden font-sans text-stone-800 pb-20">
@@ -310,52 +343,73 @@ export default function RegimentsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {MATRIX_DATA.map((row, index) => (
-                                    <motion.tr
-                                        key={row.rank}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="border-b border-stone-200 hover:bg-stone-50/80 transition-colors group"
-                                    >
-                                        <td className="p-4 sm:p-4 pl-4 sm:pl-8 border-r border-stone-300 bg-stone-100/30">
-                                            <div className="flex items-center gap-2 sm:gap-4">
-                                                <div className={`p-1.5 sm:p-2 rounded-lg bg-white border border-stone-200 text-stone-400 group-hover:text-orange-600 group-hover:border-orange-200 transition-all shadow-sm hidden sm:block`}>
-                                                    <row.icon size={18} />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-stone-700 uppercase tracking-tight text-[10px] sm:text-sm font-poppins hidden sm:block">{row.rank}</span>
-                                                    {/* Mobile Short Rank */}
-                                                    <span className="font-bold text-stone-700 uppercase tracking-tight text-xs sm:text-sm font-poppins sm:hidden">{row.shortRank}</span>
-                                                </div>
-                                            </div>
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={5} className="p-8 text-center text-stone-400">
+                                            <p className="text-sm font-bold">Loading regiment data...</p>
                                         </td>
-
-                                        {/* Counts with Clickable Modal */}
-                                        {['north', 'south', 'west', 'east'].map((zoneId) => {
-                                            const count = (row.counts as any)[zoneId];
-                                            const zoneLabel = ZONES.find(z => z.id === zoneId)?.label;
-
-                                            // Hover color
-                                            const hoverColor = zoneId === 'north' ? 'group-hover:text-orange-600' :
-                                                zoneId === 'south' ? 'group-hover:text-blue-600' :
-                                                    zoneId === 'east' ? 'group-hover:text-emerald-600' : 'group-hover:text-stone-800';
-
-                                            return (
-                                                <td
-                                                    key={zoneId}
-                                                    className="p-4 sm:p-4 text-center border-r border-stone-200 bg-white/50 cursor-pointer hover:bg-white transition-all relative overflow-hidden"
-                                                    onClick={() => setSelectedCell({ rank: row.rank, zone: zoneLabel, count: count })}
-                                                >
-                                                    <div className="flex items-center justify-center gap-1 group/cell relative z-10">
-                                                        <span className={`font-mono text-base sm:text-lg font-bold text-stone-600 ${hoverColor} transition-colors`}>{count}</span>
-                                                        <ChevronRight size={14} className="text-stone-300 group-hover/cell:text-stone-400 transition-all opacity-0 group-hover/cell:opacity-100 group-hover/cell:translate-x-1 hidden sm:block" />
+                                    </tr>
+                                ) : error ? (
+                                    <tr>
+                                        <td colSpan={5} className="p-8 text-center text-red-500">
+                                            <p className="text-sm font-bold">Error: {error}</p>
+                                        </td>
+                                    </tr>
+                                ) : matrixData.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="p-8 text-center text-stone-400">
+                                            <p className="text-sm font-bold">No data available</p>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    matrixData.map((row: any, index: number) => (
+                                        <motion.tr
+                                            key={row.rank}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="border-b border-stone-200 hover:bg-stone-50/80 transition-colors group"
+                                        >
+                                            <td className="p-4 sm:p-4 pl-4 sm:pl-8 border-r border-stone-300 bg-stone-100/30">
+                                                <div className="flex items-center gap-2 sm:gap-4">
+                                                    <div className={`p-1.5 sm:p-2 rounded-lg bg-white border border-stone-200 text-stone-400 group-hover:text-orange-600 group-hover:border-orange-200 transition-all shadow-sm hidden sm:block`}>
+                                                        <row.icon size={18} />
                                                     </div>
-                                                </td>
-                                            );
-                                        })}
-                                    </motion.tr>
-                                ))}
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-stone-700 uppercase tracking-tight text-[10px] sm:text-sm font-poppins hidden sm:block">{row.rank}</span>
+                                                        {/* Mobile Short Rank */}
+                                                        <span className="font-bold text-stone-700 uppercase tracking-tight text-xs sm:text-sm font-poppins sm:hidden">{row.shortRank}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            {/* Counts with Clickable Modal */}
+                                            {['NORTH', 'SOUTH', 'WEST', 'EAST'].map((zoneId) => {
+                                                const count = (row.counts as any)[zoneId];
+                                                const zoneLabel = ZONES.find(z => z.id === zoneId)?.label;
+                                                const personnel = personnelData[row.rank]?.[zoneId] || [];
+
+                                                // Hover color
+                                                const hoverColor = zoneId === 'NORTH' ? 'group-hover:text-orange-600' :
+                                                    zoneId === 'SOUTH' ? 'group-hover:text-blue-600' :
+                                                        zoneId === 'EAST' ? 'group-hover:text-emerald-600' : 'group-hover:text-stone-800';
+
+                                                return (
+                                                    <td
+                                                        key={zoneId}
+                                                        className="p-4 sm:p-4 text-center border-r border-stone-200 bg-white/50 cursor-pointer hover:bg-white transition-all relative overflow-hidden"
+                                                        onClick={() => setSelectedCell({ rank: row.rank, zone: zoneLabel, count: count, personnel: personnel })}
+                                                    >
+                                                        <div className="flex items-center justify-center gap-1 group/cell relative z-10">
+                                                            <span className={`font-mono text-base sm:text-lg font-bold text-stone-600 ${hoverColor} transition-colors`}>{count}</span>
+                                                            <ChevronRight size={14} className="text-stone-300 group-hover/cell:text-stone-400 transition-all opacity-0 group-hover/cell:opacity-100 group-hover/cell:translate-x-1 hidden sm:block" />
+                                                        </div>
+                                                    </td>
+                                                );
+                                            })}
+                                        </motion.tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
