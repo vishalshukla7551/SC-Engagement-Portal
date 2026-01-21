@@ -22,7 +22,7 @@ export default function LandingPage({ userName = '' }) {
         '🪁 Special 26th Jan Rewards',
         '�🇳 Earn Extra on every Sale',
       ],
-      validity: 'Valid till 28th Jan',
+      validity: 'Valid till 31st Jan',
       gradient: 'from-[#FF9933] to-[#FFB366]', // Saffron gradient
     },
     {
@@ -36,7 +36,7 @@ export default function LandingPage({ userName = '' }) {
       ],
       validity: 'Limited time offer',
       gradient: 'from-[#000080] to-[#1a1a5e]', // Navy Blue gradient
-      textColor: 'text-white'
+      textColor: 'text-black'
     },
     {
       id: 3,
@@ -49,7 +49,7 @@ export default function LandingPage({ userName = '' }) {
       ],
       validity: 'Ends this weekend',
       gradient: 'from-[#138808] to-[#1a990a]', // Green gradient
-      textColor: 'text-white'
+      textColor: 'text-black'
     },
   ];
 
@@ -137,11 +137,13 @@ export default function LandingPage({ userName = '' }) {
                 >
                   <div
                     className={`bg-gradient-to-br ${banner.gradient} px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 lg:py-8 min-h-[160px] sm:min-h-[180px] md:min-h-[220px] lg:min-h-[260px] flex flex-col justify-center items-center text-center relative overflow-hidden`}
+                    style={{
+                      backgroundImage: `url('/images/${banner.id === 2 ? 'banner 2.jpeg' : 'banner1.jpeg'}')`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
                   >
-                    {/* Watermark/Background decoration */}
-                    <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
-                      <span className="text-[150px]">🇮🇳</span>
-                    </div>
+
 
                     <p className={`text-[10px] sm:text-xs md:text-sm font-bold mb-0.5 sm:mb-1 uppercase tracking-wider ${banner.textColor || 'text-gray-900'}`}>
                       {banner.title}
