@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Award,
     ChevronRight,
@@ -9,7 +9,10 @@ import {
     Flag,
     Shield,
     Lock,
-    CheckCircle
+    CheckCircle,
+    Gift,
+    FileText,
+    X
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -154,6 +157,133 @@ const JetFlypast = () => {
     );
 };
 
+const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+                onClick={e => e.stopPropagation()}
+            >
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-blue-50/50">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-blue-100 p-2 rounded-xl text-blue-600">
+                            <FileText size={20} />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>Terms & Conditions</h3>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400">
+                        <X size={24} />
+                    </button>
+                </div>
+                <div className="p-6 overflow-y-auto space-y-4 text-slate-600 text-sm leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <div>
+                        <p className="font-bold text-slate-800 mb-1">1. Campaign Period</p>
+                        <p>The Republic Day Special Campaign (Honour & Glory Path) is valid from 20th January 2026 to 28th January 2026.</p>
+                    </div>
+
+                    <div>
+                        <p className="font-bold text-slate-800 mb-1">2. Eligibility</p>
+                        <p>This mission is open to all active Samsung Experience Consultants (SECs) across all zones (North, South, East, West).</p>
+                    </div>
+
+                    <div>
+                        <p className="font-bold text-slate-800 mb-1">3. Rank Progression & Rewards</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                            <li>Ranks are assigned based on cumulative sales achieved during the campaign period.</li>
+                            <li>Incentives are calculated based on the highest rank achieved.</li>
+                            <li>Sales must be successfully submitted and verified via the portal to count towards rank progression.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p className="font-bold text-slate-800 mb-1">4. Verification Process</p>
+                        <p>All sales entries (IMEIs) will undergo mandatory verification. Fraudulent entries will lead to immediate disqualification from the campaign and further disciplinary action.</p>
+                    </div>
+
+                    <div>
+                        <p className="font-bold text-slate-800 mb-1">5. Final Authority</p>
+                        <p>The management reserves the right to modify, extend, or terminate the campaign at its sole discretion without prior notice. Decisions regarding reward distribution are final and binding.</p>
+                    </div>
+                </div>
+                <div className="p-6 bg-slate-50 border-t border-slate-100 text-center">
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 bg-[#000080] text-white rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-blue-900/20 active:scale-95 transition-transform"
+                    >
+                        I Understand
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+                onClick={e => e.stopPropagation()}
+            >
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-orange-50/50">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-orange-100 p-2 rounded-xl text-orange-600">
+                            <Gift size={20} />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>Mission Rewards</h3>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400">
+                        <X size={24} />
+                    </button>
+                </div>
+                <div className="p-6 overflow-y-auto space-y-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <p className="text-xs text-slate-500 font-medium mb-4 uppercase tracking-wider">Achieve higher ranks to unlock massive bonus incentives!</p>
+
+                    {RANKS.filter(r => r.minSales > 0).map((rank, i) => (
+                        <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-orange-200 transition-colors">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-tr ${rank.color} to-white shadow-md ring-2 ring-white`}>
+                                <rank.icon size={24} className="text-white drop-shadow-sm" />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-bold text-slate-800 uppercase text-sm tracking-tight">{rank.title}</h4>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase">Target: ₹{rank.minSales.toLocaleString('en-IN')}+</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Bonus</p>
+                                <span className="text-sm font-black text-orange-600">UP TO 5%*</span>
+                            </div>
+                        </div>
+                    ))}
+
+                    <div className="mt-6 p-4 rounded-2xl bg-blue-50 border border-blue-100 flex items-start gap-3">
+                        <Star className="text-blue-600 shrink-0 mt-0.5" size={16} />
+                        <div>
+                            <p className="text-xs font-bold text-blue-800 uppercase">Grand Marshal Special</p>
+                            <p className="text-[10px] text-blue-600 leading-relaxed mt-0.5">Top performers in EACH ZONE will receive a special Republic Day trophy and an additional cash prize!</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="p-6 bg-slate-50 border-t border-slate-100 text-center">
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-orange-900/20 active:scale-95 transition-transform"
+                    >
+                        Let&apos;s Conquer!
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
 
 
 export default function RepublicDayHeroPage() {
@@ -162,6 +292,8 @@ export default function RepublicDayHeroPage() {
     const [currentSales, setCurrentSales] = useState(0);
     const [rankSales, setRankSales] = useState(0); // New state for stable rank positioning
     const [loading, setLoading] = useState(true);
+    const [showTerms, setShowTerms] = useState(false);
+    const [showRewards, setShowRewards] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -318,8 +450,8 @@ export default function RepublicDayHeroPage() {
                         <h1 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.03em' }}>
                             Honour & Glory <span className="text-[#FF9933]">Path</span>
                         </h1>
-                        <p className="text-slate-600 font-medium mt-0.5 text-xs sm:text-base" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            Rise through the ranks: SALESVEER to SALES GENERAL
+                        <p className="text-slate-600 font-medium mt-0.5 text-[10px] sm:text-xs" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            Climb the ranks: SALESVEER to SALESGENERAL
                         </p>
                     </div>
 
@@ -761,6 +893,42 @@ export default function RepublicDayHeroPage() {
                     </motion.div>
                 </div>
 
+                {/* Side Action Buttons - Right Side Top */}
+                <div className="fixed right-0 top-6 flex flex-col gap-3 z-40">
+                    <motion.button
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 1.2, type: "spring" }}
+                        whileHover={{ x: -8 }}
+                        onClick={() => setShowRewards(true)}
+                        className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all"
+                    >
+                        <div className="bg-orange-100 p-2 rounded-xl group-hover:bg-orange-200 transition-colors">
+                            <Gift className="text-orange-600" size={18} />
+                        </div>
+                        <span className="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-widest leading-none pr-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Rewards</span>
+                    </motion.button>
+
+                    <motion.button
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 1.3, type: "spring" }}
+                        whileHover={{ x: -8 }}
+                        onClick={() => setShowTerms(true)}
+                        className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all"
+                    >
+                        <div className="bg-blue-100 p-2 rounded-xl group-hover:bg-blue-200 transition-colors">
+                            <FileText className="text-blue-600" size={18} />
+                        </div>
+                        <span className="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-widest leading-none pr-1" style={{ fontFamily: 'Poppins, sans-serif' }}>T&C</span>
+                    </motion.button>
+                </div>
+
+                {/* Modals */}
+                <AnimatePresence>
+                    {showTerms && <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />}
+                    {showRewards && <RewardsModal isOpen={showRewards} onClose={() => setShowRewards(false)} />}
+                </AnimatePresence>
             </main>
 
             {/* Hide scrollbar styles */}
