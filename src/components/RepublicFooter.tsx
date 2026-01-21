@@ -96,8 +96,8 @@ export default function RepublicFooter() {
                                 key={item.id}
                                 href={item.href}
                                 className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-all duration-300 ${isActive
-                                        ? 'text-[#FF9933]'
-                                        : 'text-gray-400 hover:text-gray-200'
+                                    ? 'text-[#FF9933]'
+                                    : 'text-gray-400 hover:text-gray-200'
                                     }`}
                             >
                                 <div className={`transition-transform duration-300 ${isActive ? 'animate-bounce' : 'hover:-translate-y-1'}`}>
