@@ -16,26 +16,18 @@ export default function LandingPage({ userName = '' }) {
       title: 'REPUBLIC DAY SPECIAL 🇮🇳',
       subtitle: 'SALES DOST SALUTES',
       description: 'CELEBRATE WITH SUPER INCENTIVES',
-      highlights: [
-        '🪁 Special 26th Jan Rewards',
-        '🇮🇳 Earn Extra on every Sale',
-      ],
-      validity: 'Valid till 31st Jan',
-      gradient: 'from-[#FF9933] to-[#FFB366]',
-      textColor: 'text-white'
+      isImageBanner: true,
+      imageSrc: '/images/banner1.jpeg',
+      imageAlt: 'Republic Day Banner 1',
     },
     {
       id: 2,
       title: 'JAI HIND TEAM! 🫡',
       subtitle: 'HEROES OF SALES',
       description: 'BE A LEADER LIKE A SOLDIER',
-      highlights: [
-        '⚔️ Rank up to General',
-        '🎯 Double points on Targets',
-      ],
-      validity: 'Limited time offer',
-      gradient: 'from-[#000080] to-[#1a1a5e]',
-      textColor: 'text-white'
+      isImageBanner: true,
+      imageSrc: '/images/banner 2.jpeg',
+      imageAlt: 'Jai Hind Banner 2',
     },
     {
       id: 3,
