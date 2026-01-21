@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaDownload, FaSignOutAlt, FaSpinner } from 'react-icons/fa';
+import { FaDownload, FaSignOutAlt, FaSpinner, FaCheckDouble, FaTrashAlt, FaCheckSquare, FaSquare } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import { clientLogout } from '@/lib/clientLogout';
 
@@ -106,6 +106,64 @@ export default function SpotIncentiveReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Bulk Selection State
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === reports.length && reports.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(reports.map(r => r.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkAction = async (action: 'approve' | 'discard') => {
+    if (selectedIds.size === 0) return;
+
+    const actionText = action === 'approve' ? 'approve' : 'discard/delete';
+    if (!confirm(`Are you sure you want to ${actionText} ${selectedIds.size} selected reports?`)) {
+      return;
+    }
+
+    try {
+      setBulkActionLoading(true);
+      const response = await fetch('/api/zopper-admin/spot-incentive-report/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: Array.from(selectedIds),
+          action
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert(result.message);
+        setSelectedIds(new Set()); // Clear selection
+        fetchData(); // Refresh data
+      } else {
+        alert(result.error || `Failed to ${action} reports`);
+      }
+    } catch (error) {
+      console.error(`Error processing bulk ${action}:`, error);
+      alert(`Error processing bulk ${action}`);
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   // Handle Mark Paid action
   const handleMarkPaid = async (reportId: string) => {
     try {
@@ -193,9 +251,10 @@ export default function SpotIncentiveReport() {
     fetchData();
   }, [page, query, storeFilter, planFilter, paymentFilter, startDate]);
 
-  // Reset page when filters change
+  // Reset page and selection when filters change
   useEffect(() => {
     setPage(1);
+    setSelectedIds(new Set());
   }, [query, storeFilter, planFilter, paymentFilter, startDate]);
 
   const reports = data?.reports || [];
@@ -331,12 +390,57 @@ export default function SpotIncentiveReport() {
           </button>
         </section>
 
+        {/* Bulk Actions Bar - Only visible when items selected */}
+        {selectedIds.size > 0 && (
+          <div className="bg-indigo-900/40 border border-indigo-500/30 rounded-lg p-3 flex items-center justify-between mb-4 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="bg-indigo-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                {selectedIds.size} Selected
+              </span>
+              <span className="text-sm text-indigo-200">
+                rows selected
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleBulkAction('approve')}
+                disabled={bulkActionLoading}
+                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold rounded-md transition-colors"
+              >
+                {bulkActionLoading ? <FaSpinner className="animate-spin" /> : <FaCheckDouble />}
+                Approve Selected
+              </button>
+              <button
+                onClick={() => handleBulkAction('discard')}
+                disabled={bulkActionLoading}
+                className="flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-semibold rounded-md transition-colors"
+              >
+                {bulkActionLoading ? <FaSpinner className="animate-spin" /> : <FaTrashAlt />}
+                Discard Selected
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full table-auto">
               <thead className="bg-neutral-50 border-b border-neutral-200">
                 <tr className="text-left">
+                  <th className="p-2 md:p-3 w-[40px]">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="text-neutral-500 hover:text-indigo-600 transition-colors"
+                      title={selectedIds.size === reports.length ? "Deselect All" : "Select All"}
+                    >
+                      {reports.length > 0 && selectedIds.size === reports.length ? (
+                        <FaCheckSquare size={16} className="text-indigo-600" />
+                      ) : (
+                        <FaSquare size={16} />
+                      )}
+                    </button>
+                  </th>
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                     Timestamp
                   </th>
@@ -372,26 +476,38 @@ export default function SpotIncentiveReport() {
               <tbody className="divide-y divide-neutral-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={10} className="p-8 text-center text-neutral-500">
+                    <td colSpan={11} className="p-8 text-center text-neutral-500">
                       <FaSpinner className="animate-spin mx-auto mb-2" size={20} />
                       Loading reports...
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={10} className="p-8 text-center text-red-500">
+                    <td colSpan={11} className="p-8 text-center text-red-500">
                       {error}
                     </td>
                   </tr>
                 ) : reports.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="p-8 text-center text-neutral-500">
+                    <td colSpan={11} className="p-8 text-center text-neutral-500">
                       No reports found
                     </td>
                   </tr>
                 ) : (
                   reports.map((r: SpotIncentiveReport) => (
                     <tr key={r.id} className="hover:bg-neutral-50 transition">
+                      <td className="p-2 md:p-3">
+                        <button
+                          onClick={() => toggleSelectRow(r.id)}
+                          className="text-neutral-400 hover:text-indigo-600 transition-colors block"
+                        >
+                          {selectedIds.has(r.id) ? (
+                            <FaCheckSquare size={16} className="text-indigo-600" />
+                          ) : (
+                            <FaSquare size={16} />
+                          )}
+                        </button>
+                      </td>
                       <td className="p-2 md:p-3 text-neutral-900 text-sm">
                         <div className="text-xs">{formatDateWithTime(r.createdAt).date}</div>
                         <div className="text-neutral-500 text-xs">
@@ -425,8 +541,8 @@ export default function SpotIncentiveReport() {
                       <td className="p-2 md:p-3">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${r.isPaid
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : 'bg-amber-50 text-amber-700'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-amber-50 text-amber-700'
                             }`}
                         >
                           {r.isPaid ? 'Paid' : 'Pending'}
@@ -438,8 +554,8 @@ export default function SpotIncentiveReport() {
                             onClick={() => handleMarkPaid(r.id)}
                             disabled={r.isPaid}
                             className={`px-2 py-1 rounded text-xs font-medium transition-colors ${r.isPaid
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-blue-500 hover:bg-blue-600 text-white'
                               }`}
                           >
                             Approve
