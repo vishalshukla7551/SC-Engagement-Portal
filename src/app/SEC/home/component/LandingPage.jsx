@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-// import FestiveHeader from '@/components/FestiveHeader';
-// import FestiveFooter from '@/components/FestiveFooter';
 import RepublicHeader from '@/components/RepublicHeader';
 import RepublicFooter from '@/components/RepublicFooter';
 
@@ -15,15 +13,16 @@ export default function LandingPage({ userName = '' }) {
   const banners = [
     {
       id: 1,
-      title: 'REPUBLIC DAY SPECIAL �🇳',
+      title: 'REPUBLIC DAY SPECIAL 🇮🇳',
       subtitle: 'SALES DOST SALUTES',
       description: 'CELEBRATE WITH SUPER INCENTIVES',
       highlights: [
         '🪁 Special 26th Jan Rewards',
-        '�🇳 Earn Extra on every Sale',
+        '🇮🇳 Earn Extra on every Sale',
       ],
-      validity: 'Valid till 28th Jan',
-      gradient: 'from-[#FF9933] to-[#FFB366]', // Saffron gradient
+      validity: 'Valid till 31st Jan',
+      gradient: 'from-[#FF9933] to-[#FFB366]',
+      textColor: 'text-white'
     },
     {
       id: 2,
@@ -31,11 +30,11 @@ export default function LandingPage({ userName = '' }) {
       subtitle: 'HEROES OF SALES',
       description: 'BE A LEADER LIKE A SOLDIER',
       highlights: [
-        '�️ Rank up to General',
+        '⚔️ Rank up to General',
         '🎯 Double points on Targets',
       ],
       validity: 'Limited time offer',
-      gradient: 'from-[#000080] to-[#1a1a5e]', // Navy Blue gradient
+      gradient: 'from-[#000080] to-[#1a1a5e]',
       textColor: 'text-white'
     },
     {
@@ -45,10 +44,10 @@ export default function LandingPage({ userName = '' }) {
       description: 'UNLEASH YOUR EARNING POTENTIAL',
       highlights: [
         '🚀 Skyrocket your Income',
-        '� Green zone Incentives',
+        '💚 Green zone Incentives',
       ],
       validity: 'Ends this weekend',
-      gradient: 'from-[#138808] to-[#1a990a]', // Green gradient
+      gradient: 'from-[#138808] to-[#1a990a]',
       textColor: 'text-white'
     },
     {
@@ -79,7 +78,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'SEC Incentive Form',
       description: 'Submit your sales IMEI wise',
       icon: '📝',
-      bgGradient: 'from-[#2563eb] via-[#3b82f6] to-[#06b6d4]', // Vivid Blue -> Cyan
+      bgGradient: 'from-[#2563eb] via-[#3b82f6] to-[#06b6d4]',
       iconBg: 'bg-white/20',
       link: '/SEC/incentive-form',
       badge: 'SUBMIT ⚡'
@@ -89,7 +88,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'Battle Standings',
       description: 'View Your Progress',
       icon: '⚔️',
-      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]', // Indigo -> Purple -> Pink
+      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
       iconBg: 'bg-white/20',
       link: '/SEC/republic-day-hero',
       badge: 'LIVE 🔴'
@@ -99,22 +98,17 @@ export default function LandingPage({ userName = '' }) {
       title: 'SC+ Claim Raise Procedure',
       description: 'Learn More',
       icon: '📢',
-      bgGradient: 'from-[#ea580c] via-[#f97316] to-[#fbbf24]', // Orange -> Amber
+      bgGradient: 'from-[#ea580c] via-[#f97316] to-[#fbbf24]',
       iconBg: 'bg-white/20',
       link: '/SEC/claim-procedure',
       badge: 'GUIDE 📘'
     },
-    // {
-    //   id: 'hall-of-fame',
-    //   title: 'Hall of Fame',
-    //   ...
-    // },
     {
       id: 'regiments',
       title: 'Regiments',
       description: 'View Your Regiment',
       icon: '🎖️',
-      bgGradient: 'from-[#166534] via-[#15803d] to-[#4ade80]', // Deep Green -> Bright Green
+      bgGradient: 'from-[#166534] via-[#15803d] to-[#4ade80]',
       iconBg: 'bg-white/20',
       link: '/SEC/republic-regiments',
       badge: 'YOUR SQUAD 🪖'
@@ -128,14 +122,13 @@ export default function LandingPage({ userName = '' }) {
   return (
     <div className="min-h-screen md:h-auto h-screen bg-gray-50 flex flex-col md:overflow-visible overflow-hidden">
       <RepublicHeader userName={userName || 'Guest'} />
-      {/* <FestiveHeader userName={userName || 'Guest'} /> */}
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
 
         {/* Banner Carousel */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mb-4 sm:mb-5 md:mb-6 pt-4">
-          <div className="relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg h-[160px] sm:h-[180px] md:h-[220px] lg:h-[260px]">
+          <div className="relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg h-[200px] sm:h-[220px] md:h-[260px] lg:h-[300px]">
             <div
               className="flex transition-transform duration-500 ease-in-out h-full"
               style={{ transform: `translateX(-${activeSlide * 100}%)` }}
@@ -146,7 +139,7 @@ export default function LandingPage({ userName = '' }) {
                   className="w-full flex-shrink-0 h-full"
                 >
                   {banner.isImageBanner ? (
-                    // Image Banner
+                    // Image Banner - Clickable
                     <a
                       href={banner.link}
                       target="_blank"
@@ -210,7 +203,7 @@ export default function LandingPage({ userName = '' }) {
                   }`}
                 style={{
                   backgroundColor: activeSlide === index
-                    ? (index === 0 ? '#FF9933' : index === 1 ? '#000080' : '#138808')
+                    ? (index === 0 ? '#FF9933' : index === 1 ? '#000080' : index === 2 ? '#138808' : '#FFD700')
                     : undefined
                 }}
                 aria-label={`Go to slide ${index + 1}`}
@@ -258,7 +251,6 @@ export default function LandingPage({ userName = '' }) {
       </main>
 
       <RepublicFooter />
-      {/* <FestiveFooter /> */}
     </div>
   );
 }
