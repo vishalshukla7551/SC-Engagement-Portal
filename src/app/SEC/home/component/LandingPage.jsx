@@ -51,6 +51,16 @@ export default function LandingPage({ userName = '' }) {
       gradient: 'from-[#138808] to-[#1a990a]', // Green gradient
       textColor: 'text-white'
     },
+    {
+      id: 4,
+      title: 'PITCH SULTAN',
+      subtitle: 'SPECIAL PROMOTION',
+      description: 'EXCLUSIVE OFFER',
+      isImageBanner: true,
+      imageSrc: '/pitchsultan_banner.png',
+      imageAlt: 'Pitch Sultan Banner',
+      link: 'https://www.salesdost.com/pitchsultan/rewards',
+    },
   ];
 
   // Auto-scroll banner every 3 seconds
@@ -125,47 +135,64 @@ export default function LandingPage({ userName = '' }) {
 
         {/* Banner Carousel */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mb-4 sm:mb-5 md:mb-6 pt-4">
-          <div className="relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg">
+          <div className="relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg h-[160px] sm:h-[180px] md:h-[220px] lg:h-[260px]">
             <div
-              className="flex transition-transform duration-500 ease-in-out"
+              className="flex transition-transform duration-500 ease-in-out h-full"
               style={{ transform: `translateX(-${activeSlide * 100}%)` }}
             >
               {banners.map((banner) => (
                 <div
                   key={banner.id}
-                  className="w-full flex-shrink-0"
+                  className="w-full flex-shrink-0 h-full"
                 >
-                  <div
-                    className={`bg-gradient-to-br ${banner.gradient} px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 lg:py-8 min-h-[160px] sm:min-h-[180px] md:min-h-[220px] lg:min-h-[260px] flex flex-col justify-center items-center text-center relative overflow-hidden`}
-                  >
-                    {/* Watermark/Background decoration */}
-                    <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
-                      <span className="text-[150px]">🇮🇳</span>
-                    </div>
+                  {banner.isImageBanner ? (
+                    // Image Banner
+                    <a
+                      href={banner.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full h-full relative overflow-hidden rounded-xl md:rounded-2xl bg-gray-100 block cursor-pointer hover:opacity-90 transition-opacity"
+                    >
+                      <img
+                        src={banner.imageSrc}
+                        alt={banner.imageAlt}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </a>
+                  ) : (
+                    // Gradient Banner
+                    <div
+                      className={`bg-gradient-to-br ${banner.gradient} px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 lg:py-8 h-full flex flex-col justify-center items-center text-center relative overflow-hidden`}
+                    >
+                      {/* Watermark/Background decoration */}
+                      <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
+                        <span className="text-[150px]">🇮🇳</span>
+                      </div>
 
-                    <p className={`text-[10px] sm:text-xs md:text-sm font-bold mb-0.5 sm:mb-1 uppercase tracking-wider ${banner.textColor || 'text-gray-900'}`}>
-                      {banner.title}
-                    </p>
-                    <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold mb-0.5 sm:mb-1 md:mb-2 ${banner.textColor || 'text-gray-900'}`}>
-                      {banner.subtitle}
-                    </h2>
-                    <p className={`text-[10px] sm:text-xs md:text-sm font-semibold mb-2 sm:mb-3 md:mb-4 ${banner.textColor || 'text-gray-800'}`}>
-                      {banner.description}
-                    </p>
-                    <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px] relative z-10">
-                      {banner.highlights.map((highlight, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white/95 rounded-full px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm font-bold text-gray-900 shadow-sm"
-                        >
-                          {highlight}
-                        </div>
-                      ))}
+                      <p className={`text-[10px] sm:text-xs md:text-sm font-bold mb-0.5 sm:mb-1 uppercase tracking-wider ${banner.textColor || 'text-gray-900'}`}>
+                        {banner.title}
+                      </p>
+                      <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold mb-0.5 sm:mb-1 md:mb-2 ${banner.textColor || 'text-gray-900'}`}>
+                        {banner.subtitle}
+                      </h2>
+                      <p className={`text-[10px] sm:text-xs md:text-sm font-semibold mb-2 sm:mb-3 md:mb-4 ${banner.textColor || 'text-gray-800'}`}>
+                        {banner.description}
+                      </p>
+                      <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[500px] relative z-10">
+                        {banner.highlights.map((highlight, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white/95 rounded-full px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm font-bold text-gray-900 shadow-sm"
+                          >
+                            {highlight}
+                          </div>
+                        ))}
+                      </div>
+                      <p className={`text-[9px] sm:text-[10px] md:text-xs font-medium mt-2 sm:mt-3 md:mt-4 opacity-80 ${banner.textColor || 'text-gray-800'}`}>
+                        {banner.validity}
+                      </p>
                     </div>
-                    <p className={`text-[9px] sm:text-[10px] md:text-xs font-medium mt-2 sm:mt-3 md:mt-4 opacity-80 ${banner.textColor || 'text-gray-800'}`}>
-                      {banner.validity}
-                    </p>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
