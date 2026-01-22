@@ -154,11 +154,11 @@ const JetFlypast = () => {
 
 // --- Mock Data (will be replaced with real data) ---
 
-const ZONES = [
-    { id: 'NORTH', label: 'NORTH ZONE', shortLabel: 'N', color: 'text-orange-600' },
-    { id: 'SOUTH', label: 'SOUTH ZONE', shortLabel: 'S', color: 'text-blue-600' },
-    { id: 'WEST', label: 'WEST ZONE', shortLabel: 'W', color: 'text-stone-600' },
-    { id: 'EAST', label: 'EAST ZONE', shortLabel: 'E', color: 'text-emerald-600' }
+const REGIMENTS = [
+    { id: 'NORTH', label: 'NORTH REGIMENT', shortLabel: 'N', color: 'text-orange-600' },
+    { id: 'SOUTH', label: 'SOUTH REGIMENT', shortLabel: 'S', color: 'text-blue-600' },
+    { id: 'WEST', label: 'WEST REGIMENT', shortLabel: 'W', color: 'text-stone-600' },
+    { id: 'EAST', label: 'EAST REGIMENT', shortLabel: 'E', color: 'text-emerald-600' }
 ];
 
 const RANKS = [
@@ -191,7 +191,7 @@ const PersonnelListModal = ({ data, onClose }: { data: any, onClose: () => void 
                 <div className="p-4 bg-stone-100 border-b border-stone-200 flex justify-between items-center">
                     <div>
                         <h3 className="text-lg font-black uppercase text-stone-800 tracking-tight">{data.rank}</h3>
-                        <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">{data.zone}</p>
+                        <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">{data.regiment}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-stone-200 rounded-lg transition-colors text-stone-500">
                         <X size={20} />
@@ -335,9 +335,9 @@ export default function RegimentsPage() {
                             <thead>
                                 <tr className="bg-stone-200/50 border-b-2 border-stone-300">
                                     <th className="p-3 sm:p-6 text-[10px] sm:text-sm font-black text-stone-600 uppercase tracking-widest text-center">Rank</th>
-                                    {ZONES.map(zone => (
-                                        <th key={zone.id} className={`p-2 sm:p-4 text-[10px] sm:text-sm font-black uppercase tracking-wider text-center border-l border-stone-300 ${zone.color}`}>
-                                            {zone.label}
+                                    {REGIMENTS.map(regiment => (
+                                        <th key={regiment.id} className={`p-2 sm:p-4 text-[10px] sm:text-sm font-black uppercase tracking-wider text-center border-l border-stone-300 ${regiment.color}`}>
+                                            {regiment.label}
                                         </th>
                                     ))}
                                 </tr>
@@ -386,7 +386,7 @@ export default function RegimentsPage() {
                                             {/* Counts with Clickable Modal */}
                                             {['NORTH', 'SOUTH', 'WEST', 'EAST'].map((zoneId) => {
                                                 const count = (row.counts as any)[zoneId];
-                                                const zoneLabel = ZONES.find(z => z.id === zoneId)?.label;
+                                                const regimentLabel = REGIMENTS.find(r => r.id === zoneId)?.label;
                                                 const personnel = personnelData[row.rank]?.[zoneId] || [];
 
                                                 // Hover color
@@ -398,7 +398,7 @@ export default function RegimentsPage() {
                                                     <td
                                                         key={zoneId}
                                                         className="p-4 sm:p-4 text-center border-r border-stone-200 bg-white/50 cursor-pointer hover:bg-white transition-all relative overflow-hidden"
-                                                        onClick={() => setSelectedCell({ rank: row.rank, zone: zoneLabel, count: count, personnel: personnel })}
+                                                        onClick={() => setSelectedCell({ rank: row.rank, regiment: regimentLabel, count: count, personnel: personnel })}
                                                     >
                                                         <div className="flex items-center justify-center gap-1 group/cell relative z-10">
                                                             <span className={`font-mono text-base sm:text-lg font-bold text-stone-600 ${hoverColor} transition-colors`}>{count}</span>

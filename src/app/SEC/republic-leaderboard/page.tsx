@@ -151,6 +151,7 @@ export default function RepublicLeaderboardPage() {
     const [loading, setLoading] = useState(true);
     const [leaderboardData, setLeaderboardData] = useState<Record<string, any[]>>({});
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [animatedRankIndex, setAnimatedRankIndex] = useState<number | null>(null); // For jumping indicator
 
     // Refs for Rank Blocks
     const rankRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -181,6 +182,43 @@ export default function RepublicLeaderboardPage() {
 
         fetchLeaderboard();
     }, []);
+
+    // Progressive Scroll Animation - Scroll from Salesveer to current rank
+    useEffect(() => {
+        if (currentUser && currentUser.rankId) {
+            const userRankIndex = RANKS.findIndex(r => r.id === currentUser.rankId);
+
+            if (userRankIndex >= 0) {
+                // Start from last rank (Salesveer) and progress upwards
+                const totalRanks = RANKS.length;
+                const startIndex = totalRanks - 1; // Salesveer
+                const targetIndex = userRankIndex; // User's rank
+
+                let currentStep = startIndex;
+                const scrollInterval = setInterval(() => {
+                    setAnimatedRankIndex(currentStep); // Set jumping indicator position
+
+                    const rankId = RANKS[currentStep]?.id;
+                    if (rankId && rankRefs.current[rankId]) {
+                        rankRefs.current[rankId]?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+
+                    if (currentStep <= targetIndex) {
+                        clearInterval(scrollInterval);
+                    } else {
+                        currentStep--;
+                    }
+                }, 500); // 500ms delay between each rank
+
+                return () => clearInterval(scrollInterval);
+            }
+        }
+    }, [currentUser]);
+
+
 
     const [isMobile, setIsMobile] = useState(false);
 
@@ -277,6 +315,7 @@ export default function RepublicLeaderboardPage() {
                             const Icon = rank.icon;
                             const isLast = rankIndex === RANKS.length - 1;
                             const isEmpty = players.length === 0;
+                            const isJumping = animatedRankIndex === rankIndex; // Check if jumping indicator is on this rank
 
                             return (
                                 <div
@@ -297,7 +336,7 @@ export default function RepublicLeaderboardPage() {
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.5, delay: rankIndex * 0.1 }}
                                         className={`
-                                            w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative z-10
+                                            w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative z-10 transition-all duration-300
                                             ${currentUser?.rankId === rank.id ? 'ring-2 ring-orange-500 shadow-orange-100' : ''}
                                             ${isEmpty ? 'opacity-90 grayscale-[0.3]' : ''} 
                                         `}
@@ -320,13 +359,41 @@ export default function RepublicLeaderboardPage() {
 
                                         {/* Salespersons List or Empty State */}
                                         <div className="p-2 space-y-2 bg-slate-50/50">
-                                            {isEmpty ? (
+                                            {/* Show jumping user card if this rank is currently being animated */}
+                                            {isJumping && currentUser && (
+                                                <motion.div
+                                                    key={`jumping-${rankIndex}`}
+                                                    initial={{ y: -20, opacity: 0, scale: 0.9 }}
+                                                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                                                    exit={{ y: 20, opacity: 0, scale: 0.9 }}
+                                                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                                    className="border p-3 rounded-xl flex items-center justify-between shadow-lg bg-orange-50 border-orange-300 ring-2 ring-orange-400"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full flex items-center justify-center border bg-orange-100 text-orange-600 border-orange-200">
+                                                            <Crown size={14} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-sm text-orange-900">
+                                                                {currentUser.name}
+                                                                <span className="ml-2 text-[10px] bg-orange-200 text-orange-800 px-1 rounded">YOU</span>
+                                                            </p>
+                                                            <p className="text-[10px] text-slate-400 font-medium uppercase">{currentUser.storeName}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="font-bold text-sm text-orange-700">₹{currentUser.salesAmount?.toLocaleString('en-IN') || '0'}</p>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {isEmpty && !isJumping ? (
                                                 <div className="py-6 text-center text-slate-400 flex flex-col items-center gap-2">
                                                     <Lock size={20} className="opacity-50" />
                                                     <p className="text-xs font-medium italic">No officers at this rank yet.</p>
                                                     <p className="text-[10px] uppercase tracking-wide font-bold text-orange-500/80">Be the first!</p>
                                                 </div>
-                                            ) : (
+                                            ) : !isJumping && (
                                                 players.map((player, pIndex) => {
                                                     const isMe = currentUser && currentUser.secId === player.secId;
                                                     return (
