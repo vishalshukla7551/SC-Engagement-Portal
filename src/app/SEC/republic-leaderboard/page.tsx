@@ -195,7 +195,26 @@ export default function RepublicLeaderboardPage() {
                 const targetIndex = userRankIndex; // User's rank
 
                 let currentStep = startIndex;
+
+                // Set initial position immediately
+                setAnimatedRankIndex(currentStep);
+                const initialRankId = RANKS[currentStep]?.id;
+                if (initialRankId && rankRefs.current[initialRankId]) {
+                    setTimeout(() => {
+                        rankRefs.current[initialRankId]?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }, 300);
+                }
+
+                // If user is at Salesveer (0 sales), no need to animate further
+                if (currentStep === targetIndex) {
+                    return;
+                }
+
                 const scrollInterval = setInterval(() => {
+                    currentStep--;
                     setAnimatedRankIndex(currentStep); // Set jumping indicator position
 
                     const rankId = RANKS[currentStep]?.id;
@@ -208,8 +227,6 @@ export default function RepublicLeaderboardPage() {
 
                     if (currentStep <= targetIndex) {
                         clearInterval(scrollInterval);
-                    } else {
-                        currentStep--;
                     }
                 }, 500); // 500ms delay between each rank
 

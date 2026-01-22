@@ -60,7 +60,7 @@ export default function LandingPage({ userName = '' }) {
   const features = [
     {
       id: 'sec-incentive',
-      title: 'SEC Incentive Form',
+      title: 'Sales Submission Form',
       description: 'Submit your sales IMEI wise',
       icon: '📝',
       bgGradient: 'from-[#2563eb] via-[#3b82f6] to-[#06b6d4]',
