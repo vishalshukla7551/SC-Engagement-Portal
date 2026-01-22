@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useRequireAuth } from '@/lib/clientAuth';
 import { useState, useEffect } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 export default function ZopperAdministratorLayout({
   children,
@@ -34,266 +35,146 @@ export default function ZopperAdministratorLayout({
 
   const isActive = (path: string) => pathname === path;
 
+  // Navigation Groups
+  const navGroups = [
+    {
+      title: 'Overview',
+      items: [
+        { name: 'Home', path: '/Zopper-Administrator', icon: '🏠' },
+        { name: 'Hall of Fame', path: '/Zopper-Administrator/hall-of-fame', icon: '🏅' },
+        { name: 'Regiments', path: '/Zopper-Administrator/regiments', icon: '⚔️' },
+      ]
+    },
+    {
+      title: 'Incentives & Reports',
+      items: [
+        { name: 'Monthly Incentive', path: '/Zopper-Administrator/monthly-incentive-report', icon: '📄' },
+        { name: 'Spot Incentive', path: '/Zopper-Administrator/spot-incentive-report', icon: '📘' },
+        { name: 'Referrals', path: '/Zopper-Administrator/referral', icon: '🤝' },
+      ]
+    },
+    {
+      title: 'Management',
+      items: [
+        { name: 'User Validation', path: '/Zopper-Administrator/validate-user', icon: '👤' },
+        { name: 'Store Requests', path: '/Zopper-Administrator/store-change-requests', icon: '🏪' },
+        { name: 'Help Requests', path: '/Zopper-Administrator/help-requests', icon: '🆘' },
+      ]
+    },
+    {
+      title: 'Data Operations',
+      items: [
+        { name: 'Voucher Excel', path: '/Zopper-Administrator/process-voucher-excel', icon: '📊' },
+        { name: 'Store Attach Rate', path: '/Zopper-Administrator/import-store-attach-rate', icon: '📈' },
+        { name: 'Daily Reports', path: '/Zopper-Administrator/import-daily-reports', icon: '📋' },
+        { name: 'Invalid IMEIs', path: '/Zopper-Administrator/process-invalid-imeis', icon: '❌' },
+      ]
+    },
+    {
+      title: 'System',
+      items: [
+        { name: 'Test Panel', path: '/Zopper-Administrator/test', icon: '🔧' },
+      ]
+    }
+  ];
+
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="flex h-screen bg-slate-50">
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside 
-        className={`${sidebarOpen ? 'w-72' : 'w-0'} bg-black text-white flex flex-col border-r border-neutral-700 h-full transition-all duration-300 ease-in-out overflow-hidden`}
+      <aside
+        className={`${sidebarOpen ? 'w-72' : 'w-0'} bg-[#0B1120] text-slate-300 flex flex-col border-r border-slate-800 h-full transition-all duration-300 ease-in-out overflow-hidden shrink-0 z-30`}
       >
-        {/* Logo */}
-        <div className="relative w-full h-[69px] bg-black border-b border-[#353535] overflow-hidden">
-          <div 
-            className="absolute w-[72.83px] h-[69px] top-[-1px] left-[6px] rounded-[20px]"
-            style={{
-              background: 'url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-14/N8vfr4GWX8.png) no-repeat center',
-              backgroundSize: 'cover'
-            }}
-          />
-          
-          <div 
-            className="absolute flex items-center justify-center h-[26px] top-[21px] left-[23px] text-white font-bold text-[28px] leading-[26px] whitespace-nowrap z-[1]"
-            style={{ 
-              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              width: '36px'
-            }}
-          >
-            S
-          </div>
-          
-          <div 
-            className="absolute flex items-start justify-start h-[31px] top-[7px] left-[87.938px] font-bold text-[26px] leading-[31px] whitespace-nowrap z-[3]"
-            style={{
-              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              color: 'rgba(0, 0, 0, 0)',
-              background: 'linear-gradient(90deg, #1d4ed8, #2563eb)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            SalesDost
-          </div>
-          
-          <div 
-            className="absolute flex items-start justify-start h-[25px] top-[38px] left-[92.938px] text-white font-medium text-[16px] leading-[25px] whitespace-nowrap z-[2]"
-            style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
-          >
-            Safalta ka Sathi
+        {/* Logo Area */}
+        <div className="relative h-[80px] bg-[#0B1120] border-b border-slate-800 flex items-center px-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-900/20">
+              S
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-white text-lg leading-tight tracking-tight">SalesDost</span>
+              <span className="text-[10px] text-blue-400 font-medium uppercase tracking-wider">Administrator</span>
+            </div>
           </div>
 
-          {/* Hamburger Menu Button */}
+          {/* Close Button (Mobile) */}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="absolute top-[20px] right-[15px] p-2 rounded-md bg-slate-800 text-white hover:bg-slate-700 transition-colors z-[4]"
-            title="Collapse Menu"
+            className="absolute right-4 top-1/2 -translate-y-1/2 lg:hidden p-2 text-slate-400 hover:text-white"
           >
-            <FaBars size={16} />
+            <FaTimes />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 pt-4 text-sm font-normal overflow-y-auto">
-          <div className="space-y-1 px-3">
-            {/* Home */}
-            <Link
-              href="/Zopper-Administrator"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="shrink-0"
-              >
-                <path
-                  d="M10 20V14H14V20H19V12H22L12 3L2 12H5V20H10Z"
-                  fill="white"
-                />
-              </svg>
-              <span className="text-sm leading-normal">Home</span>
-            </Link>
-
-            {/* Monthly Incentive Report */}
-            <Link
-              href="/Zopper-Administrator/monthly-incentive-report"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/monthly-incentive-report')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📄</span>
-              <span className="text-sm leading-normal">Monthly Incentive Report</span>
-            </Link>
-
-            {/* Spot Incentive Report */}
-            <Link
-              href="/Zopper-Administrator/spot-incentive-report"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/spot-incentive-report')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📘</span>
-              <span className="text-sm leading-normal">Spot Incentive Report</span>
-            </Link>
-
-            {/* View Leaderboard */}
-            <Link
-              href="/Zopper-Administrator/leaderboard"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/leaderboard')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">🏆</span>
-              <span className="text-sm leading-normal">View Leaderboard</span>
-            </Link>
-
-            {/* User Validation */}
-            <Link
-              href="/Zopper-Administrator/validate-user"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/validate-user')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">👤</span>
-              <span className="text-sm leading-normal">User Validation</span>
-            </Link>
-
-            {/* Store Change Requests */}
-            <Link
-              href="/Zopper-Administrator/store-change-requests"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/store-change-requests')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">🏪</span>
-              <span className="text-sm leading-normal">Store Change Requests</span>
-            </Link>
-
-            {/* Referral */}
-            <Link
-              href="/Zopper-Administrator/referral"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                pathname?.startsWith('/Zopper-Administrator/referral')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📄</span>
-              <span className="text-sm leading-normal">Referral</span>
-            </Link>
-
-            {/* Process Voucher Excel */}
-            <Link
-              href="/Zopper-Administrator/process-voucher-excel"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/process-voucher-excel')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📊</span>
-              <span className="text-sm leading-normal">Process Voucher Excel</span>
-            </Link>
-
-            {/* Import Store Attach Rate */}
-            <Link
-              href="/Zopper-Administrator/import-store-attach-rate"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/import-store-attach-rate')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📈</span>
-              <span className="text-sm leading-normal">Import Store Attach Rate</span>
-            </Link>
-
-            {/* Import Daily Reports */}
-            <Link
-              href="/Zopper-Administrator/import-daily-reports"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/import-daily-reports')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📋</span>
-              <span className="text-sm leading-normal">Import Daily Reports</span>
-            </Link>
-
-            {/* Process Invalid IMEIs */}
-            <Link
-              href="/Zopper-Administrator/process-invalid-imeis"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/process-invalid-imeis')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0 text-red-500">❌</span>
-              <span className="text-sm leading-normal">Process Invalid IMEIs</span>
-            </Link>
-
-            {/* Test */}
-            <Link
-              href="/Zopper-Administrator/test"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                pathname?.startsWith('/Zopper-Administrator/test')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">📋</span>
-              <span className="text-sm leading-normal">Test</span>
-            </Link>
-
-            {/* Help Requests */}
-            <Link
-              href="/Zopper-Administrator/help-requests"
-              className={`w-full flex items-center space-x-3 rounded-lg py-2.5 px-3 select-none ${
-                isActive('/Zopper-Administrator/help-requests')
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-lg shrink-0">🆘</span>
-              <span className="text-sm leading-normal">Help Requests</span>
-            </Link>
-          </div>
+        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+          {navGroups.map((group, idx) => (
+            <div key={idx}>
+              <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3 px-3 font-mono">
+                {group.title}
+              </h3>
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const active = isActive(item.path) || (item.path !== '/Zopper-Administrator' && pathname?.startsWith(item.path));
+                  return (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      className={`
+                        w-full flex items-center gap-3 rounded-xl py-2.5 px-3 transition-all duration-200 group
+                        ${active
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20 font-medium'
+                          : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                        }
+                      `}
+                    >
+                      <span className={`text-lg transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                        {item.icon}
+                      </span>
+                      <span className="text-sm">{item.name}</span>
+                      {active && (
+                        <motion.div
+                          layoutId="active-pill"
+                          className="ml-auto w-1.5 h-1.5 rounded-full bg-white"
+                        />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
+
+        {/* Admin User Profile Snippet */}
+        <div className="p-4 border-t border-slate-800 bg-[#0f172a]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+              AD
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">Admin User</p>
+              <p className="text-xs text-slate-500 truncate">admin@zopper.com</p>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 overflow-auto relative ${!sidebarOpen ? 'pl-16' : ''}`}>
+      <main className={`flex-1 overflow-auto relative bg-slate-50 transition-all duration-300 ${!sidebarOpen ? '' : ''}`}>
         {/* Hamburger button when sidebar is hidden */}
         {!sidebarOpen && (
           <div className="absolute top-4 left-4 z-40">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-3 rounded-md bg-slate-800 text-white hover:bg-slate-700 transition-colors shadow-lg"
+              className="p-3 rounded-xl bg-white text-slate-700 hover:bg-slate-50 transition-all shadow-lg border border-slate-200"
               title="Expand Menu"
             >
               <FaBars size={18} />

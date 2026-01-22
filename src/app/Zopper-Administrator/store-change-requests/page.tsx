@@ -79,7 +79,7 @@ export default function StoreChangeRequestsPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params = new URLSearchParams({
         status: statusFilter,
         page: page.toString(),
@@ -88,9 +88,9 @@ export default function StoreChangeRequestsPage() {
 
       console.log('Fetching requests with params:', params.toString());
       const response = await fetch(`/api/admin/store-change-requests?${params}`);
-      
+
       console.log('Response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Response error:', errorText);
@@ -99,7 +99,7 @@ export default function StoreChangeRequestsPage() {
 
       const result: ApiResponse = await response.json();
       console.log('API result:', result);
-      
+
       if (result.success) {
         setRequests(result.data.requests);
         setPagination(result.data.pagination);
@@ -189,7 +189,7 @@ export default function StoreChangeRequestsPage() {
           <button
             onClick={async () => {
               try {
-                const response = await fetch('/api/test/create-request', { method: 'POST' });
+                const response = await fetch('/api/zopper-administrator/create-request', { method: 'POST' });
                 const result = await response.json();
                 if (result.success) {
                   alert('Test request created successfully!');
@@ -244,13 +244,12 @@ export default function StoreChangeRequestsPage() {
                         <h3 className="text-lg font-semibold text-gray-900">
                           {request.profile?.fullName || request.ase?.fullName || request.abm?.fullName || request.sec?.fullName}
                         </h3>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          request.userRole === 'ASE' ? 'bg-blue-100 text-blue-800' : 
-                          request.userRole === 'ABM' ? 'bg-purple-100 text-purple-800' :
-                          request.userRole === 'SEC' ? 'bg-green-100 text-green-800' :
-                          request.ase ? 'bg-blue-100 text-blue-800' : 
-                          request.abm ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${request.userRole === 'ASE' ? 'bg-blue-100 text-blue-800' :
+                            request.userRole === 'ABM' ? 'bg-purple-100 text-purple-800' :
+                              request.userRole === 'SEC' ? 'bg-green-100 text-green-800' :
+                                request.ase ? 'bg-blue-100 text-blue-800' :
+                                  request.abm ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                          }`}>
                           {request.userRole || (request.ase ? 'ASE' : request.abm ? 'ABM' : 'SEC')}
                         </span>
                       </div>
@@ -262,11 +261,10 @@ export default function StoreChangeRequestsPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        request.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        request.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${request.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          request.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                        }`}>
                         {request.status}
                       </span>
                     </div>

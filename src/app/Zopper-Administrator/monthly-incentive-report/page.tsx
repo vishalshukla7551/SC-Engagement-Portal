@@ -66,7 +66,7 @@ function formatDateWithTime(isoString: string) {
   const year = date.getFullYear();
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  
+
   return {
     date: `${day}-${month}-${year}`,
     time: `${hours}:${minutes}`
@@ -99,7 +99,7 @@ export default function MonthlyIncentiveReport() {
   const [startDate, setStartDate] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 50;
-  
+
   // API data state
   const [data, setData] = useState<SalesReportData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +125,7 @@ export default function MonthlyIncentiveReport() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: pageSize.toString(),
@@ -137,14 +137,13 @@ export default function MonthlyIncentiveReport() {
       });
 
       const response = await fetch(`/api/zopper-administrator/monthly-incentive-report?${params}`);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(errorData.details || errorData.error || `Failed to fetch data (${response.status})`);
       }
 
       const result: ApiResponse = await response.json();
-      
+
       if (result.success) {
         setData(result.data.salesReports);
         setPagination(result.data.pagination);

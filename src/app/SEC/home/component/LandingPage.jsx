@@ -12,6 +12,15 @@ export default function LandingPage({ userName = '' }) {
   // Republican Day Banner data
   const banners = [
     {
+      id: 3,
+      title: 'SPECIAL OFFER 🎯',
+      subtitle: 'EXCLUSIVE DEALS',
+      description: 'LIMITED TIME PROMOTION',
+      isImageBanner: true,
+      imageSrc: '/images/banner3.jpeg',
+      imageAlt: 'Special Promotion Banner',
+    },
+    {
       id: 1,
       title: 'REPUBLIC DAY SPECIAL 🇮🇳',
       subtitle: 'SALES DOST SALUTES',
@@ -28,21 +37,6 @@ export default function LandingPage({ userName = '' }) {
     },
     {
       id: 2,
-      title: 'JAI HIND TEAM! 🫡',
-      subtitle: 'HEROES OF SALES',
-      description: 'BE A LEADER LIKE A SOLDIER',
-      highlights: [
-        '⚔️ Rank up to General',
-        '🎯 Double points on Targets',
-      ],
-      validity: 'Limited time offer',
-      isImageBanner: true,
-      imageSrc: '/images/banner 2.jpeg',
-      imageAlt: 'Jai Hind Banner 2',
-      showTextOverlay: true,
-    },
-    {
-      id: 3,
       title: 'PITCH SULTAN',
       subtitle: 'SPECIAL PROMOTION',
       description: 'EXCLUSIVE OFFER',
@@ -142,7 +136,7 @@ export default function LandingPage({ userName = '' }) {
                         alt={banner.imageAlt}
                         className="w-full h-full object-cover object-top"
                       />
-                      
+
                       {/* Text Overlay for banners with showTextOverlay flag */}
                       {banner.showTextOverlay && (
                         <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-4 sm:px-6 md:px-8">

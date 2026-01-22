@@ -31,18 +31,21 @@ export async function GET(req: NextRequest) {
         const cookies = await (await import('next/headers')).cookies();
         const authUser = await getAuthenticatedUserFromCookies(cookies as any);
 
-        if (!authUser || authUser.role !== ('SEC' as Role)) {
+        if (!authUser || (authUser.role !== 'SEC' && authUser.role !== 'ZOPPER_ADMINISTRATOR')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // 2. Get Current SEC ID
-        const currentSec = await prisma.sEC.findUnique({
-            where: { phone: authUser.id },
-            select: { id: true, fullName: true }
-        });
+        // 2. Get Current SEC ID (Only if user is SEC)
+        let currentSec = null;
+        if (authUser.role === 'SEC') {
+            currentSec = await prisma.sEC.findUnique({
+                where: { phone: authUser.id },
+                select: { id: true, fullName: true }
+            });
 
-        if (!currentSec) {
-            return NextResponse.json({ error: 'SEC profile not found' }, { status: 404 });
+            if (!currentSec) {
+                return NextResponse.json({ error: 'SEC profile not found' }, { status: 404 });
+            }
         }
 
         // 3. Fetch Sales Data
@@ -129,45 +132,48 @@ export async function GET(req: NextRequest) {
         });
 
         // 7. Get Current User Stats
-        const currentUserData = allUsers.find(u => u.secId === currentSec.id);
-
         let userResponse = null;
-        if (currentUserData) {
-            const rankUsers = allUsers.filter(u => u.rankId === currentUserData.rankId)
-                .sort((a, b) => b.salesAmount - a.salesAmount);
-            const position = rankUsers.findIndex(u => u.secId === currentSec.id) + 1;
 
-            const nextRank = getNextRank(currentUserData.rankId);
+        if (currentSec) {
+            const currentUserData = allUsers.find(u => u.secId === currentSec.id);
 
-            userResponse = {
-                secId: currentUserData.secId,
-                name: currentUserData.name,
-                storeName: currentUserData.storeName,
-                salesAmount: currentUserData.salesAmount,
-                rankId: currentUserData.rankId,
-                rankTitle: currentUserData.rankTitle,
-                positionInRank: position,
-                nextRank: nextRank ? {
-                    title: nextRank.title,
-                    targetSales: nextRank.minSales,
-                    remaining: Math.max(0, nextRank.minSales - currentUserData.salesAmount)
-                } : null
-            };
-        } else {
-            userResponse = {
-                secId: currentSec.id,
-                name: currentSec.fullName,
-                storeName: '',
-                salesAmount: 0,
-                rankId: 'cadet',
-                rankTitle: 'Salesveer',
-                positionInRank: 0,
-                nextRank: {
-                    title: 'Sales Lieutenant',
-                    targetSales: 21000,
-                    remaining: 21000
-                }
-            };
+            if (currentUserData) {
+                const rankUsers = allUsers.filter(u => u.rankId === currentUserData.rankId)
+                    .sort((a, b) => b.salesAmount - a.salesAmount);
+                const position = rankUsers.findIndex(u => u.secId === currentSec.id) + 1;
+
+                const nextRank = getNextRank(currentUserData.rankId);
+
+                userResponse = {
+                    secId: currentUserData.secId,
+                    name: currentUserData.name,
+                    storeName: currentUserData.storeName,
+                    salesAmount: currentUserData.salesAmount,
+                    rankId: currentUserData.rankId,
+                    rankTitle: currentUserData.rankTitle,
+                    positionInRank: position,
+                    nextRank: nextRank ? {
+                        title: nextRank.title,
+                        targetSales: nextRank.minSales,
+                        remaining: Math.max(0, nextRank.minSales - currentUserData.salesAmount)
+                    } : null
+                };
+            } else {
+                userResponse = {
+                    secId: currentSec.id,
+                    name: currentSec.fullName,
+                    storeName: '',
+                    salesAmount: 0,
+                    rankId: 'cadet',
+                    rankTitle: 'Salesveer',
+                    positionInRank: 0,
+                    nextRank: {
+                        title: 'Sales Lieutenant',
+                        targetSales: 21000,
+                        remaining: 21000
+                    }
+                };
+            }
         }
 
         return NextResponse.json({

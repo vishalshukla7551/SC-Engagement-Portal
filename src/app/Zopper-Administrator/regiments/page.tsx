@@ -16,7 +16,6 @@ import {
     Crown
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import RepublicFooter from '@/components/RepublicFooter';
 
 // --- Shared Components ---
 
@@ -154,11 +153,11 @@ const JetFlypast = () => {
 
 // --- Mock Data (will be replaced with real data) ---
 
-const REGIMENTS = [
-    { id: 'NORTH', label: 'NORTH REGIMENT', shortLabel: 'N', color: 'text-orange-600' },
-    { id: 'SOUTH', label: 'SOUTH REGIMENT', shortLabel: 'S', color: 'text-blue-600' },
-    { id: 'WEST', label: 'WEST REGIMENT', shortLabel: 'W', color: 'text-stone-600' },
-    { id: 'EAST', label: 'EAST REGIMENT', shortLabel: 'E', color: 'text-emerald-600' }
+const ZONES = [
+    { id: 'NORTH', label: 'NORTH ZONE', shortLabel: 'N', color: 'text-orange-600' },
+    { id: 'SOUTH', label: 'SOUTH ZONE', shortLabel: 'S', color: 'text-blue-600' },
+    { id: 'WEST', label: 'WEST ZONE', shortLabel: 'W', color: 'text-stone-600' },
+    { id: 'EAST', label: 'EAST ZONE', shortLabel: 'E', color: 'text-emerald-600' }
 ];
 
 const RANKS = [
@@ -170,10 +169,6 @@ const RANKS = [
     { title: 'Sales Lieutenant', shortTitle: 'Lieutenant', icon: Star },
     { title: 'Salesveer', shortTitle: 'Salesveer', icon: Shield }
 ];
-
-// --- Mock Names for Detail View ---
-const NAMES = ["Vikram Singh", "Aditi Rao", "Rohan Gupta", "Priya Sharma", "Amit Patel", "Sneha Reddy", "Rahul Verma", "Kavita Das", "Arjun Nair", "Pooja Mehta", "Suresh Raina", "Deepak Hooda", "Manish Pandey", "Hardik Pandya"];
-const STORES = ["Reliance Digital - MG Road", "Croma - Sector 18", "Vijay Sales - Mall of India", "Sargam Electronics - Dwarka", "DigiWorld - CP", "Girias - Indiranagar", "Adishwar - Jayanagar", "Viveks - T Nagar"];
 
 const PersonnelListModal = ({ data, onClose }: { data: any, onClose: () => void }) => {
     const personnel = data.personnel || [];
@@ -191,7 +186,7 @@ const PersonnelListModal = ({ data, onClose }: { data: any, onClose: () => void 
                 <div className="p-4 bg-stone-100 border-b border-stone-200 flex justify-between items-center">
                     <div>
                         <h3 className="text-lg font-black uppercase text-stone-800 tracking-tight">{data.rank}</h3>
-                        <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">{data.regiment}</p>
+                        <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">{data.zone}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-stone-200 rounded-lg transition-colors text-stone-500">
                         <X size={20} />
@@ -293,14 +288,14 @@ export default function RegimentsPage() {
             <div className="relative z-10 px-4 pt-6 pb-2">
                 <div className="flex items-center justify-between mb-6">
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/Zopper-Administrator')}
                         className="p-2 bg-white/80 backdrop-blur rounded-full shadow-sm hover:bg-white transition-colors text-stone-700 border border-stone-300"
                     >
                         <ChevronRight className="w-6 h-6 rotate-180" />
                     </button>
                     <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-full shadow-sm border border-stone-300">
                         <IndianFlag size={20} />
-                        <span className="text-xs font-bold text-orange-700 tracking-wide uppercase">Republic Day Special</span>
+                        <span className="text-xs font-bold text-orange-700 tracking-wide uppercase">Admin View</span>
                         <IndianFlag size={20} />
                     </div>
                     <div className="w-10" />
@@ -335,9 +330,9 @@ export default function RegimentsPage() {
                             <thead>
                                 <tr className="bg-stone-200/50 border-b-2 border-stone-300">
                                     <th className="p-3 sm:p-6 text-[10px] sm:text-sm font-black text-stone-600 uppercase tracking-widest text-center">Rank</th>
-                                    {REGIMENTS.map(regiment => (
-                                        <th key={regiment.id} className={`p-2 sm:p-4 text-[10px] sm:text-sm font-black uppercase tracking-wider text-center border-l border-stone-300 ${regiment.color}`}>
-                                            {regiment.label}
+                                    {ZONES.map(zone => (
+                                        <th key={zone.id} className={`p-2 sm:p-4 text-[10px] sm:text-sm font-black uppercase tracking-wider text-center border-l border-stone-300 ${zone.color}`}>
+                                            {zone.label}
                                         </th>
                                     ))}
                                 </tr>
@@ -386,7 +381,7 @@ export default function RegimentsPage() {
                                             {/* Counts with Clickable Modal */}
                                             {['NORTH', 'SOUTH', 'WEST', 'EAST'].map((zoneId) => {
                                                 const count = (row.counts as any)[zoneId];
-                                                const regimentLabel = REGIMENTS.find(r => r.id === zoneId)?.label;
+                                                const zoneLabel = ZONES.find(z => z.id === zoneId)?.label;
                                                 const personnel = personnelData[row.rank]?.[zoneId] || [];
 
                                                 // Hover color
@@ -398,7 +393,7 @@ export default function RegimentsPage() {
                                                     <td
                                                         key={zoneId}
                                                         className="p-4 sm:p-4 text-center border-r border-stone-200 bg-white/50 cursor-pointer hover:bg-white transition-all relative overflow-hidden"
-                                                        onClick={() => setSelectedCell({ rank: row.rank, regiment: regimentLabel, count: count, personnel: personnel })}
+                                                        onClick={() => setSelectedCell({ rank: row.rank, zone: zoneLabel, count: count, personnel: personnel })}
                                                     >
                                                         <div className="flex items-center justify-center gap-1 group/cell relative z-10">
                                                             <span className={`font-mono text-base sm:text-lg font-bold text-stone-600 ${hoverColor} transition-colors`}>{count}</span>
@@ -419,7 +414,6 @@ export default function RegimentsPage() {
                 <TacticalCompass />
 
             </div>
-            <RepublicFooter />
         </div>
     );
 }
