@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/test/store-requests
+// GET /api/zopper-administrator/store-requests
 // Test endpoint to check store change requests
 export async function GET(req: NextRequest) {
   try {
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/test/store-requests
+// POST /api/zopper-administrator/store-requests
 // Create a test store change request
 export async function POST(req: NextRequest) {
   try {

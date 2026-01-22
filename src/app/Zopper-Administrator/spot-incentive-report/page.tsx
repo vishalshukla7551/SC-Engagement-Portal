@@ -138,7 +138,7 @@ export default function SpotIncentiveReport() {
 
     try {
       setBulkActionLoading(true);
-      const response = await fetch('/api/zopper-admin/spot-incentive-report/bulk', {
+      const response = await fetch('/api/zopper-administrator/spot-incentive-report/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

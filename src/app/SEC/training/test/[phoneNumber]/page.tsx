@@ -87,7 +87,7 @@ export default function ProctoredTestPage() {
       setLoading(true);
       try {
         // Fetch 10 random questions from the database
-        const response = await fetch(`/api/test/questions?testType=CERTIFICATION&limit=10`);
+        const response = await fetch(`/api/sec/training/quiz/questions?testType=CERTIFICATION&limit=10`);
         const result = await response.json();
 
         if (result.success && result.data) {
@@ -178,7 +178,7 @@ export default function ProctoredTestPage() {
   const logViolation = async (type: string, details?: string) => { try { await fetch('/api/proctoring/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, eventType: type, details }) }); } catch { } };
   const showWarning = (msg: string) => { setWarningMessage(msg); setTimeout(() => setWarningMessage(null), 3000); };
   const startTest = async () => { try { await document.documentElement.requestFullscreen(); } catch { } setPhase('test'); };
-  const handleAnswerSelect = async (questionId: string, option: string) => { setAnswers(prev => ({ ...prev, [questionId]: option })); try { await fetch('/api/test/save-answer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, phoneNumber, questionId, selectedAnswer: option }) }); } catch { } };
+  const handleAnswerSelect = async (questionId: string, option: string) => { setAnswers(prev => ({ ...prev, [questionId]: option })); try { await fetch('/api/sec/training/quiz/save-answer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, phoneNumber, questionId, selectedAnswer: option }) }); } catch { } };
   const handleNextQuestion = () => { if (testData && currentQuestion < testData.questions.length - 1) { setCurrentQuestion(prev => prev + 1); } };
 
   const handleSubmit = useCallback(async () => {
@@ -186,7 +186,7 @@ export default function ProctoredTestPage() {
     let correct = 0; testData.questions.forEach(q => { if (answers[q.id] === q.correctAnswer) correct++; });
     const percentage = Math.round((correct / testData.questions.length) * 100);
     setScore(percentage); setSubmittedAt(new Date().toLocaleString());
-    try { await fetch('/api/test/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, phoneNumber, testName: testData.name, answers, score: percentage, totalQuestions: testData.questions.length, passed: percentage >= testData.passingPercentage }) }); } catch { }
+    try { await fetch('/api/sec/training/quiz/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, phoneNumber, testName: testData.name, answers, score: percentage, totalQuestions: testData.questions.length, passed: percentage >= testData.passingPercentage }) }); } catch { }
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
     if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
     setPhase('certificate');
