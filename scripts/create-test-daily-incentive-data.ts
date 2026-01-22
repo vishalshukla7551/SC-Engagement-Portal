@@ -9,7 +9,7 @@ async function createTestData() {
     // Find or create a test SEC user
     let secUser = await prisma.sEC.findFirst({
       where: {
-        phone: '+919999999999'
+        phone: '8368017420'
       },
       include: {
         store: true

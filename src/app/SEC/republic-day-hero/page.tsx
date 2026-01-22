@@ -298,6 +298,7 @@ export default function RepublicDayHeroPage() {
     const [showTerms, setShowTerms] = useState(false);
     const [showRewards, setShowRewards] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [animatedRankIndex, setAnimatedRankIndex] = useState(0); // For progressive avatar jump animation
 
     useEffect(() => {
         let isMounted = true;
@@ -354,6 +355,23 @@ export default function RepublicDayHeroPage() {
     const currentRankIndex = RANKS.findLastIndex(rank => rankSales >= rank.minSales);
     const nextRank = RANKS[currentRankIndex + 1];
 
+    // Progressive Avatar Jump Animation - Jump through each rank until reaching current rank
+    useEffect(() => {
+        if (currentRankIndex >= 0) {
+            let currentStep = 0;
+            const jumpInterval = setInterval(() => {
+                if (currentStep <= currentRankIndex) {
+                    setAnimatedRankIndex(currentStep);
+                    currentStep++;
+                } else {
+                    clearInterval(jumpInterval);
+                }
+            }, 500); // 500ms delay between each rank jump
+
+            return () => clearInterval(jumpInterval);
+        }
+    }, [currentRankIndex]);
+
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -393,9 +411,9 @@ export default function RepublicDayHeroPage() {
     };
 
     useEffect(() => {
-        if (scrollContainerRef.current && itemsRef.current[currentRankIndex]) {
+        if (scrollContainerRef.current && itemsRef.current[animatedRankIndex]) {
             const container = scrollContainerRef.current;
-            const target = itemsRef.current[currentRankIndex];
+            const target = itemsRef.current[animatedRankIndex];
 
             if (target) {
                 const scrollLeft = target.offsetLeft - (container.clientWidth / 2) + (target.clientWidth / 2);
@@ -405,7 +423,7 @@ export default function RepublicDayHeroPage() {
                 });
             }
         }
-    }, [currentRankIndex]);
+    }, [animatedRankIndex]);
 
     const handleContinue = () => {
         router.push('/SEC/home');
@@ -491,9 +509,9 @@ export default function RepublicDayHeroPage() {
                     <div ref={scrollContainerRef} className="w-full overflow-x-auto overflow-y-visible pb-2 pt-28 sm:pt-40 hide-scrollbar snap-x snap-mandatory flex md:justify-start md:pl-20">
                         <div className="flex items-end gap-2 md:gap-4 px-2 md:px-6 min-w-max mx-auto md:mx-0 justify-center" style={{ paddingBottom: '40px' }}>
                             {RANKS.map((rank, index) => {
-                                const isUnlocked = index <= currentRankIndex;
-                                const isCurrent = index === currentRankIndex;
-                                const isLocked = index > currentRankIndex;
+                                const isUnlocked = index <= animatedRankIndex;
+                                const isCurrent = index === animatedRankIndex;
+                                const isLocked = index > animatedRankIndex;
 
                                 // Calculate ladder height - each step goes higher (reduced for compact view)
                                 const ladderHeight = index * 24; // 24px increment per level (was 40px)
@@ -544,9 +562,10 @@ export default function RepublicDayHeroPage() {
                                             />
                                         )}
 
-                                        {/* Soldier Avatar (Current Level) */}
-                                        {isCurrent && (
+                                        {/* Soldier Avatar (Current Level) - Shows at animated progression rank */}
+                                        {index === animatedRankIndex && (
                                             <motion.div
+                                                key={`avatar-${animatedRankIndex}`}
                                                 initial={{ y: -100, opacity: 0, scale: 0.3, rotate: -20 }}
                                                 animate={{
                                                     y: [0, -4, 0],
