@@ -747,7 +747,22 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">Store Name</span>
                 <span className="text-sm text-gray-900 font-medium text-right ml-4">
-                  {stores.find(s => s.id === storeId)?.name || storeId}
+                  {(() => {
+                    if (typeof window !== 'undefined') {
+                      try {
+                        const raw = window.localStorage.getItem('authUser');
+                        if (raw) {
+                          const auth = JSON.parse(raw);
+                          if (auth?.store?.name) {
+                            return `${auth.store.name}${auth.store.city ? ` - ${auth.store.city}` : ''}`;
+                          }
+                        }
+                      } catch {
+                        // ignore
+                      }
+                    }
+                    return storeId;
+                  })()}
                 </span>
               </div>
 
