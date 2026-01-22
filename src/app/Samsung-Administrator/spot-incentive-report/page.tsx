@@ -108,7 +108,7 @@ export default function SpotIncentiveReportPage() {
       if (filterStore) params.append('storeId', filterStore);
       if (filterDevice) params.append('deviceName', filterDevice);
 
-      const response = await fetch(`/api/samsung-admin/spot-incentive-report?${params}`);
+      const response = await fetch(`/api/samsung-administrator/spot-incentive-report?${params}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch data');
@@ -195,7 +195,7 @@ export default function SpotIncentiveReportPage() {
               <button onClick={fetchData} disabled={loading} className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50">
                 {loading ? 'Loading...' : 'Refresh'}
               </button>
-              <button onClick={() => clientLogout('/login/role')} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-md">
+              <button onClick={() => clientLogout('/login/role', false)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-md">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 17L21 12L16 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Logout
               </button>

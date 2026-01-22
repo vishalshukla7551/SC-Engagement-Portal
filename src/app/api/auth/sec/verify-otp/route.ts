@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
     const payload: AuthTokenPayload = {
       secId: normalized,
       role: 'SEC' as any,
+      projectId: process.env.PROJECT_ID || 'samsung',
     };
 
     const accessToken = signAccessToken(payload);
@@ -102,7 +103,6 @@ export async function POST(req: NextRequest) {
       needsName: needsName || needsStore || needsEmployeeId,
       user: {
         role: 'SEC',
-        id: secRecord.id,
         phone: normalized,
         fullName: secRecord.fullName ?? null,
         storeId: secRecord.storeId ?? null,

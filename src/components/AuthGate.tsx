@@ -22,16 +22,15 @@ function isPublicPath(pathname: string) {
 
 export function AuthGate({
   children,
-  requiredRoles,
 }: {
   children: ReactNode;
-  requiredRoles?: string[];
 }) {
   const pathname = usePathname();
   const publicRoute = isPublicPath(pathname);
 
   // Only enforce auth for non-public routes
-  const { loading } = useRequireAuth(requiredRoles, { enabled: !publicRoute });
+  // Role is automatically extracted from URL path
+  const { loading } = useRequireAuth({ enabled: !publicRoute });
 
   if (publicRoute) {
     return <>{children}</>;

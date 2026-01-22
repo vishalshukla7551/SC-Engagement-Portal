@@ -107,7 +107,7 @@ export default function SpotIncentivePage() {
             </div>
           </div>
           <button 
-            onClick={() => clientLogout('/login/role')} 
+            onClick={() => clientLogout('/login/role', false)} 
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

@@ -19,10 +19,34 @@ if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
 const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET || ''
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
 
+// Helper function to clear auth cookies
+// Handles both NextResponse.cookies (has .set) and next/headers cookies (has .delete)
+export function clearAuthCookies(cookieStore: any, shouldMutate: boolean = true) {
+  if (!cookieStore || !shouldMutate) return;
+
+  if (cookieStore.set) {
+    // NextResponse.cookies - use .set() with maxAge: 0
+    const cookieOptions = {
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 0,
+    };
+    cookieStore.set(ACCESS_TOKEN_COOKIE, '', cookieOptions);
+    cookieStore.set(REFRESH_TOKEN_COOKIE, '', cookieOptions);
+  } else if (cookieStore.delete) {
+    // next/headers cookies - use .delete()
+    cookieStore.delete(ACCESS_TOKEN_COOKIE);
+    cookieStore.delete(REFRESH_TOKEN_COOKIE);
+  }
+}
+
 export interface AuthTokenPayload {
   userId?: string;
   secId?: string;
   role: Role;
+  projectId: string;
 }
 
 export interface AuthenticatedUser {
@@ -112,10 +136,17 @@ export async function getAuthenticatedUserFromCookies(
 
   // No valid tokens at all – clear cookies if we can and bail out
   if (!payload) {
-    if (cookieStore && allowCookieMutation) {
-      if (accessToken) cookieStore.delete(ACCESS_TOKEN_COOKIE);
-      if (refreshToken) cookieStore.delete(REFRESH_TOKEN_COOKIE);
-    }
+    clearAuthCookies(cookieStore, allowCookieMutation);
+    return null;
+  }
+
+  // Validate projectId to prevent cross-project token usage
+  const currentProject = process.env.PROJECT_ID || 'samsung';
+  if (payload.projectId !== currentProject) {
+    console.warn(
+      `[auth] Token from different project: ${payload.projectId} vs ${currentProject}. Clearing cookies.`
+    );
+    clearAuthCookies(cookieStore, allowCookieMutation);
     return null;
   }
 
@@ -126,10 +157,7 @@ export async function getAuthenticatedUserFromCookies(
   if (payload.role === 'SEC') {
     const secId = payload.secId;
     if (!secId) {
-      if (cookieStore && allowCookieMutation) {
-        cookieStore.delete(ACCESS_TOKEN_COOKIE);
-        cookieStore.delete(REFRESH_TOKEN_COOKIE);
-      }
+      clearAuthCookies(cookieStore, allowCookieMutation);
       return null;
     }
 
@@ -139,6 +167,7 @@ export async function getAuthenticatedUserFromCookies(
       const newPayload: AuthTokenPayload = {
         secId,
         role: 'SEC' as Role,
+        projectId: process.env.PROJECT_ID || 'samsung',
       };
 
       // Rotate ONLY the access token. Refresh token keeps its original
@@ -155,6 +184,32 @@ export async function getAuthenticatedUserFromCookies(
       });
     }
 
+    // Fetch SEC profile data from database
+    const secProfile = await prisma.sEC.findUnique({
+      where: { phone: secId },
+      select: {
+        id: true,
+        phone: true,
+        fullName: true,
+        storeId: true,
+        employeeId: true,
+        AgencyName: true,
+      },
+    });
+
+    // Fetch store details if storeId exists
+    let storeDetails = null;
+    if (secProfile?.storeId) {
+      storeDetails = await prisma.store.findUnique({
+        where: { id: secProfile.storeId },
+        select: {
+          id: true,
+          name: true,
+          city: true,
+        },
+      });
+    }
+
     const authUser: AuthenticatedUser = {
       id: secId,
       username: secId,
@@ -162,12 +217,22 @@ export async function getAuthenticatedUserFromCookies(
       validation: 'APPROVED',
       metadata: {},
       profile: {
-        id: secId,
-        phone: secId,
+        id: secProfile?.id || secId,
+        phone: secProfile?.phone || secId,
+        fullName: secProfile?.fullName || null,
+        store: storeDetails,
+        employeeId: secProfile?.employeeId || null,
+        AgencyName: secProfile?.AgencyName || null,
       },
     } as any;
 
     return authUser;
+  }
+
+  // Ensure userId exists in payload
+  if (!payload.userId) {
+    clearAuthCookies(cookieStore, allowCookieMutation);
+    return null;
   }
 
   const user = await prisma.user.findUnique({
@@ -183,10 +248,7 @@ export async function getAuthenticatedUserFromCookies(
   } as any);
 
   if (!user || user.validation !== 'APPROVED') {
-    if (cookieStore && allowCookieMutation) {
-      cookieStore.delete(ACCESS_TOKEN_COOKIE);
-      cookieStore.delete(REFRESH_TOKEN_COOKIE);
-    }
+    clearAuthCookies(cookieStore, allowCookieMutation);
     return null;
   }
 
@@ -196,6 +258,7 @@ export async function getAuthenticatedUserFromCookies(
     const newPayload: AuthTokenPayload = {
       userId: user.id,
       role: user.role,
+      projectId: process.env.PROJECT_ID || 'samsung',
     };
 
     // Rotate ONLY the access token. Refresh token keeps its original

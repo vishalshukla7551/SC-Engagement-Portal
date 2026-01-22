@@ -44,18 +44,26 @@ export async function POST(req: NextRequest) {
 
     console.log(`[SEC OTP] Phone ${normalized} -> ${code}`);
 
-    // Send OTP via Comify WhatsApp API
-    if (comifyService.isConfigured()) {
-      try {
-        await comifyService.sendOtp(normalized, code);
-        console.log(`[SEC OTP] Successfully sent OTP to ${normalized} via Comify WhatsApp`);
-      } catch (comifyError) {
-        console.error(`[SEC OTP] Failed to send OTP via Comify:`, comifyError);
-        // Continue execution - OTP is still stored in database for manual verification
-        // In production, you might want to return an error here depending on requirements
-      }
+    // Skip WhatsApp sending on localhost
+    const isLocalhost = process.env.NODE_ENV === 'development' || 
+                       process.env.VERCEL_ENV === undefined;
+    
+    if (isLocalhost) {
+      console.log(`[SEC OTP] Localhost detected - skipping WhatsApp send. Use OTP: ${code}`);
     } else {
-      console.warn('[SEC OTP] Comify not configured - OTP not sent via WhatsApp');
+      // Send OTP via Comify WhatsApp API (production only)
+      if (comifyService.isConfigured()) {
+        try {
+          await comifyService.sendOtp(normalized, code);
+          console.log(`[SEC OTP] Successfully sent OTP to ${normalized} via Comify WhatsApp`);
+        } catch (comifyError) {
+          console.error(`[SEC OTP] Failed to send OTP via Comify:`, comifyError);
+          // Continue execution - OTP is still stored in database for manual verification
+          // In production, you might want to return an error here depending on requirements
+        }
+      } else {
+        console.warn('[SEC OTP] Comify not configured - OTP not sent via WhatsApp');
+      }
     }
 
     return NextResponse.json({ 

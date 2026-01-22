@@ -136,7 +136,7 @@ export default function MonthlyIncentiveReport() {
         ...(startDate && { endDate: startDate })
       });
 
-      const response = await fetch(`/api/zopper-admin/monthly-incentive-report?${params}`);
+      const response = await fetch(`/api/zopper-administrator/monthly-incentive-report?${params}`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -217,7 +217,7 @@ export default function MonthlyIncentiveReport() {
           </div>
 
           <button
-            onClick={() => clientLogout('/login/role')}
+            onClick={() => clientLogout('/login/role', false)}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg self-start"
           >
             <FaSignOutAlt size={12} />

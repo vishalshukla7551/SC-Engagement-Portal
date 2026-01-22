@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
-// GET /api/zopper-admin/monthly-incentive-report
+// GET /api/zopper-administrator/monthly-incentive-report
 // Fetches monthly incentive report data from DailyIncentiveReport schema
 export async function GET(req: NextRequest) {
   try {
@@ -234,7 +234,7 @@ export async function GET(req: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Error in GET /api/zopper-admin/monthly-incentive-report', error);
+    console.error('Error in GET /api/zopper-administrator/monthly-incentive-report', error);
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined

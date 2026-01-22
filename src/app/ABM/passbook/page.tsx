@@ -11,7 +11,7 @@ export default function WalletPage() {
           <p className="text-neutral-300">Track your earnings and transaction history</p>
         </div>
         <button
-          onClick={() => clientLogout('/login/role')}
+          onClick={() => clientLogout('/login/role', false)}
           className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
         >
           <svg

@@ -7,7 +7,7 @@ import { useRequireAuth } from '@/lib/clientAuth';
 
 export default function ASELayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { loading } = useRequireAuth(['ASE']);
+  const { loading } = useRequireAuth({ enabled: true });
 
   if (loading) {
     return null; // or a loading spinner

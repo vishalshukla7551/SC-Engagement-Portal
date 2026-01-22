@@ -3,17 +3,19 @@ import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
 /**
- * GET /api/samsung-admin/dashboard
- * Get dashboard data for Samsung Administrator from DailyIncentiveReport schema
+ * GET /api/samsung-administrator/spot-incentive-report
+ * Get all spot incentive reports for Samsung Administrator
  * 
- * DailyIncentiveReport Schema Fields:
- * - id, secId, storeId, samsungSKUId, planId
- * - imei, metadata, Date_of_sale, createdAt, updatedAt
+ * SpotIncentiveReport Schema Fields:
+ * - id, secId, storeId, samsungSKUId, planId, salesSummaryid
+ * - imei, isCompaignActive, spotincentiveEarned, voucherCode
+ * - spotincentivepaidAt, metadata, Date_of_sale, createdAt, updatedAt
  * 
  * Query Parameters:
  * - storeId?: string (filter by store)
  * - planType?: string (filter by plan type)
  * - deviceName?: string (filter by device)
+ * - paymentStatus?: 'paid' | 'unpaid' | 'all'
  * - startDate?: string (YYYY-MM-DD)
  * - endDate?: string (YYYY-MM-DD)
  * - search?: string (search SEC/Store/Device/IMEI)
@@ -33,11 +35,12 @@ export async function GET(req: NextRequest) {
     const storeId = searchParams.get('storeId');
     const planType = searchParams.get('planType');
     const deviceName = searchParams.get('deviceName');
+    const paymentStatus = searchParams.get('paymentStatus') || 'all';
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = parseInt(searchParams.get('limit') || '50');
 
     // Build where clause
     const where: any = {};
@@ -62,6 +65,13 @@ export async function GET(req: NextRequest) {
           mode: 'insensitive'
         }
       };
+    }
+
+    // Payment status filter
+    if (paymentStatus === 'paid') {
+      where.spotincentivepaidAt = { not: null };
+    } else if (paymentStatus === 'unpaid') {
+      where.spotincentivepaidAt = null;
     }
 
     // Date range filter
@@ -89,10 +99,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Get total count for pagination
-    const totalCount = await prisma.dailyIncentiveReport.count({ where });
+    const totalCount = await prisma.spotIncentiveReport.count({ where });
 
     // Get paginated reports with all related data
-    const reports = await prisma.dailyIncentiveReport.findMany({
+    const reports = await prisma.spotIncentiveReport.findMany({
       where,
       include: {
         secUser: {
@@ -154,53 +164,60 @@ export async function GET(req: NextRequest) {
       return `${yyyy}-${mm}-${dd}`;
     };
 
-    // Transform data for frontend - matching DailyIncentiveReport schema
+    // Transform data for frontend - matching SpotIncentiveReport schema
     const transformedReports = reports.map((report) => ({
-      // Core DailyIncentiveReport fields
+      // Core SpotIncentiveReport fields
       id: report.id,
       imei: report.imei,
+      isCompaignActive: report.isCompaignActive,
+      spotincentiveEarned: report.spotincentiveEarned,
+      voucherCode: report.voucherCode || null,
+      spotincentivepaidAt: report.spotincentivepaidAt ? formatDateTime(report.spotincentivepaidAt) : null,
+      isPaid: !!report.spotincentivepaidAt,
       metadata: report.metadata,
       Date_of_sale: formatDate(report.Date_of_sale),
       createdAt: formatDateTime(report.createdAt),
       updatedAt: formatDateTime(report.updatedAt),
       
-      // Frontend display fields
-      timestamp: formatDateTime(report.createdAt),
-      dateOfSale: formatDate(report.Date_of_sale),
-      secId: report.secUser?.employeeId || report.secUser?.id || 'N/A',
-      storeName: report.store.name,
-      storeCode: report.store.city || '', // Using city as storeCode for display
-      deviceName: report.samsungSKU.ModelName,
-      planType: report.plan.planType.replace(/_/g, ' '),
-      incentiveEarned: report.plan.price, // Using plan price as incentive for daily reports
-      status: 'Submitted', // Daily reports are always submitted
-      validator: 'Samsung', // Samsung validates daily reports
+      // Related SEC data
+      secId: report.secUser.employeeId || report.secUser.id,
+      secName: report.secUser.fullName || 'Not Set',
+      secPhone: report.secUser.phone,
+      agencyName: report.secUser.AgencyName || null,
       
-      // Additional data
-      secName: report.secUser?.fullName || 'Not Set',
-      secPhone: report.secUser?.phone || 'N/A',
-      agencyName: report.secUser?.AgencyName || null,
+      // Related Store data
+      storeId: report.store.id,
+      storeName: report.store.name,
       storeCity: report.store.city || null,
+      
+      // Related Device (SamsungSKU) data
+      deviceId: report.samsungSKU.id,
+      deviceName: report.samsungSKU.ModelName,
       deviceCategory: report.samsungSKU.Category,
       devicePrice: report.samsungSKU.ModelPrice || 0,
+      
+      // Related Plan data
+      planId: report.plan.id,
+      planType: report.plan.planType,
       planPrice: report.plan.price,
     }));
 
     // Calculate summary statistics from all matching records (not just current page)
-    const allReportsForStats = await prisma.dailyIncentiveReport.findMany({
+    const allReportsForStats = await prisma.spotIncentiveReport.findMany({
       where,
       select: {
         storeId: true,
         secId: true,
-        plan: {
-          select: { price: true }
-        }
+        spotincentiveEarned: true,
+        spotincentivepaidAt: true,
       }
     });
 
     const uniqueStores = new Set(allReportsForStats.map(r => r.storeId));
-    const uniqueSECs = new Set(allReportsForStats.filter(r => r.secId).map(r => r.secId));
-    const totalPlanValue = allReportsForStats.reduce((sum, r) => sum + r.plan.price, 0);
+    const uniqueSECs = new Set(allReportsForStats.map(r => r.secId));
+    const totalIncentiveEarned = allReportsForStats.reduce((sum, r) => sum + r.spotincentiveEarned, 0);
+    const paidReports = allReportsForStats.filter(r => r.spotincentivepaidAt);
+    const totalIncentivePaid = paidReports.reduce((sum, r) => sum + r.spotincentiveEarned, 0);
 
     // Get available filters data
     const [stores, planTypes, devices] = await Promise.all([
@@ -234,13 +251,13 @@ export async function GET(req: NextRequest) {
           hasPrev: page > 1
         },
         summary: {
+          totalReports: totalCount,
           activeStores: uniqueStores.size,
-          secsActive: uniqueSECs.size,
-          reportsSubmitted: totalCount,
-          incentiveEarned: totalPlanValue, // Total plan value as incentive earned
-          incentivePaid: totalPlanValue, // All daily reports are considered "paid"
-          incentivePaidCount: totalCount,
-          incentiveUnpaidCount: 0 // Daily reports don't have unpaid status
+          activeSECs: uniqueSECs.size,
+          totalIncentiveEarned,
+          totalIncentivePaid,
+          paidCount: paidReports.length,
+          unpaidCount: totalCount - paidReports.length
         },
         filters: {
           stores: stores.map(s => ({ id: s.id, name: s.name, city: s.city })),
@@ -251,7 +268,7 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error in GET /api/samsung-admin/dashboard', error);
+    console.error('Error in GET /api/samsung-administrator/spot-incentive-report', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

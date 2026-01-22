@@ -72,7 +72,7 @@ export default function SECOnboardingPage() {
   }, [selectedStoreId, stores]);
 
   const handleBack = async () => {
-    await clientLogout('/login/sec');
+    await clientLogout('/login/sec', false);
   };
 
   const filteredStores = stores.filter((store) => {

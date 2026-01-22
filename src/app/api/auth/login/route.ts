@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
     const payload: AuthTokenPayload = {
       userId: rest.id,
       role: rest.role,
+      projectId: process.env.PROJECT_ID || 'samsung',
     };
 
     const accessToken = signAccessToken(payload);

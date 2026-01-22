@@ -138,7 +138,7 @@ export default function SpotIncentiveReport() {
 
     try {
       setBulkActionLoading(true);
-      const response = await fetch('/api/zopper-admin/spot-incentive-report/bulk', {
+      const response = await fetch('/api/zopper-administrator/spot-incentive-report/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -167,7 +167,7 @@ export default function SpotIncentiveReport() {
   // Handle Mark Paid action
   const handleMarkPaid = async (reportId: string) => {
     try {
-      const response = await fetch(`/api/zopper-admin/spot-incentive-report/${reportId}/mark-paid`, {
+      const response = await fetch(`/api/zopper-administrator/spot-incentive-report/${reportId}/mark-paid`, {
         method: 'POST',
       });
 
@@ -187,7 +187,7 @@ export default function SpotIncentiveReport() {
   const handleDiscard = async (reportId: string) => {
     if (confirm('Are you sure you want to discard this report?')) {
       try {
-        const response = await fetch(`/api/zopper-admin/spot-incentive-report/${reportId}/discard`, {
+        const response = await fetch(`/api/zopper-administrator/spot-incentive-report/${reportId}/discard`, {
           method: 'POST',
         });
 
@@ -224,7 +224,7 @@ export default function SpotIncentiveReport() {
         params.append('endDate', startDate);
       }
 
-      const response = await fetch(`/api/zopper-admin/spot-incentive-report?${params}`);
+      const response = await fetch(`/api/zopper-administrator/spot-incentive-report?${params}`);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -314,7 +314,7 @@ export default function SpotIncentiveReport() {
           </div>
 
           <button
-            onClick={() => clientLogout('/login/role')}
+            onClick={() => clientLogout('/login/role', false)}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
           >
             <FaSignOutAlt size={12} />

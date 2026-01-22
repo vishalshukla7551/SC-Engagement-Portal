@@ -108,7 +108,7 @@ export default function LeaderboardPage() {
             {loading ? 'Loading...' : 'Refresh'}
           </button>
           <button
-            onClick={() => clientLogout('/login/role')}
+            onClick={() => clientLogout('/login/role', false)}
             className="px-4 py-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium"
           >
             Logout

@@ -7,7 +7,7 @@ export default function SamsungAdministratorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { loading } = useRequireAuth(['SAMSUNG_ADMINISTRATOR']);
+  const { loading } = useRequireAuth({ enabled: true });
 
   if (loading) {
     return null; // or a loading spinner

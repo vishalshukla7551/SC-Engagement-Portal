@@ -12,7 +12,7 @@ export default function ZopperAdministratorLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { loading } = useRequireAuth(['ZOPPER_ADMINISTRATOR']);
+  const { loading } = useRequireAuth({ enabled: true });
 
   // Sidebar state with localStorage persistence
   const [sidebarOpen, setSidebarOpen] = useState(() => {

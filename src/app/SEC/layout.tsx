@@ -9,7 +9,7 @@ export default function SECLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { loading, user } = useRequireAuth(['SEC']);
+  const { loading, user } = useRequireAuth({ enabled: true });
   const router = useRouter();
   const pathname = usePathname();
   const [checkingProfile, setCheckingProfile] = useState(true);

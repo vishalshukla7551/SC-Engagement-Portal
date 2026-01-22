@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { clientLogout } from '@/lib/clientLogout';
+import { LogoutToast } from './LogoutToast';
 
 let isPatched = false;
 
 // Mounted once near the root (in RootLayout) to watch for 401 responses
 // from client-side fetch calls and trigger a global logout.
 export function GlobalAuthInterceptor() {
+  const [showLogoutToast, setShowLogoutToast] = useState(false);
+
   useEffect(() => {
     if (typeof window === 'undefined' || isPatched) return;
     isPatched = true;
@@ -39,7 +42,8 @@ export function GlobalAuthInterceptor() {
         const isLoginEndpoint = 
           url.includes('/api/auth/login') || 
           url.includes('/api/auth/sec/verify-otp') ||
-          url.includes('/api/auth/signup');
+          url.includes('/api/auth/signup') ||
+          url.includes('/api/auth/verify');
 
         // Debug log (remove after testing)
         console.log('401 Response - URL:', url, 'Is Login Endpoint:', isLoginEndpoint);
@@ -53,7 +57,18 @@ export function GlobalAuthInterceptor() {
 
       return response;
     };
+
+    // Listen for logout event
+    const handleLogoutInitiated = () => {
+      setShowLogoutToast(true);
+    };
+
+    window.addEventListener('logout-initiated', handleLogoutInitiated as EventListener);
+
+    return () => {
+      window.removeEventListener('logout-initiated', handleLogoutInitiated as EventListener);
+    };
   }, []);
 
-  return null;
+  return <LogoutToast isVisible={showLogoutToast} />;
 }

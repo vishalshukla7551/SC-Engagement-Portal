@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
 /**
- * GET /api/zopper-admin/spot-incentive-report
+ * GET /api/zopper-administrator/spot-incentive-report
  * Get all spot incentive reports for Zopper Administrator
  * 
  * Query Parameters:
@@ -255,7 +255,7 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error in GET /api/zopper-admin/spot-incentive-report', error);
+    console.error('Error in GET /api/zopper-administrator/spot-incentive-report', error);
     return NextResponse.json(
       { 
         error: 'Internal server error',

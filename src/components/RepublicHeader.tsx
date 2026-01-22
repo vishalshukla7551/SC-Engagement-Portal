@@ -16,7 +16,7 @@ export default function RepublicHeader({ userName = 'Guest', hideGreeting = fals
     const fullGreeting = `Jai Hind, ${userName}`;
 
     const handleLogout = () => {
-        clientLogout('/login/sec');
+        clientLogout('/login/sec', false);
     };
 
     const handleConfetti = () => {

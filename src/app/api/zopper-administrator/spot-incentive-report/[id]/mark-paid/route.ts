@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
 /**
- * POST /api/zopper-admin/spot-incentive-report/[id]/mark-paid
+ * POST /api/zopper-administrator/spot-incentive-report/[id]/mark-paid
  * Mark a spot incentive report as paid
  */
 export async function POST(

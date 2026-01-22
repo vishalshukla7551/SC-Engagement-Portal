@@ -10,7 +10,7 @@ export default function ZSELayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { loading } = useRequireAuth(['ZSE']);
+  const { loading } = useRequireAuth({ enabled: true });
 
   if (loading) {
     return null; // or a loading spinner

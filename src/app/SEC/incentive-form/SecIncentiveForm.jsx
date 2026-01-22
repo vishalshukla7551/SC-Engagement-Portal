@@ -44,10 +44,8 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   // const [showConfetti, setShowConfetti] = useState(false);
 
   // Data from APIs
-  const [stores, setStores] = useState([]);
   const [devices, setDevices] = useState([]);
   const [plans, setPlans] = useState([]);
-  const [loadingStores, setLoadingStores] = useState(true);
   const [loadingDevices, setLoadingDevices] = useState(true);
   const [loadingPlans, setLoadingPlans] = useState(false);
 
@@ -64,8 +62,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       const auth = JSON.parse(raw);
       const phoneFromAuth = auth?.phone;
       const employeeIdFromAuth = auth?.employeeId || auth?.employId;
-      const storeFromAuth = auth?.storeId || auth?.selectedStoreId;
-      const storeDetails = auth?.store;
+      const storeFromAuth = auth?.store?.id;
 
       if (phoneFromAuth) {
         setSecPhone(phoneFromAuth);
@@ -80,16 +77,11 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
       if (storeFromAuth) {
         setStoreId(storeFromAuth);
-        // Store the store details for display
-        if (storeDetails) {
-          setStores([storeDetails]);
-        }
       }
     } catch {
       // ignore parse errors but show alert so SEC can re-login
       setShowSecAlert(true);
     }
-    setLoadingStores(false);
   }, []);
 
   // Fetch devices on mount
@@ -495,9 +487,21 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 type="text"
                 id="storeId"
                 value={(() => {
-                  const store = stores.find((s) => s.id === storeId);
-                  if (!store) return loadingStores ? 'Loading...' : 'Store not set';
-                  return `${store.name}${store.city ? ` - ${store.city}` : ''}`;
+                  // Get store from authUser directly
+                  if (typeof window !== 'undefined') {
+                    try {
+                      const raw = window.localStorage.getItem('authUser');
+                      if (raw) {
+                        const auth = JSON.parse(raw);
+                        if (auth?.store?.name) {
+                          return `${auth.store.name}${auth.store.city ? ` - ${auth.store.city}` : ''}`;
+                        }
+                      }
+                    } catch {
+                      // ignore
+                    }
+                  }
+                  return 'Store not set';
                 })()}
                 disabled
                 className="w-full px-4 py-3 bg-slate-200/50 border border-slate-200 rounded-xl text-slate-600 text-sm font-medium"
