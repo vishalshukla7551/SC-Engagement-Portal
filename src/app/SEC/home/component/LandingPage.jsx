@@ -43,7 +43,7 @@ export default function LandingPage({ userName = '' }) {
       isImageBanner: true,
       imageSrc: '/pitchsultan_banner.png',
       imageAlt: 'Pitch Sultan Banner',
-      link: 'https://www.salesdost.com/pitchsultan/rewards',
+      link: 'https://salesdost.vercel.app/pitchsultan/rewards',
     },
   ];
 
