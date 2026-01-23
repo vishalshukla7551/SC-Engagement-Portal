@@ -10,7 +10,8 @@ import {
     ChevronRight,
     RefreshCcw,
     Lock,
-    User
+    User,
+    Medal
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -158,6 +159,7 @@ export default function RepublicLeaderboardPage() {
 
     // Refs for Rank Blocks
     const rankRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+    const userRowRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         const fetchLeaderboard = async () => {
@@ -169,13 +171,18 @@ export default function RepublicLeaderboardPage() {
                     setCurrentUser(data.currentUser);
                     setHasBonus(data.currentUser?.hasBonus || false);
 
-                    // Auto-scroll to user's rank after a short delay
+                    // Auto-scroll to user's ROW (specific element) after a short delay
                     setTimeout(() => {
-                        const userRankId = data.currentUser?.rankId;
-                        if (userRankId && rankRefs.current[userRankId]) {
-                            rankRefs.current[userRankId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        if (userRowRef.current) {
+                            userRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        } else {
+                            // Fallback to rank block if row not found
+                            const userRankId = data.currentUser?.rankId;
+                            if (userRankId && rankRefs.current[userRankId]) {
+                                rankRefs.current[userRankId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
                         }
-                    }, 500);
+                    }, 800);
                 }
             } catch (error) {
                 console.error("Failed to fetch leaderboard", error);
@@ -202,39 +209,37 @@ export default function RepublicLeaderboardPage() {
 
                 // Set initial position immediately
                 setAnimatedRankIndex(currentStep);
-                const initialRankId = RANKS[currentStep]?.id;
-                if (initialRankId && rankRefs.current[initialRankId]) {
+
+                // Only animate if we are starting lower than target
+                if (currentStep > targetIndex) {
+                    const scrollInterval = setInterval(() => {
+                        currentStep--;
+                        setAnimatedRankIndex(currentStep); // Set jumping indicator position
+
+                        const rankId = RANKS[currentStep]?.id;
+                        if (rankId && rankRefs.current[rankId]) {
+                            rankRefs.current[rankId]?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+
+                        if (currentStep <= targetIndex) {
+                            clearInterval(scrollInterval);
+                            // Final Scroll: Focus mainly on the user's specific row
+                            setTimeout(() => {
+                                userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 600);
+                        }
+                    }, 600); // 600ms delay between each rank
+
+                    return () => clearInterval(scrollInterval);
+                } else {
+                    // Already there or invalid direction, just ensure we see the user
                     setTimeout(() => {
-                        rankRefs.current[initialRankId]?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-                    }, 300);
+                        userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 500);
                 }
-
-                // If user is at Salesveer (0 sales), no need to animate further
-                if (currentStep === targetIndex) {
-                    return;
-                }
-
-                const scrollInterval = setInterval(() => {
-                    currentStep--;
-                    setAnimatedRankIndex(currentStep); // Set jumping indicator position
-
-                    const rankId = RANKS[currentStep]?.id;
-                    if (rankId && rankRefs.current[rankId]) {
-                        rankRefs.current[rankId]?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-                    }
-
-                    if (currentStep <= targetIndex) {
-                        clearInterval(scrollInterval);
-                    }
-                }, 500); // 500ms delay between each rank
-
-                return () => clearInterval(scrollInterval);
             }
         }
     }, [currentUser]);
@@ -392,23 +397,40 @@ export default function RepublicLeaderboardPage() {
                                             ) : (
                                                 players.map((player, pIndex) => {
                                                     const isMe = currentUser && currentUser.secId === player.secId;
+
+                                                    // Determine Rank Icon/Number
+                                                    let RankIndicator;
+                                                    if (pIndex === 0) {
+                                                        RankIndicator = <Medal size={20} className="text-yellow-500 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
+                                                    } else if (pIndex === 1) {
+                                                        RankIndicator = <Medal size={20} className="text-slate-400 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
+                                                    } else if (pIndex === 2) {
+                                                        RankIndicator = <Medal size={20} className="text-amber-700 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
+                                                    } else {
+                                                        RankIndicator = <span className={`font-bold text-sm ${isMe ? 'text-orange-600' : 'text-slate-500'}`}>#{pIndex + 1}</span>;
+                                                    }
+
                                                     return (
                                                         <motion.div
                                                             key={player.secId || pIndex}
+                                                            ref={isMe ? userRowRef : null}
                                                             className={`
                                                                 border p-3 rounded-xl flex items-center justify-between shadow-sm hover:shadow-md transition-shadow
                                                                 ${isMe
-                                                                    ? 'bg-orange-50 border-orange-200 z-20 relative'
+                                                                    ? 'bg-orange-50 border-orange-200 z-20 relative ring-2 ring-offset-2 ring-orange-400'
                                                                     : 'bg-white border-slate-100'}
                                                             `}
                                                         >
                                                             <div className="flex items-center gap-3">
+                                                                {/* Rank Indicator / Avatar Area */}
                                                                 <div className={`
-                                                                    w-8 h-8 rounded-full flex items-center justify-center border
-                                                                    ${isMe ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-slate-100 text-slate-400 border-slate-200'}
+                                                                    w-8 h-8 rounded-full flex items-center justify-center border shrink-0
+                                                                    ${isMe && pIndex > 2 ? 'bg-orange-100 border-orange-200' : 'bg-slate-50 border-slate-200'}
+                                                                    ${pIndex < 3 ? 'bg-white shrink-0' : ''}
                                                                 `}>
-                                                                    {isMe ? <Crown size={14} /> : <User size={14} />}
+                                                                    {RankIndicator}
                                                                 </div>
+
                                                                 <div>
                                                                     <p className={`font-bold text-sm ${isMe ? 'text-orange-900' : 'text-slate-700'}`}>
                                                                         {player.name}

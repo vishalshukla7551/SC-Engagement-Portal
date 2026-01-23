@@ -146,14 +146,18 @@ export async function GET(req: NextRequest) {
       take: limit
     });
 
-    // Format date helper
+    // Format date helper (IST)
     const formatDate = (date: Date) => {
       const d = new Date(date);
-      const dd = String(d.getDate()).padStart(2, '0');
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const yyyy = d.getFullYear();
-      const hh = String(d.getHours()).padStart(2, '0');
-      const min = String(d.getMinutes()).padStart(2, '0');
+      // IST is UTC + 5:30
+      const IST_OFFSET = 330 * 60 * 1000;
+      const istDate = new Date(d.getTime() + IST_OFFSET);
+
+      const dd = String(istDate.getUTCDate()).padStart(2, '0');
+      const mm = String(istDate.getUTCMonth() + 1).padStart(2, '0');
+      const yyyy = istDate.getUTCFullYear();
+      const hh = String(istDate.getUTCHours()).padStart(2, '0');
+      const min = String(istDate.getUTCMinutes()).padStart(2, '0');
       return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
     };
 
@@ -196,7 +200,7 @@ export async function GET(req: NextRequest) {
     const totalIncentivePaid = reports
       .filter((report: any) => report.spotincentivepaidAt)
       .reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
-    
+
     const uniqueStores = new Set(reports.map((report: any) => report.storeId));
     const uniqueSECs = new Set(reports.map((report: any) => report.secId));
 
@@ -257,7 +261,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Error in GET /api/zopper-administrator/spot-incentive-report', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
