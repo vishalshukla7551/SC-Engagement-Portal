@@ -108,9 +108,10 @@ export default function ClaimProcedurePage() {
 
       {/* PDF Viewer - Full Screen */}
       <iframe
-        src={`/api/claim-procedure/pdfs/${pdf.id}/view#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
+        src={`/api/claim-procedure/pdfs/${pdf.id}/view#toolbar=1&navpanes=0&scrollbar=1&view=Fit`}
         className="w-full h-full border-0"
         title="Claim Procedure"
+        allow="fullscreen"
       />
     </div>
   );
