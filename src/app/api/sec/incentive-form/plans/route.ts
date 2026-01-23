@@ -30,9 +30,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if this is a device that should only show SCREEN_PROTECT_2_YR
-    const devicesWithOnly2YrScreenProtection = [
-      { category: 'Mid', modelName: 'A17' },
-    ];
+    const devicesWithOnly2YrScreenProtection: { category: string; modelName: string }[] = [];
 
     const isRestricted2YrDevice = devicesWithOnly2YrScreenProtection.some(
       (d) => d.category === device.Category && d.modelName === device.ModelName
