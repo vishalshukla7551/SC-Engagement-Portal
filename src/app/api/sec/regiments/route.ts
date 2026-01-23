@@ -299,7 +299,7 @@ export async function GET(req: NextRequest) {
             if (sec.salesAmount >= 200000) rank = 'Sales General';
             else if (sec.salesAmount >= 150000) rank = 'Sales Chief Marshal';
             else if (sec.salesAmount >= 120000) rank = 'Sales Commander';
-            else if (sec.salesAmount >= 90000) rank = 'Sales Major';
+            else if (sec.salesAmount >= 80000) rank = 'Sales Major';
             else if (sec.salesAmount >= 51000) rank = 'Sales Captain';
             else if (sec.salesAmount >= 21000) rank = 'Sales Lieutenant';
 

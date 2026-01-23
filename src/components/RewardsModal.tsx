@@ -9,7 +9,7 @@ const RANKS = [
     { id: 'cadet', title: 'SALESVEER', minSales: 0, color: 'bg-stone-400', icon: Shield },
     { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 21000, color: 'bg-emerald-500', icon: Star },
     { id: 'captain', title: 'SALES CAPTAIN', minSales: 51000, color: 'bg-blue-500', icon: Award },
-    { id: 'major', title: 'SALES MAJOR', minSales: 90000, color: ' bg-indigo-600', icon: Award },
+    { id: 'major', title: 'SALES MAJOR', minSales: 80000, color: ' bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
     { id: 'general', title: 'SALES GENERAL', minSales: 150000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
@@ -47,7 +47,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({ isOpen, onClose }) =
             title: 'SALES MAJOR',
             message: 'Outstanding achievement! Your dedication is paying off.',
             reward: '₹500',
-            minSales: 90000
+            minSales: 80000
         },
         {
             title: 'SALES COMMANDER',

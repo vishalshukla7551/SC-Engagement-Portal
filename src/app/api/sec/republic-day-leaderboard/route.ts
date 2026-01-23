@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 const RANKS = [
     { id: 'brigadier', title: 'Sales Chief Marshal', minSales: 150000 },
     { id: 'colonel', title: 'Sales Commander', minSales: 120000 },
-    { id: 'major', title: 'Sales Major', minSales: 90000 },
+    { id: 'major', title: 'Sales Major', minSales: 80000 },
     { id: 'captain', title: 'Sales Captain', minSales: 51000 },
     { id: 'lieutenant', title: 'Sales Lieutenant', minSales: 21000 },
     { id: 'cadet', title: 'Salesveer', minSales: 0 },

@@ -588,12 +588,18 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={submittingPersonalInfo}
-                className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {submittingPersonalInfo ? 'Saving...' : 'Submit'}
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {submittingPersonalInfo ? 'Saving...' : 'Submit'}
+                </div>
               </button>
             </form>
           </section>
@@ -701,24 +707,30 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={verifyingPan}
-                  className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                  }}
                 >
-                  {verifyingPan ? (
-                    <>
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Verifying PAN...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Verify PAN
-                    </>
-                  )}
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                  <div className="relative flex items-center justify-center gap-2">
+                    {verifyingPan ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Verifying PAN...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Verify PAN
+                      </>
+                    )}
+                  </div>
                 </button>
               )}
             </form>
@@ -844,12 +856,18 @@ export default function ProfilePage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
+                className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
+                style={{
+                  background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                Submit
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Submit
+                </div>
               </button>
             </form>
           </section>
@@ -1000,9 +1018,13 @@ export default function ProfilePage() {
               <button
                 onClick={handleSubmitStoreChangeRequest}
                 disabled={submittingRequest || !selectedStoreId || selectedStoreId === currentStore?.id}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+                style={{
+                  background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                }}
               >
-                {submittingRequest ? 'Submitting...' : 'Submit Request'}
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <span className="relative">{submittingRequest ? 'Submitting...' : 'Submit Request'}</span>
               </button>
             </div>
           </div>

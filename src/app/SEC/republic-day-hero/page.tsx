@@ -25,7 +25,7 @@ const RANKS = [
     { id: 'cadet', title: 'SALESVEER', minSales: 0, color: 'bg-stone-400', icon: Shield },
     { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 21000, color: 'bg-emerald-500', icon: Star },
     { id: 'captain', title: 'SALES CAPTAIN', minSales: 51000, color: 'bg-blue-500', icon: Award },
-    { id: 'major', title: 'SALES MAJOR', minSales: 90000, color: 'bg-indigo-600', icon: Award },
+    { id: 'major', title: 'SALES MAJOR', minSales: 80000, color: 'bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
     { id: 'general', title: 'SALES GENERAL', minSales: 150000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
@@ -225,9 +225,13 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                 <div className="p-6 bg-slate-50 border-t border-slate-100 text-center">
                     <button
                         onClick={onClose}
-                        className="w-full py-3 bg-[#000080] text-white rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-blue-900/20 active:scale-95 transition-transform"
+                        className="w-full text-white font-bold py-3 rounded-xl uppercase tracking-wider shadow-lg hover:shadow-xl active:scale-95 transition-all relative overflow-hidden group"
+                        style={{
+                            background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                        }}
                     >
-                        I Understand
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                        <span className="relative">I Understand</span>
                     </button>
                 </div>
             </motion.div>
@@ -235,7 +239,7 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
     );
 };
 
-const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const RewardsModal = ({ isOpen, onClose, currentRankIndex }: { isOpen: boolean, onClose: () => void, currentRankIndex: number }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -269,7 +273,7 @@ const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => voi
                             { title: 'SALES VEER', message: 'Start Now', reward: 'Get Started', minSales: 0 },
                             { title: 'SALES LIEUTENANT', message: 'Honor and congratulations on achieving your new rank!', reward: 'Recognition', minSales: 21000 },
                             { title: 'SALES CAPTAIN', message: 'Don\'t stop here—after all, you are the Sales Captain of Sales!', reward: 'Prestige', minSales: 51000 },
-                            { title: 'SALES MAJOR', message: 'Outstanding achievement! Your dedication is paying off.', reward: '₹500', minSales: 90000 },
+                            { title: 'SALES MAJOR', message: 'Outstanding achievement! Your dedication is paying off.', reward: '₹500', minSales: 80000 },
                             { title: 'SALES COMMANDER', message: 'Exceptional performance! Lead by example and inspire others.', reward: '₹1,500', minSales: 120000 },
                             { title: 'SALES CHIEF MARSHAL', message: 'Elite status achieved! You\'re among the top performers.', reward: '₹2,500', minSales: 150000 },
                             { title: 'SALES GENERAL', message: 'Supreme excellence! Only ONE person tops the Hall of Fame!', reward: '₹5,000', minSales: 150000 }
@@ -277,18 +281,26 @@ const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => voi
                         return rewardData.map((item, i) => {
                             const rank = RANKS[i];
                             const isTopRank = i === rewardData.length - 1;
+                            const isCurrentRank = i === currentRankIndex;
                             return (
                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.08 }}
-                                    className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 transition-all hover:scale-[1.02] ${isTopRank
-                                        ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
-                                        : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
+                                    className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 transition-all hover:scale-[1.02] ${isCurrentRank
+                                        ? 'from-blue-50 to-indigo-50 border-blue-400 shadow-lg shadow-blue-300/50 ring-2 ring-blue-400'
+                                        : isTopRank
+                                            ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
+                                            : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
                                         }`}
                                 >
-                                    {isTopRank && (
+                                    {isCurrentRank && (
+                                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-md animate-pulse border border-blue-200">
+                                            ⭐ Your Rank
+                                        </div>
+                                    )}
+                                    {isTopRank && !isCurrentRank && (
                                         <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 via-yellow-500 to-orange-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-md animate-pulse border border-yellow-200">
                                             🏆 Top Honor
                                         </div>
@@ -523,10 +535,21 @@ export default function RepublicDayHeroPage() {
                 {/* Header Section */}
                 <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-6 gap-2 sm:gap-4 shrink-0">
                     <div>
-                        <div className="flex items-center gap-2 mb-1 bg-orange-50 w-fit px-3 py-1 rounded-full border border-orange-100">
-                            <IndianFlag size={18} />
-                            <span className="text-xs font-bold tracking-wider text-[#000080] uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>Republic Day Special</span>
-                            <IndianFlag size={18} />
+                        <div className="flex items-center gap-2 mb-1">
+                            {/* Back Button - Smaller and positioned before Republic Day Special */}
+                            <button
+                                onClick={() => router.push('/SEC/home')}
+                                className="p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white hover:scale-110 transition-all active:scale-95 border border-slate-200"
+                                aria-label="Go back to home"
+                            >
+                                <ChevronLeft className="text-slate-700" size={18} />
+                            </button>
+
+                            <div className="flex items-center gap-2 bg-orange-50 w-fit px-3 py-1 rounded-full border border-orange-100">
+                                <IndianFlag size={18} />
+                                <span className="text-xs font-bold tracking-wider text-[#000080] uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>Republic Day Special</span>
+                                <IndianFlag size={18} />
+                            </div>
                         </div>
                         <h1 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.03em' }}>
                             Honour & Glory <span className="text-[#FF9933]">Path</span>
@@ -984,23 +1007,34 @@ export default function RepublicDayHeroPage() {
                         <div className="flex flex-col gap-3 w-full">
                             <button
                                 onClick={() => router.push('/SEC/incentive-form')}
-                                className="w-full py-2.5 bg-[#000080] text-white rounded-xl font-bold text-sm shadow-[0_10px_20px_-5px_rgba(0,0,128,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(0,0,128,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
-                                style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
+                                className="w-full text-white font-bold py-3 rounded-xl transition-all text-sm shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
+                                style={{
+                                    background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)',
+                                    fontFamily: 'Poppins, sans-serif',
+                                    fontWeight: 700
+                                }}
                             >
-                                <span className="relative z-10 uppercase">Submit Your Sales</span>
-                                <ChevronRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
-
-                                {/* Button Hover Glow */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#000080] via-[#1a1a90] to-[#000080] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                <div className="relative flex items-center justify-center gap-2">
+                                    <span className="uppercase">Submit Your Sales</span>
+                                    <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" strokeWidth={3} />
+                                </div>
                             </button>
 
                             <button
                                 onClick={() => router.push('/SEC/republic-leaderboard')}
-                                className="w-full py-2.5 bg-white text-[#000080] border-2 border-[#000080] rounded-xl font-bold text-sm shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
-                                style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
+                                className="w-full text-white font-bold py-3 rounded-xl transition-all text-sm shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
+                                style={{
+                                    background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)',
+                                    fontFamily: 'Poppins, sans-serif',
+                                    fontWeight: 700
+                                }}
                             >
-                                <span className="relative z-10 uppercase">HALL OF FAME</span>
-                                <Award size={18} className="relative z-10 group-hover:scale-110 transition-transform" strokeWidth={2} />
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                <div className="relative flex items-center justify-center gap-2">
+                                    <span className="uppercase">HALL OF FAME</span>
+                                    <Award size={18} className="group-hover:scale-110 transition-transform" strokeWidth={2} />
+                                </div>
                             </button>
                         </div>
                     </motion.div>
@@ -1071,7 +1105,7 @@ export default function RepublicDayHeroPage() {
                 {/* Modals */}
                 <AnimatePresence>
                     {showTerms && <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />}
-                    {showRewards && <RewardsModal isOpen={showRewards} onClose={() => setShowRewards(false)} />}
+                    {showRewards && <RewardsModal isOpen={showRewards} onClose={() => setShowRewards(false)} currentRankIndex={currentRankIndex} />}
                 </AnimatePresence>
             </main>
 

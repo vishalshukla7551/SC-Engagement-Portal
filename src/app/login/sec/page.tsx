@@ -8,6 +8,17 @@ import { motion } from 'framer-motion'; // Added framer-motion
 import { getHomePathForRole } from '@/lib/roleHomePath';
 import ButtonLoader from '@/components/ButtonLoader';
 
+// Pre-calculate Ashok Chakra spokes to avoid hydration mismatch
+// Round to fixed precision to ensure exact SSR/client match
+const ASHOK_CHAKRA_SPOKES = Array.from({ length: 24 }).map((_, i) => {
+  const angle = (i * 15 * Math.PI) / 180;
+  const x1 = Number((12 + 2 * Math.cos(angle)).toFixed(6));
+  const y1 = Number((12 + 2 * Math.sin(angle)).toFixed(6));
+  const x2 = Number((12 + 10 * Math.cos(angle)).toFixed(6));
+  const y2 = Number((12 + 10 * Math.sin(angle)).toFixed(6));
+  return `M${x1} ${y1}L${x2} ${y2}`;
+});
+
 export default function SECLogin() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -43,20 +54,8 @@ export default function SECLogin() {
   }, [otpSent]);
 
   // If already logged in, redirect away from SEC login.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const raw = window.localStorage.getItem('authUser');
-    if (!raw) return;
-    try {
-      const user = JSON.parse(raw) as { role?: string };
-      if (user?.role) {
-        const target = getHomePathForRole(user.role);
-        router.replace(target);
-      }
-    } catch {
-      // ignore parse errors
-    }
-  }, [router]);
+  // REMOVED: authUser is only for UI display, not for auth decisions
+  // Auth is handled by cookies/tokens via AuthProvider
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -223,10 +222,10 @@ export default function SECLogin() {
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-blue-900">
             <circle cx="12" cy="12" r="10" strokeWidth="0.5" />
-            <path d="M12 2L12 22" strokeWidth="0.5" />
-            <path d="M2 12L22 12" strokeWidth="0.5" />
-            <path d="M4.93 4.93L19.07 19.07" strokeWidth="0.5" />
-            <path d="M19.07 4.93L4.93 19.07" strokeWidth="0.5" />
+            {/* 24 spokes for authentic Ashok Chakra */}
+            {ASHOK_CHAKRA_SPOKES.map((d, i) => (
+              <path key={i} d={d} strokeWidth="0.5" />
+            ))}
             <circle cx="12" cy="12" r="2" strokeWidth="0.5" />
           </svg>
         </motion.div>

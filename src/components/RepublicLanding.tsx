@@ -6,6 +6,17 @@ import { useRouter } from 'next/navigation';
 
 import Image from 'next/image';
 
+// Pre-calculate Ashok Chakra spokes to avoid hydration mismatch
+// Round to fixed precision to ensure exact SSR/client match
+const ASHOK_CHAKRA_SPOKES = Array.from({ length: 24 }).map((_, i) => {
+    const angle = (i * 15 * Math.PI) / 180;
+    const x1 = Number((12 + 2 * Math.cos(angle)).toFixed(6));
+    const y1 = Number((12 + 2 * Math.sin(angle)).toFixed(6));
+    const x2 = Number((12 + 10 * Math.cos(angle)).toFixed(6));
+    const y2 = Number((12 + 10 * Math.sin(angle)).toFixed(6));
+    return `M${x1} ${y1}L${x2} ${y2}`;
+});
+
 export default function RepublicLanding() {
     const router = useRouter();
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -99,10 +110,10 @@ export default function RepublicLanding() {
                 >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-blue-800">
                         <circle cx="12" cy="12" r="10" strokeWidth="0.5" />
-                        <path d="M12 2L12 22" strokeWidth="0.5" />
-                        <path d="M2 12L22 12" strokeWidth="0.5" />
-                        <path d="M4.93 4.93L19.07 19.07" strokeWidth="0.5" />
-                        <path d="M19.07 4.93L4.93 19.07" strokeWidth="0.5" />
+                        {/* 24 spokes for authentic Ashok Chakra */}
+                        {ASHOK_CHAKRA_SPOKES.map((d, i) => (
+                            <path key={i} d={d} strokeWidth="0.5" />
+                        ))}
                     </svg>
                 </motion.div>
 
@@ -146,30 +157,34 @@ export default function RepublicLanding() {
                             onClick={handlePageClick}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="bg-gradient-to-r from-orange-500 via-blue-600 to-green-600 text-white px-8 py-3 rounded-full font-semibold text-sm tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3"
+                            className="text-white px-8 py-3 rounded-full font-semibold text-sm tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 relative overflow-hidden group"
+                            style={{
+                                background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                            }}
                         >
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                             <motion.div
-                                animate={{ 
+                                animate={{
                                     scale: isPlaying ? [1, 1.2, 1] : 1,
                                 }}
-                                transition={{ 
-                                    duration: 0.8, 
+                                transition={{
+                                    duration: 0.8,
                                     repeat: isPlaying ? Infinity : 0,
-                                    ease: "easeInOut" 
+                                    ease: "easeInOut"
                                 }}
-                                className="w-4 h-4"
+                                className="w-4 h-4 relative z-10"
                             >
                                 {isPlaying ? (
                                     <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                                     </svg>
                                 ) : (
                                     <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z"/>
+                                        <path d="M8 5v14l11-7z" />
                                     </svg>
                                 )}
                             </motion.div>
-                            <span>
+                            <span className="relative z-10">
                                 {!hasStarted ? 'Click to Start' : (isPlaying ? 'Playing...' : 'Play Audio')}
                             </span>
                         </motion.button>
