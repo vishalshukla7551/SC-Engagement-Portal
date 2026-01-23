@@ -25,6 +25,7 @@ enum Validation {
 
 enum PlanType {
   SCREEN_PROTECT_1_YR
+  SCREEN_PROTECT_2_YR
   ADLD_1_YR
   COMBO_2_YRS
   EXTENDED_WARRANTY_1_YR
