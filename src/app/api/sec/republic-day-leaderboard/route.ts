@@ -5,6 +5,8 @@ import { Role } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
+const BONUS_PHONE_NUMBERS = (process.env.REPUBLIC_DAY_BONUS_PHONES || '').split(',').filter(Boolean);
+
 // RANKS Updated to match Republic Day Hero Page thresholds
 const RANKS = [
     { id: 'brigadier', title: 'Sales Chief Marshal', minSales: 150000 },
@@ -69,6 +71,7 @@ export async function GET(req: NextRequest) {
                     select: {
                         fullName: true,
                         employeeId: true,
+                        phone: true,
                         store: {
                             select: {
                                 name: true // Changed from city to name
@@ -82,6 +85,7 @@ export async function GET(req: NextRequest) {
         // 4. Aggregation
         const userSalesMap = new Map<string, {
             secId: string,
+            phone: string,
             name: string,
             storeName: string,
             salesAmount: number
@@ -96,6 +100,7 @@ export async function GET(req: NextRequest) {
             if (!userSalesMap.has(secId)) {
                 userSalesMap.set(secId, {
                     secId: secId,
+                    phone: report.secUser.phone || '',
                     name: report.secUser.fullName || 'Unknown',
                     storeName: report.secUser.store?.name || '', // Using store name
                     salesAmount: 0
@@ -106,7 +111,7 @@ export async function GET(req: NextRequest) {
             userData.salesAmount += sales;
         });
 
-        // 5. Process Ranks and Sort
+        // 5. Process Ranks and Sort (WITHOUT bonus - will add later)
         const allUsers = Array.from(userSalesMap.values()).map(user => {
             const rankObj = getRank(user.salesAmount);
             return {
@@ -117,7 +122,62 @@ export async function GET(req: NextRequest) {
             };
         });
 
-        // 6. Build Response Structure
+        // 6. Add Bonus Users who have no sales
+        // Fetch all SECs with bonus phones
+        const bonusUsersData = await prisma.sEC.findMany({
+            where: {
+                phone: {
+                    in: BONUS_PHONE_NUMBERS
+                }
+            },
+            select: {
+                id: true,
+                fullName: true,
+                phone: true,
+                store: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
+
+        // Add bonus to all bonus users (whether they have sales or not)
+        bonusUsersData.forEach(secUser => {
+            const trimmedPhone = (secUser.phone || '').trim();
+            const existingUserIndex = allUsers.findIndex(u => u.phone === trimmedPhone);
+            
+            if (existingUserIndex >= 0) {
+                // User already exists, update with bonus
+                const existingUser = allUsers[existingUserIndex];
+                if (existingUser.salesAmount < 21000) {
+                    // Only add bonus if not already added
+                    existingUser.salesAmount += 21000;
+                    // Recalculate rank with bonus
+                    const rankObj = getRank(existingUser.salesAmount);
+                    existingUser.rankId = rankObj.id;
+                    existingUser.rankTitle = rankObj.title;
+                    existingUser.minSalesForRank = rankObj.minSales;
+                }
+            } else {
+                // User doesn't exist, add with only bonus
+                const bonusAmount = 21000;
+                const rankObj = getRank(bonusAmount);
+                
+                allUsers.push({
+                    secId: secUser.id,
+                    phone: trimmedPhone,
+                    name: secUser.fullName || 'Unknown',
+                    storeName: secUser.store?.name || '',
+                    salesAmount: bonusAmount,
+                    rankId: rankObj.id,
+                    rankTitle: rankObj.title,
+                    minSalesForRank: rankObj.minSales
+                });
+            }
+        });
+
+        // 7. Build Response Structure
         const leaderboards: Record<string, any[]> = {};
         RANKS.forEach(r => leaderboards[r.id] = []);
 
@@ -127,11 +187,10 @@ export async function GET(req: NextRequest) {
 
         Object.keys(leaderboards).forEach(rankId => {
             leaderboards[rankId].sort((a, b) => b.salesAmount - a.salesAmount);
-            // Limit to Top 50 instead of Top 3 for scrollable list
-            leaderboards[rankId] = leaderboards[rankId].slice(0, 50);
+            // Show all users in each rank
         });
 
-        // 7. Get Current User Stats
+        // 8. Get Current User Stats
         let userResponse = null;
 
         if (currentSec) {
@@ -143,34 +202,47 @@ export async function GET(req: NextRequest) {
                 const position = rankUsers.findIndex(u => u.secId === currentSec.id) + 1;
 
                 const nextRank = getNextRank(currentUserData.rankId);
+                
+                // Add bonus if user is in bonus list
+                const hasBonus = BONUS_PHONE_NUMBERS.includes(authUser.id);
+                const totalSalesAmount = currentUserData.salesAmount + (hasBonus ? 21000 : 0);
 
                 userResponse = {
                     secId: currentUserData.secId,
                     name: currentUserData.name,
                     storeName: currentUserData.storeName,
-                    salesAmount: currentUserData.salesAmount,
+                    salesAmount: totalSalesAmount,
                     rankId: currentUserData.rankId,
                     rankTitle: currentUserData.rankTitle,
                     positionInRank: position,
+                    hasBonus: hasBonus,
                     nextRank: nextRank ? {
                         title: nextRank.title,
                         targetSales: nextRank.minSales,
-                        remaining: Math.max(0, nextRank.minSales - currentUserData.salesAmount)
+                        remaining: Math.max(0, nextRank.minSales - totalSalesAmount)
                     } : null
                 };
             } else {
+                const hasBonus = BONUS_PHONE_NUMBERS.includes(authUser.id);
+                const bonusAmount = hasBonus ? 21000 : 0;
+                
                 userResponse = {
                     secId: currentSec.id,
                     name: currentSec.fullName,
                     storeName: '',
-                    salesAmount: 0,
-                    rankId: 'cadet',
-                    rankTitle: 'Salesveer',
+                    salesAmount: bonusAmount,
+                    rankId: bonusAmount >= 21000 ? 'lieutenant' : 'cadet',
+                    rankTitle: bonusAmount >= 21000 ? 'Sales Lieutenant' : 'Salesveer',
                     positionInRank: 0,
-                    nextRank: {
+                    hasBonus: hasBonus,
+                    nextRank: bonusAmount >= 21000 ? {
+                        title: 'Sales Captain',
+                        targetSales: 51000,
+                        remaining: Math.max(0, 51000 - bonusAmount)
+                    } : {
                         title: 'Sales Lieutenant',
                         targetSales: 21000,
-                        remaining: 21000
+                        remaining: 21000 - bonusAmount
                     }
                 };
             }

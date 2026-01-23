@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import RepublicFooter from '@/components/RepublicFooter';
+import RepublicDayBonusPopup from '@/components/RepublicDayBonusPopup';
 
 // Rank Configuration (Updated Titles matching Backend)
 // SALES GENERAL is locked - will be awarded after campaign ends on Jan 31
@@ -152,6 +153,7 @@ export default function RepublicLeaderboardPage() {
     const [loading, setLoading] = useState(true);
     const [leaderboardData, setLeaderboardData] = useState<Record<string, any[]>>({});
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [hasBonus, setHasBonus] = useState(false);
     const [animatedRankIndex, setAnimatedRankIndex] = useState<number | null>(null); // For jumping indicator
 
     // Refs for Rank Blocks
@@ -165,6 +167,7 @@ export default function RepublicLeaderboardPage() {
                 if (data.success) {
                     setLeaderboardData(data.leaderboards);
                     setCurrentUser(data.currentUser);
+                    setHasBonus(data.currentUser?.hasBonus || false);
 
                     // Auto-scroll to user's rank after a short delay
                     setTimeout(() => {
@@ -278,6 +281,9 @@ export default function RepublicLeaderboardPage() {
         >
             <BackgroundEffects />
 
+            {/* Republic Day Bonus Popup */}
+            <RepublicDayBonusPopup hasBonus={hasBonus} />
+
             {/* Header */}
             <div className="relative z-10 px-4 pt-6 pb-2">
                 <div className="flex items-center justify-between mb-4">
@@ -377,41 +383,13 @@ export default function RepublicLeaderboardPage() {
 
                                         {/* Salespersons List or Empty State */}
                                         <div className="p-2 space-y-2 bg-slate-50/50">
-                                            {/* Show jumping user card if this rank is currently being animated */}
-                                            {isJumping && currentUser && (
-                                                <motion.div
-                                                    key={`jumping-${rankIndex}`}
-                                                    initial={{ y: -20, opacity: 0, scale: 0.9 }}
-                                                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                                                    exit={{ y: 20, opacity: 0, scale: 0.9 }}
-                                                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                                                    className="border p-3 rounded-xl flex items-center justify-between shadow-lg bg-orange-50 border-orange-300 ring-2 ring-orange-400"
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full flex items-center justify-center border bg-orange-100 text-orange-600 border-orange-200">
-                                                            <Crown size={14} />
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-bold text-sm text-orange-900">
-                                                                {currentUser.name}
-                                                                <span className="ml-2 text-[10px] bg-orange-200 text-orange-800 px-1 rounded">YOU</span>
-                                                            </p>
-                                                            <p className="text-[10px] text-slate-400 font-medium uppercase">{currentUser.storeName}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="font-bold text-sm text-orange-700">₹{currentUser.salesAmount?.toLocaleString('en-IN') || '0'}</p>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-
-                                            {isEmpty && !isJumping ? (
+                                            {isEmpty ? (
                                                 <div className="py-6 text-center text-slate-400 flex flex-col items-center gap-2">
                                                     <Lock size={20} className="opacity-50" />
                                                     <p className="text-xs font-medium italic">No officers at this rank yet.</p>
                                                     <p className="text-[10px] uppercase tracking-wide font-bold text-orange-500/80">Be the first!</p>
                                                 </div>
-                                            ) : !isJumping && (
+                                            ) : (
                                                 players.map((player, pIndex) => {
                                                     const isMe = currentUser && currentUser.secId === player.secId;
                                                     return (

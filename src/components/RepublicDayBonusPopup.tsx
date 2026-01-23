@@ -4,26 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, X, Star } from 'lucide-react';
 
-const BONUS_PHONE_NUMBERS = [
-  "6377159886","9462008833","9928563176","9873829955","9999777910","7700987551","7756998722","8249426923","9962473050","7276452315",
-  "9814654646","8100432608","8271116222","8237952639","7569720524","9586051609","8017838550","9987432175","7382470372","7020496418",
-  "9137303035","8668993472","7044339703","7029543643","8435363145","7093299335","7973390912","9860589046","9877732964","8708323804",
-  "8707258851","8218981308","8412098681","9140682442","6394502060","9044467509","9264995526","8867811147","9989999421","8108784550",
-  "8080555696","9773202129","9945111142","8237963992","9987161700","9767414826","9676530082","9637742857","7838131652","9026788090",
-  "9999404156","9663827863","9742934601","7359544317","9582576831","8882575369","9718804101","7600443523","7503059272","9626983020",
-  "7982552640","9327126229","7676060317","9690997663","9999678004","7408108617"
-];
-
-const BONUS_POINTS = 25000;
 const STORAGE_KEY = 'republic_day_bonus_shown';
 
 interface RepublicDayBonusPopupProps {
-  userPhone?: string;
+  hasBonus?: boolean;
 }
 
-export default function RepublicDayBonusPopup({ userPhone }: RepublicDayBonusPopupProps) {
+export default function RepublicDayBonusPopup({ hasBonus = false }: RepublicDayBonusPopupProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEligible, setIsEligible] = useState(false);
 
   useEffect(() => {
     // Check if popup has already been shown
@@ -32,28 +20,13 @@ export default function RepublicDayBonusPopup({ userPhone }: RepublicDayBonusPop
       return;
     }
 
-    // Get user phone from authUser if not provided
-    let phone = userPhone;
-    if (!phone && typeof window !== 'undefined') {
-      try {
-        const authUser = window.localStorage.getItem('authUser');
-        if (authUser) {
-          const user = JSON.parse(authUser);
-          phone = user?.phone;
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    // Check if user is eligible
-    if (phone && BONUS_PHONE_NUMBERS.includes(phone)) {
-      setIsEligible(true);
+    // Show popup if user has bonus
+    if (hasBonus) {
       setIsOpen(true);
       // Mark as shown
       localStorage.setItem(STORAGE_KEY, 'true');
     }
-  }, [userPhone]);
+  }, [hasBonus]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -61,7 +34,7 @@ export default function RepublicDayBonusPopup({ userPhone }: RepublicDayBonusPop
 
   return (
     <AnimatePresence>
-      {isOpen && isEligible && (
+      {isOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -128,7 +101,7 @@ export default function RepublicDayBonusPopup({ userPhone }: RepublicDayBonusPop
                   className="flex items-center justify-center gap-2"
                 >
                   <span className="text-4xl font-black bg-gradient-to-r from-orange-600 via-[#000080] to-green-600 bg-clip-text text-transparent" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                    {BONUS_POINTS.toLocaleString('en-IN')}
+                    21,000
                   </span>
                   <span className="text-xl font-bold text-slate-700">Points</span>
                 </motion.div>

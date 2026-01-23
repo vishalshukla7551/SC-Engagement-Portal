@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 import { Role } from '@prisma/client';
 
+const BONUS_PHONE_NUMBERS = (process.env.REPUBLIC_DAY_BONUS_PHONES || '').split(',').filter(Boolean);
+
 export async function GET(req: NextRequest) {
     try {
         const cookies = await (await import('next/headers')).cookies();
@@ -34,13 +36,19 @@ export async function GET(req: NextRequest) {
             }
         });
 
-        const totalSales = reports.reduce((sum, report) => sum + (report.plan?.price || 0), 0);
+        let totalSales = reports.reduce((sum, report) => sum + (report.plan?.price || 0), 0);
+
+        // Add bonus points if user is in bonus list
+        if (BONUS_PHONE_NUMBERS.includes(authUser.id)) {
+            totalSales += 21000;
+        }
 
         return NextResponse.json({
             success: true,
             data: {
                 totalSales,
-                salesCount: reports.length
+                salesCount: reports.length,
+                hasBonus: BONUS_PHONE_NUMBERS.includes(authUser.id)
             }
         });
     } catch (error) {

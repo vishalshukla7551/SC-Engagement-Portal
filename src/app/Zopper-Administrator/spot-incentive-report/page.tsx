@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaDownload, FaSignOutAlt, FaSpinner, FaCheckDouble, FaTrashAlt, FaCheckSquare, FaSquare } from 'react-icons/fa';
+import { FaDownload, FaSignOutAlt, FaSpinner, FaCheckDouble, FaTrashAlt, FaCheckSquare, FaSquare, FaUpload, FaTimes } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import { clientLogout } from '@/lib/clientLogout';
 
@@ -109,6 +109,11 @@ export default function SpotIncentiveReport() {
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  // Import State
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === reports.length && reports.length > 0) {
@@ -282,13 +287,56 @@ export default function SpotIncentiveReport() {
       'Voucher Code': report.voucherCode || '',
       'Campaign Active': report.isCompaignActive ? 'Yes' : 'No',
       'Paid Date': report.paidAt ? formatDateWithTime(report.paidAt).date : '',
-      'Action Required': report.isPaid ? 'None' : 'Mark Paid Available'
+      'Action Required': report.isPaid ? 'None' : 'Mark Paid Available',
+      'Approved': '' // Empty column for manual approval marking
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Spot Incentive Report');
     XLSX.writeFile(wb, `spot-incentive-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setImportLoading(true);
+      setImportResult(null);
+      setImportModalOpen(true);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/zopper-administrator/spot-incentive-report/import', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setImportResult(result);
+        // Refresh data after successful import
+        fetchData();
+      } else {
+        setImportResult({
+          success: false,
+          error: result.error || 'Failed to import file'
+        });
+      }
+    } catch (error) {
+      console.error('Error importing file:', error);
+      setImportResult({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+    } finally {
+      setImportLoading(false);
+      // Reset file input
+      event.target.value = '';
+    }
   };
 
   return (
@@ -388,6 +436,16 @@ export default function SpotIncentiveReport() {
             <FaDownload size={14} />
             Export
           </button>
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-[0_10px_30px_rgba(37,99,235,0.4)] cursor-pointer">
+            <FaUpload size={14} />
+            Import
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleImportFile}
+              className="hidden"
+            />
+          </label>
         </section>
 
         {/* Bulk Actions Bar - Only visible when items selected */}
@@ -595,6 +653,110 @@ export default function SpotIncentiveReport() {
             >
               Next
             </button>
+          </div>
+        )}
+
+        {/* Import Modal */}
+        {importModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-neutral-200 p-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-neutral-900">Import Results</h2>
+                <button
+                  onClick={() => setImportModalOpen(false)}
+                  className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                >
+                  <FaTimes size={20} />
+                </button>
+              </div>
+
+              <div className="p-6">
+                {importLoading ? (
+                  <div className="text-center py-12">
+                    <FaSpinner className="animate-spin mx-auto mb-4 text-blue-600" size={40} />
+                    <p className="text-neutral-600">Processing Excel file...</p>
+                  </div>
+                ) : importResult ? (
+                  <div>
+                    {importResult.success ? (
+                      <div>
+                        {/* Summary */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                          <div className="bg-blue-50 rounded-lg p-4">
+                            <div className="text-xs text-blue-600 font-medium mb-1">Total Rows</div>
+                            <div className="text-2xl font-bold text-blue-900">{importResult.summary.total}</div>
+                          </div>
+                          <div className="bg-emerald-50 rounded-lg p-4">
+                            <div className="text-xs text-emerald-600 font-medium mb-1">Approved</div>
+                            <div className="text-2xl font-bold text-emerald-900">{importResult.summary.approved}</div>
+                          </div>
+                          <div className="bg-amber-50 rounded-lg p-4">
+                            <div className="text-xs text-amber-600 font-medium mb-1">Skipped</div>
+                            <div className="text-2xl font-bold text-amber-900">{importResult.summary.skipped}</div>
+                          </div>
+                          <div className="bg-red-50 rounded-lg p-4">
+                            <div className="text-xs text-red-600 font-medium mb-1">Errors</div>
+                            <div className="text-2xl font-bold text-red-900">{importResult.summary.errors + importResult.summary.notFound}</div>
+                          </div>
+                        </div>
+
+                        {/* Details */}
+                        {importResult.details && importResult.details.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Processing Details</h3>
+                            <div className="max-h-96 overflow-y-auto border border-neutral-200 rounded-lg">
+                              <table className="w-full">
+                                <thead className="bg-neutral-50 sticky top-0">
+                                  <tr>
+                                    <th className="text-left p-3 text-xs font-medium text-neutral-600">Report ID</th>
+                                    <th className="text-left p-3 text-xs font-medium text-neutral-600">Status</th>
+                                    <th className="text-left p-3 text-xs font-medium text-neutral-600">Message</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-100">
+                                  {importResult.details.map((detail: any, idx: number) => (
+                                    <tr key={idx} className="hover:bg-neutral-50">
+                                      <td className="p-3 text-sm text-neutral-900 font-mono">{detail.reportId}</td>
+                                      <td className="p-3">
+                                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${detail.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                                            detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
+                                              detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
+                                                'bg-red-100 text-red-700'
+                                          }`}>
+                                          {detail.status.replace('_', ' ')}
+                                        </span>
+                                      </td>
+                                      <td className="p-3 text-sm text-neutral-600">{detail.message}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+                          <FaTimes className="text-red-600" size={24} />
+                        </div>
+                        <h3 className="text-lg font-semibold text-neutral-900 mb-2">Import Failed</h3>
+                        <p className="text-neutral-600">{importResult.error}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 p-6">
+                <button
+                  onClick={() => setImportModalOpen(false)}
+                  className="w-full px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
