@@ -11,7 +11,7 @@ import ButtonLoader from '@/components/ButtonLoader';
 export default function SECLogin() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [agreed, setAgreed] = useState(false);
+
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
   const [validationMessage, setValidationMessage] = useState('');
@@ -91,10 +91,7 @@ export default function SECLogin() {
       return;
     }
 
-    if (!agreed) {
-      alert('Please agree to the Terms of Service and Privacy Policy');
-      return;
-    }
+
 
     setPhoneNumber(digitsOnly);
     setValidationMessage('Valid number');
@@ -336,21 +333,6 @@ export default function SECLogin() {
                 {error}
               </p>
             )}
-          </div>
-
-          <div className="flex items-start">
-            <div className="flex items-center h-5">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer"
-              />
-            </div>
-            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-              I have read and agree.
-            </label>
           </div>
 
 

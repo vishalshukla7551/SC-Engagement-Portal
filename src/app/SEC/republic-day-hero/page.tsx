@@ -353,7 +353,7 @@ export default function RepublicDayHeroPage() {
     const [loading, setLoading] = useState(true);
     const [showTerms, setShowTerms] = useState(false);
     const [showRewards, setShowRewards] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
     const [animatedRankIndex, setAnimatedRankIndex] = useState(0); // For progressive avatar jump animation
 
     useEffect(() => {
@@ -535,7 +535,7 @@ export default function RepublicDayHeroPage() {
 
                     <div className="flex items-center gap-4 bg-white/60 backdrop-blur-sm p-2 sm:p-3 rounded-2xl border border-white shadow-sm">
                         <div className="text-right">
-                            <p className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wide" style={{ fontFamily: 'Poppins, sans-serif' }}>Current Sales</p>
+                            <p className="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wide" style={{ fontFamily: 'Poppins, sans-serif' }}>Current Points</p>
                             <motion.p
                                 className="text-lg sm:text-2xl font-extrabold bg-gradient-to-r from-orange-500 via-blue-700 to-green-600 bg-clip-text text-transparent bg-[length:200%_auto]"
                                 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}
@@ -548,12 +548,10 @@ export default function RepublicDayHeroPage() {
                                     y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
                                 }}
                             >
-                                ₹{currentSales.toLocaleString('en-IN')}
+                                {currentSales.toLocaleString('en-IN')}
                             </motion.p>
                         </div>
-                        <div className="bg-orange-100 p-1.5 sm:p-2 rounded-full">
-                            <Award className="text-orange-600" size={20} />
-                        </div>
+
                     </div>
                 </header>
 
@@ -1036,83 +1034,36 @@ export default function RepublicDayHeroPage() {
                     </motion.div>
                 </div>
 
-                {/* Side Action Buttons - Right Side Top - Collapsible */}
-                <motion.div
-                    className="fixed right-0 top-20 flex flex-col items-end z-40"
-                    initial={{ x: 0 }}
-                    animate={{ x: isSidebarOpen ? 0 : 120 }} // Slide out to right, leaving only toggle visible if we structure it right
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                >
-                    {/* Container for Buttons and Toggle */}
-                    <div className="flex items-start">
-
-                        {/* Toggle Button - Shifts with the container */}
-                        <button
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="mr-2 mt-2 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-md rounded-full shadow-md text-slate-600 border border-white/50 hover:bg-white transition-colors"
+                {/* Side Action Buttons - Right Side Top - Always Visible */}
+                <div className="fixed right-0 top-20 flex flex-col items-end z-40">
+                    <div className="flex flex-col gap-3">
+                        <motion.button
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            whileHover={{ x: -8 }}
+                            onClick={() => setShowRewards(true)}
+                            className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all w-[130px]"
                         >
-                            {/* User requested: Left arrow to hide, Right arrow to show (pull in) */}
-                            {/* If Open (Visible), show Left Arrow to click and Hide? 
-                                User said "give left arrow so if anyone click... then shift hide"
-                                If Hidden, show Right Arrow to "pull in"? 
-                                
-                                Wait, if it slides to the RIGHT to hide:
-                                - To bring it back (pull LEFT), we usually use a Left Arrow (<).
-                                - To hide it (push RIGHT), we usually use a Right Arrow (>).
-                                
-                                User logic seems: "show right arrow to pull in". 
-                                If "pull in" means bring to screen (move left), then arrow usually points to direction of movement (Left).
-                                But maybe user thinks "Right arrow" means "Expand"?
-                                
-                                Let's stick to standard behavior which is clearer, but swap icons if it looks wrong.
-                                Standard: 
-                                - Expanded: Show ChevronRight (>) to collapse.
-                                - Collapsed: Show ChevronLeft (<) to expand.
-                                
-                                User request: "left arrow... hide". "right arrow... pull in".
-                                This matches:
-                                Open -> Show Left Arrow (<) -> Click -> Hides.
-                                Closed -> Show Right Arrow (>) -> Click -> Shows.
-                                
-                                This implies the panel moves LEFT to hide? No, panel is on right.
-                                If panel is on right, moving left brings it center (more visible). moving right hides it.
-                                
-                                Let's implement icons based on the user's literal request first.
-                                Open state: Show Left Arrow (<). Click -> Hide.
-                                Closed state: Show Right Arrow (>). Click -> Show.
-                            */}
-                            {isSidebarOpen ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-                        </button>
+                            <div className="bg-orange-100 p-2 rounded-xl group-hover:bg-orange-200 transition-colors shrink-0">
+                                <Gift className="text-orange-600" size={18} />
+                            </div>
+                            <span className="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-widest leading-none pr-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Rewards</span>
+                        </motion.button>
 
-                        <div className="flex flex-col gap-3">
-                            <motion.button
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                whileHover={{ x: -8 }}
-                                onClick={() => setShowRewards(true)}
-                                className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all w-[130px]"
-                            >
-                                <div className="bg-orange-100 p-2 rounded-xl group-hover:bg-orange-200 transition-colors shrink-0">
-                                    <Gift className="text-orange-600" size={18} />
-                                </div>
-                                <span className="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-widest leading-none pr-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Rewards</span>
-                            </motion.button>
-
-                            <motion.button
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                whileHover={{ x: -8 }}
-                                onClick={() => setShowTerms(true)}
-                                className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all w-[130px]"
-                            >
-                                <div className="bg-blue-100 p-2 rounded-xl group-hover:bg-blue-200 transition-colors shrink-0">
-                                    <FileText className="text-blue-600" size={18} />
-                                </div>
-                                <span className="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-widest leading-none pr-1" style={{ fontFamily: 'Poppins, sans-serif' }}>T&C</span>
-                            </motion.button>
-                        </div>
+                        <motion.button
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            whileHover={{ x: -8 }}
+                            onClick={() => setShowTerms(true)}
+                            className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all w-[130px]"
+                        >
+                            <div className="bg-blue-100 p-2 rounded-xl group-hover:bg-blue-200 transition-colors shrink-0">
+                                <FileText className="text-blue-600" size={18} />
+                            </div>
+                            <span className="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-widest leading-none pr-1" style={{ fontFamily: 'Poppins, sans-serif' }}>T&C</span>
+                        </motion.button>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Modals */}
                 <AnimatePresence>
@@ -1131,6 +1082,6 @@ export default function RepublicDayHeroPage() {
           scrollbar-width: none;
         }
       `}</style>
-        </div>
+        </div >
     );
 }
