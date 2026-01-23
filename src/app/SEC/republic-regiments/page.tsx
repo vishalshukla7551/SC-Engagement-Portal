@@ -315,17 +315,6 @@ export default function RegimentsPage() {
                     </p>
                 </div>
 
-                {/* Search Bar */}
-                <div className="relative max-w-md mx-auto mb-10">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-stone-400" />
-                    </div>
-                    <input
-                        type="text"
-                        className="block w-full pl-10 pr-3 py-3 border-2 border-stone-300/50 rounded-xl leading-5 bg-white/60 backdrop-blur-md text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm shadow-sm transition-all font-mono uppercase"
-                        placeholder="SEARCH MATRIX DATABASE..."
-                    />
-                </div>
 
                 {/* Main Content Area - Responsive Table */}
                 <div className="max-w-6xl mx-auto overflow-hidden rounded-xl border-2 border-stone-300 shadow-xl bg-white/80 backdrop-blur-sm relative mb-4 md:mb-20">
