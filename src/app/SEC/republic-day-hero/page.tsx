@@ -24,7 +24,7 @@ const RANKS = [
     { id: 'cadet', title: 'SALESVEER', minSales: 0, color: 'bg-stone-400', icon: Shield },
     { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 21000, color: 'bg-emerald-500', icon: Star },
     { id: 'captain', title: 'SALES CAPTAIN', minSales: 51000, color: 'bg-blue-500', icon: Award },
-    { id: 'major', title: 'SALES MAJOR', minSales: 90000, color: 'bg-indigo-600', icon: Award },
+    { id: 'major', title: 'SALES MAJOR', minSales: 80000, color: 'bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
     { id: 'general', title: 'SALES GENERAL', minSales: 150000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
@@ -224,9 +224,13 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                 <div className="p-6 bg-slate-50 border-t border-slate-100 text-center">
                     <button
                         onClick={onClose}
-                        className="w-full py-3 bg-[#000080] text-white rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-blue-900/20 active:scale-95 transition-transform"
+                        className="w-full text-white font-bold py-3 rounded-xl uppercase tracking-wider shadow-lg hover:shadow-xl active:scale-95 transition-all relative overflow-hidden group"
+                        style={{
+                            background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                        }}
                     >
-                        I Understand
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                        <span className="relative">I Understand</span>
                     </button>
                 </div>
             </motion.div>
@@ -268,7 +272,7 @@ const RewardsModal = ({ isOpen, onClose, currentRankIndex }: { isOpen: boolean, 
                             { title: 'SALES VEER', message: 'Start Now', reward: 'Get Started', minSales: 0 },
                             { title: 'SALES LIEUTENANT', message: 'Honor and congratulations on achieving your new rank!', reward: 'Recognition', minSales: 21000 },
                             { title: 'SALES CAPTAIN', message: 'Don\'t stop here—after all, you are the Sales Captain of Sales!', reward: 'Prestige', minSales: 51000 },
-                            { title: 'SALES MAJOR', message: 'Outstanding achievement! Your dedication is paying off.', reward: '₹500', minSales: 90000 },
+                            { title: 'SALES MAJOR', message: 'Outstanding achievement! Your dedication is paying off.', reward: '₹500', minSales: 80000 },
                             { title: 'SALES COMMANDER', message: 'Exceptional performance! Lead by example and inspire others.', reward: '₹1,500', minSales: 120000 },
                             { title: 'SALES CHIEF MARSHAL', message: 'Elite status achieved! You\'re among the top performers.', reward: '₹2,500', minSales: 150000 },
                             { title: 'SALES GENERAL', message: 'Supreme excellence! Only ONE person tops the Hall of Fame!', reward: '₹5,000', minSales: 150000 }
@@ -1000,23 +1004,34 @@ export default function RepublicDayHeroPage() {
                         <div className="flex flex-col gap-3 w-full">
                             <button
                                 onClick={() => router.push('/SEC/incentive-form')}
-                                className="w-full py-2.5 bg-[#000080] text-white rounded-xl font-bold text-sm shadow-[0_10px_20px_-5px_rgba(0,0,128,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(0,0,128,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
-                                style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
+                                className="w-full text-white font-bold py-3 rounded-xl transition-all text-sm shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
+                                style={{
+                                    background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)',
+                                    fontFamily: 'Poppins, sans-serif',
+                                    fontWeight: 700
+                                }}
                             >
-                                <span className="relative z-10 uppercase">Submit Your Sales</span>
-                                <ChevronRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
-
-                                {/* Button Hover Glow */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#000080] via-[#1a1a90] to-[#000080] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                <div className="relative flex items-center justify-center gap-2">
+                                    <span className="uppercase">Submit Your Sales</span>
+                                    <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" strokeWidth={3} />
+                                </div>
                             </button>
 
                             <button
                                 onClick={() => router.push('/SEC/republic-leaderboard')}
-                                className="w-full py-2.5 bg-white text-[#000080] border-2 border-[#000080] rounded-xl font-bold text-sm shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
-                                style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700 }}
+                                className="w-full text-white font-bold py-3 rounded-xl transition-all text-sm shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
+                                style={{
+                                    background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)',
+                                    fontFamily: 'Poppins, sans-serif',
+                                    fontWeight: 700
+                                }}
                             >
-                                <span className="relative z-10 uppercase">HALL OF FAME</span>
-                                <Award size={18} className="relative z-10 group-hover:scale-110 transition-transform" strokeWidth={2} />
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                <div className="relative flex items-center justify-center gap-2">
+                                    <span className="uppercase">HALL OF FAME</span>
+                                    <Award size={18} className="group-hover:scale-110 transition-transform" strokeWidth={2} />
+                                </div>
                             </button>
                         </div>
                     </motion.div>

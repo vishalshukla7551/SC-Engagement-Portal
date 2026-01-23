@@ -9,12 +9,13 @@ import { getHomePathForRole } from '@/lib/roleHomePath';
 import ButtonLoader from '@/components/ButtonLoader';
 
 // Pre-calculate Ashok Chakra spokes to avoid hydration mismatch
+// Round to fixed precision to ensure exact SSR/client match
 const ASHOK_CHAKRA_SPOKES = Array.from({ length: 24 }).map((_, i) => {
   const angle = (i * 15 * Math.PI) / 180;
-  const x1 = 12 + 2 * Math.cos(angle);
-  const y1 = 12 + 2 * Math.sin(angle);
-  const x2 = 12 + 10 * Math.cos(angle);
-  const y2 = 12 + 10 * Math.sin(angle);
+  const x1 = Number((12 + 2 * Math.cos(angle)).toFixed(6));
+  const y1 = Number((12 + 2 * Math.sin(angle)).toFixed(6));
+  const x2 = Number((12 + 10 * Math.cos(angle)).toFixed(6));
+  const y2 = Number((12 + 10 * Math.sin(angle)).toFixed(6));
   return `M${x1} ${y1}L${x2} ${y2}`;
 });
 
