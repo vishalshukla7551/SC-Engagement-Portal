@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/sec/incentive-form/plans?deviceId=xxx
  * Get all plans for a specific device
@@ -29,19 +31,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Check if this is a device that should only show SCREEN_PROTECT_2_YR
-    const devicesWithOnly2YrScreenProtection: { category: string; modelName: string }[] = [];
-
-    const isRestricted2YrDevice = devicesWithOnly2YrScreenProtection.some(
-      (d) => d.category === device.Category && d.modelName === device.ModelName
-    );
-
     // Get all plans for this device
     const plans = await prisma.plan.findMany({
       where: {
         samsungSKUId: deviceId,
-        // If this is a restricted device, only show SCREEN_PROTECT_2_YR
-        ...(isRestricted2YrDevice && { planType: 'SCREEN_PROTECT_2_YR' }),
       },
       orderBy: {
         price: 'asc',
@@ -76,6 +69,12 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       plans: formattedPlans,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     });
   } catch (error) {
     console.error('Error fetching plans:', error);
