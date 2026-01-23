@@ -89,7 +89,7 @@ export default function LandingPage({ userName = '' }) {
       icon: '📢',
       bgGradient: 'from-[#ea580c] via-[#f97316] to-[#fbbf24]',
       iconBg: 'bg-white/20',
-      link: '/SEC/claim-procedure',
+      link: 'https://www.samsung.com/in/offer/samsung-care-plus/login/?usertype=customer',
       badge: 'GUIDE 📘'
     },
     {
@@ -248,6 +248,8 @@ export default function LandingPage({ userName = '' }) {
             <Link
               key={feature.id}
               href={feature.link}
+              target={feature.link.startsWith('http') ? '_blank' : undefined}
+              rel={feature.link.startsWith('http') ? 'noopener noreferrer' : undefined}
               className="block group"
             >
               <div
