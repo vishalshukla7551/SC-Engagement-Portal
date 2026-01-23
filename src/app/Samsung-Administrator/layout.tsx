@@ -1,13 +1,13 @@
 'use client';
 
-import { useRequireAuth } from '@/lib/clientAuth';
+import { useAuth } from '@/context/AuthContext';
 
 export default function SamsungAdministratorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { loading } = useRequireAuth({ enabled: true });
+  const { loading } = useAuth();
 
   if (loading) {
     return null; // or a loading spinner

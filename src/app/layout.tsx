@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { GlobalAuthInterceptor } from "@/components/GlobalAuthInterceptor";
-
-// Google fonts removed for build-time reliability; using system fonts via CSS
+import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
   title: "SalesDost - Welcome",
   description: "Sales incentive management platform",
 };
-
-import { AuthGate } from "@/components/AuthGate";
 
 export default function RootLayout({
   children,
@@ -19,11 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`antialiased`}>
-        {/* Global client-side 401 handler: if any fetch returns 401, trigger logout */}
         <GlobalAuthInterceptor />
-        <AuthGate>
+        <AuthProvider>
           {children}
-        </AuthGate>
+        </AuthProvider>
       </body>
     </html>
   );
