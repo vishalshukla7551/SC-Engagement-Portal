@@ -33,7 +33,7 @@ export default function RepublicFooter() {
         },
         {
             id: 'form',
-            label: 'Incentive\nForm',
+            label: 'Sales\nForm',
             href: '/SEC/incentive-form',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>

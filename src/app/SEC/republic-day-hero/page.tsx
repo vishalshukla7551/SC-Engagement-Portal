@@ -185,7 +185,7 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                 <div className="p-6 overflow-y-auto space-y-4 text-slate-600 text-sm leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
                     <div>
                         <p className="font-bold text-slate-800 mb-1">1. Campaign Period</p>
-                        <p>The PROTECTMAX YODHA Campaign (Honour & Glory Path) is valid from 23rd January 2026 to 31st January 2026.</p>
+                        <p>The PROTECTMAXYODHA Campaign (Honour & Glory Path) is valid from 23rd January 2026 to 31st January 2026.</p>
                     </div>
 
                     <div>
@@ -258,7 +258,7 @@ const RewardsModal = ({ isOpen, onClose, currentRankIndex }: { isOpen: boolean, 
                         >
                             <Gift size={20} />
                         </motion.div>
-                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>ProtectMax Yodha Rewards</h3>
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>ProtectMaxYodha Rewards</h3>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400">
                         <X size={24} />
