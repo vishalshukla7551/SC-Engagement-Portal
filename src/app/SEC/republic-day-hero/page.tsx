@@ -366,6 +366,7 @@ export default function RepublicDayHeroPage() {
     const [loading, setLoading] = useState(true);
     const [showTerms, setShowTerms] = useState(false);
     const [showRewards, setShowRewards] = useState(false);
+    const [hasBonus, setHasBonus] = useState(false);
 
     const [animatedRankIndex, setAnimatedRankIndex] = useState(0); // For progressive avatar jump animation
 
@@ -383,6 +384,9 @@ export default function RepublicDayHeroPage() {
 
                     // Set rank sales immediately to avoid avatar jumping during count animation
                     setRankSales(userRealSales);
+                    
+                    // Set bonus flag from API response
+                    setHasBonus(data.data.hasBonus || false);
 
                     // Animate count up
                     let start = 0;
@@ -504,7 +508,7 @@ export default function RepublicDayHeroPage() {
             onClick={handleGlobalInteraction}
         >
             {/* Republic Day Bonus Popup */}
-            <RepublicDayBonusPopup />
+            <RepublicDayBonusPopup hasBonus={hasBonus} />
 
             {/* SEPARATE ANIMATION LAYER */}
             {/* This container handles all background animations and jets to isolate repaints */}
