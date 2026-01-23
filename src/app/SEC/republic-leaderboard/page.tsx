@@ -17,13 +17,14 @@ import Image from 'next/image';
 import RepublicFooter from '@/components/RepublicFooter';
 
 // Rank Configuration (Updated Titles matching Backend)
+// SALES GENERAL is locked - will be awarded after campaign ends on Jan 31
 const RANKS = [
-    { id: 'brigadier', title: 'Sales Chief Marshal', color: 'from-orange-500 to-orange-700', icon: Star, min: '₹1.5L' },
-    { id: 'colonel', title: 'Sales Commander', color: 'from-purple-500 to-purple-700', icon: Award, min: '₹1.2L' },
-    { id: 'major', title: 'Sales Major', color: 'from-indigo-500 to-indigo-700', icon: Award, min: '₹90k' },
-    { id: 'captain', title: 'Sales Captain', color: 'from-blue-500 to-blue-700', icon: Award, min: '₹51k' },
-    { id: 'lieutenant', title: 'Sales Lieutenant', color: 'from-emerald-500 to-emerald-700', icon: Star, min: '₹21k' },
-    { id: 'cadet', title: 'Salesveer', color: 'from-stone-400 to-stone-600', icon: Shield, min: '₹0' },
+    { id: 'brigadier', title: 'Sales Chief Marshal', color: 'from-orange-500 to-orange-700', icon: Star, min: '1.5L+' },
+    { id: 'colonel', title: 'Sales Commander', color: 'from-purple-500 to-purple-700', icon: Award, min: '1.2L' },
+    { id: 'major', title: 'Sales Major', color: 'from-indigo-500 to-indigo-700', icon: Award, min: '90k' },
+    { id: 'captain', title: 'Sales Captain', color: 'from-blue-500 to-blue-700', icon: Award, min: '51k' },
+    { id: 'lieutenant', title: 'Sales Lieutenant', color: 'from-emerald-500 to-emerald-700', icon: Star, min: '21k' },
+    { id: 'cadet', title: 'Sales Veer', color: 'from-stone-400 to-stone-600', icon: Shield, min: '0' },
 ];
 
 const IndianFlag = ({ size = 24 }: { size?: number }) => (
@@ -366,7 +367,7 @@ export default function RepublicLeaderboardPage() {
                                                 </div>
                                                 <div>
                                                     <h2 className="font-black text-lg uppercase tracking-wider font-poppins text-shadow-sm">{rank.title}</h2>
-                                                    <p className="text-[10px] font-medium opacity-90 uppercase tracking-widest">{rank.min}+ Revenue</p>
+                                                    <p className="text-[10px] font-medium opacity-90 uppercase tracking-widest">{rank.min}+ Honour Points</p>
                                                 </div>
                                             </div>
 

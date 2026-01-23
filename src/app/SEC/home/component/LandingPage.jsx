@@ -19,6 +19,8 @@ export default function LandingPage({ userName = '' }) {
       isImageBanner: true,
       imageSrc: '/images/banner3.jpeg',
       imageAlt: 'Special Promotion Banner',
+      link: '/SEC/republic-leaderboard',
+      showLiveBadge: true,
     },
     {
       id: 1,
@@ -34,6 +36,8 @@ export default function LandingPage({ userName = '' }) {
       imageSrc: '/images/banner1.jpeg',
       imageAlt: 'Republic Day Banner 1',
       showTextOverlay: true,
+      link: '/SEC/republic-day-hero',
+      showLiveBadge: true,
     },
     {
       id: 2,
@@ -164,6 +168,17 @@ export default function LandingPage({ userName = '' }) {
                               {banner.validity}
                             </p>
                           )}
+                        </div>
+                      )}
+
+                      {/* LIVE Badge for special banners */}
+                      {banner.showLiveBadge && (
+                        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-5 md:right-5 bg-red-600 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-lg border-2 border-white animate-pulse flex items-center gap-1">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                          </span>
+                          LIVE
                         </div>
                       )}
                     </a>

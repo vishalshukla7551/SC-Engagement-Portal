@@ -168,7 +168,7 @@ const RANKS = [
     { title: 'Sales Major', shortTitle: 'Major', icon: Shield },
     { title: 'Sales Captain', shortTitle: 'Captain', icon: Target },
     { title: 'Sales Lieutenant', shortTitle: 'Lieutenant', icon: Star },
-    { title: 'Salesveer', shortTitle: 'Salesveer', icon: Shield }
+    { title: 'Sales Veer', shortTitle: 'Sales Veer', icon: Shield }
 ];
 
 // --- Mock Names for Detail View ---

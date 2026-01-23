@@ -27,7 +27,7 @@ const RANKS = [
     { id: 'major', title: 'SALES MAJOR', minSales: 90000, color: 'bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
-    { id: 'general', title: 'SALES GENERAL', minSales: 200000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
+    { id: 'general', title: 'SALES GENERAL', minSales: 150000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
 ];
 
 const IndianFlag = ({ size = 20 }: { size?: number }) => (
@@ -185,7 +185,7 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                 <div className="p-6 overflow-y-auto space-y-4 text-slate-600 text-sm leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
                     <div>
                         <p className="font-bold text-slate-800 mb-1">1. Campaign Period</p>
-                        <p>The Republic Day Special Campaign (Honour & Glory Path) is valid from 20th January 2026 to 28th January 2026.</p>
+                        <p>The PROTECTMAX YODHA Campaign (Honour & Glory Path) is valid from 23rd January 2026 to 31st January 2026.</p>
                     </div>
 
                     <div>
@@ -194,21 +194,30 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                     </div>
 
                     <div>
-                        <p className="font-bold text-slate-800 mb-1">3. Rank Progression & Rewards</p>
+                        <p className="font-bold text-slate-800 mb-1">3. Honour Points System</p>
                         <ul className="list-disc pl-5 space-y-1">
-                            <li>Ranks are assigned based on cumulative sales achieved during the campaign period.</li>
-                            <li>Incentives are calculated based on the highest rank achieved.</li>
-                            <li>Sales must be successfully submitted and verified via the portal to count towards rank progression.</li>
+                            <li>You need to earn Honour Points to progress through the ranks.</li>
+                            <li>Each ₹1 of plan sales revenue achieved translates to 1 Honour Point.</li>
+                            <li>Ranks are achieved based on the total Honour Points accumulated during the campaign period.</li>
                         </ul>
                     </div>
 
                     <div>
-                        <p className="font-bold text-slate-800 mb-1">4. Verification Process</p>
+                        <p className="font-bold text-slate-800 mb-1">4. Rank Progression & Rewards</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                            <li>Ranks are assigned based on cumulative Honour Points earned during the campaign period.</li>
+                            <li>Incentives are calculated based on the highest rank achieved.</li>
+                            <li>Sales must be successfully submitted and verified via the portal to count towards Honour Points and rank progression.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p className="font-bold text-slate-800 mb-1">5. Verification Process</p>
                         <p>All sales entries (IMEIs) will undergo mandatory verification. Fraudulent entries will lead to immediate disqualification from the campaign and further disciplinary action.</p>
                     </div>
 
                     <div>
-                        <p className="font-bold text-slate-800 mb-1">5. Final Authority</p>
+                        <p className="font-bold text-slate-800 mb-1">6. Final Authority</p>
                         <p>The management reserves the right to modify, extend, or terminate the campaign at its sole discretion without prior notice. Decisions regarding reward distribution are final and binding.</p>
                     </div>
                 </div>
@@ -245,7 +254,7 @@ const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => voi
                         >
                             <Gift size={20} />
                         </motion.div>
-                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>Republic Hero Rewards</h3>
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>ProtectMax Yodha Rewards</h3>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400">
                         <X size={24} />
@@ -256,13 +265,13 @@ const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => voi
 
                     {(() => {
                         const rewardData = [
-                            { title: 'SALES VEER', message: 'Start your sales journey to earn exciting rewards!', reward: 'Get Started', minSales: 0 },
+                            { title: 'SALES VEER', message: 'Start Now', reward: 'Get Started', minSales: 0 },
                             { title: 'SALES LIEUTENANT', message: 'Honor and congratulations on achieving your new rank!', reward: 'Recognition', minSales: 21000 },
                             { title: 'SALES CAPTAIN', message: 'Don\'t stop here—after all, you are the Sales Captain of Sales!', reward: 'Prestige', minSales: 51000 },
                             { title: 'SALES MAJOR', message: 'Outstanding achievement! Your dedication is paying off.', reward: '₹500', minSales: 90000 },
                             { title: 'SALES COMMANDER', message: 'Exceptional performance! Lead by example and inspire others.', reward: '₹1,500', minSales: 120000 },
                             { title: 'SALES CHIEF MARSHAL', message: 'Elite status achieved! You\'re among the top performers.', reward: '₹2,500', minSales: 150000 },
-                            { title: 'SALES GENERAL', message: 'Supreme excellence! Only ONE person tops the Hall of Fame!', reward: '₹5,000', minSales: 200000 }
+                            { title: 'SALES GENERAL', message: 'Supreme excellence! Only ONE person tops the Hall of Fame!', reward: '₹5,000', minSales: 150000 }
                         ];
                         return rewardData.map((item, i) => {
                             const rank = RANKS[i];
@@ -274,8 +283,8 @@ const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => voi
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.08 }}
                                     className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 transition-all hover:scale-[1.02] ${isTopRank
-                                            ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
-                                            : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
+                                        ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
+                                        : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
                                         }`}
                                 >
                                     {isTopRank && (
@@ -291,8 +300,8 @@ const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => voi
                                             <h4 className="font-black text-slate-800 text-sm tracking-tight mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>{item.title}</h4>
                                             <p className="text-xs text-slate-600 leading-relaxed mb-2">{item.message}</p>
                                             <div className="flex items-center gap-2 mt-2">
-                                                <span className="text-[10px] text-slate-400 font-semibold uppercase">Target:</span>
-                                                <span className="text-xs font-bold text-[#000080]">{item.minSales === 0 ? 'Start Now' : `₹${item.minSales.toLocaleString('en-IN')}+`}</span>
+                                                <span className="text-[10px] text-slate-400 font-semibold uppercase">Honour Points:</span>
+                                                <span className="text-xs font-bold text-[#000080]">{item.minSales === 0 ? '0' : item.title === 'SALES GENERAL' ? '1.5 lacs plus' : item.minSales.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
@@ -384,7 +393,7 @@ export default function RepublicDayHeroPage() {
                     }, stepTime);
                 }
             } catch (error) {
-                console.error("Failed to fetch republic hero sales", error);
+                console.error("Failed to fetch protectmax yodha sales", error);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -933,10 +942,10 @@ export default function RepublicDayHeroPage() {
                         <div className="mt-1 mb-3">
                             <h3 className="text-lg font-black text-slate-800 mb-0.5" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}>{nextRank ? nextRank.title : 'Mission Accomplished!'}</h3>
                             <div className="flex flex-col items-center justify-center gap-1.5">
-                                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold" style={{ fontFamily: 'Poppins, sans-serif' }}>Objective</p>
+                                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold" style={{ fontFamily: 'Poppins, sans-serif' }}>Honour Points</p>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-xl font-black bg-gradient-to-r from-orange-500 via-purple-600 to-green-600 bg-clip-text text-transparent" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900, letterSpacing: '-0.02em' }}>
-                                        ₹{nextRank?.minSales.toLocaleString('en-IN')}
+                                        {nextRank?.minSales.toLocaleString('en-IN')}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">

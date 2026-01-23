@@ -349,20 +349,7 @@ export default function SECLogin() {
               />
             </div>
             <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-              I have read and agree to the{' '}
-              <Link
-                href="/terms"
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link
-                href="/privacy"
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Privacy Policy
-              </Link>
+              I have read and agree.
             </label>
           </div>
 

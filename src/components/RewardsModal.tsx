@@ -12,7 +12,7 @@ const RANKS = [
     { id: 'major', title: 'SALES MAJOR', minSales: 90000, color: ' bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
-    { id: 'general', title: 'SALES GENERAL', minSales: 200000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
+    { id: 'general', title: 'SALES GENERAL', minSales: 150000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
 ];
 
 interface RewardsModalProps {
@@ -27,7 +27,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({ isOpen, onClose }) =
     const rewardData = [
         {
             title: 'SALES VEER',
-            message: 'Start your sales journey to earn exciting rewards!',
+            message: 'Start Now',
             reward: 'Get Started',
             minSales: 0
         },
@@ -65,7 +65,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({ isOpen, onClose }) =
             title: 'SALES GENERAL',
             message: 'Supreme excellence! Only ONE person tops the Hall of Fame!',
             reward: '₹5,000',
-            minSales: 200000
+            minSales: 150000
         }
     ];
 
@@ -87,7 +87,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({ isOpen, onClose }) =
                         >
                             <Gift size={20} />
                         </motion.div>
-                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>Republic Hero Rewards</h3>
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>ProtectMax Yodha Rewards</h3>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400">
                         <X size={24} />
@@ -107,8 +107,8 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({ isOpen, onClose }) =
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.08 }}
                                 className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 transition-all hover:scale-[1.02] ${isTopRank
-                                        ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
-                                        : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
+                                    ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
+                                    : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
                                     }`}
                             >
                                 {isTopRank && (
@@ -129,9 +129,9 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({ isOpen, onClose }) =
                                             {item.message}
                                         </p>
                                         <div className="flex items-center gap-2 mt-2">
-                                            <span className="text-[10px] text-slate-400 font-semibold uppercase">Target:</span>
+                                            <span className="text-[10px] text-slate-400 font-semibold uppercase">Honour Points:</span>
                                             <span className="text-xs font-bold text-[#000080]">
-                                                {item.minSales === 0 ? 'Start Now' : `₹${item.minSales.toLocaleString('en-IN')}+`}
+                                                {item.minSales === 0 ? '0' : item.title === 'SALES GENERAL' ? '1.5 lacs plus' : item.minSales.toLocaleString('en-IN')}
                                             </span>
                                         </div>
                                     </div>

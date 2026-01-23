@@ -91,7 +91,33 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
         const res = await fetch('/api/sec/incentive-form/devices');
         if (res.ok) {
           const data = await res.json();
-          setDevices(data.devices || []);
+
+          // Define category priority for sorting
+          const categoryPriority = {
+            'Luxury': 1,
+            'Super': 2,  // For "Super Premium"
+            'Premium': 3,
+            'High': 4,
+            'Mid': 5,
+            'Mass': 6
+          };
+
+          // Sort devices by category priority
+          const sortedDevices = (data.devices || []).sort((a, b) => {
+            const categoryA = a.Category?.split(' ')[0] || '';
+            const categoryB = b.Category?.split(' ')[0] || '';
+            const priorityA = categoryPriority[categoryA] || 999;
+            const priorityB = categoryPriority[categoryB] || 999;
+
+            // If same category, sort alphabetically by model name
+            if (priorityA === priorityB) {
+              return (a.ModelName || '').localeCompare(b.ModelName || '');
+            }
+
+            return priorityA - priorityB;
+          });
+
+          setDevices(sortedDevices);
         }
       } catch (error) {
         console.error('Error fetching devices:', error);
@@ -449,13 +475,8 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   id="dateOfSale"
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
-                  max={(() => {
-                    // Get current date in IST
-                    const now = new Date();
-                    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
-                    const istDate = new Date(now.getTime() + istOffset);
-                    return istDate.toISOString().split('T')[0];
-                  })()}
+                  min="2026-01-23"
+                  max="2026-01-31"
                   onClick={(e) => e.target.showPicker?.()}
                   className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   placeholder="dd/mm/yyyy"
