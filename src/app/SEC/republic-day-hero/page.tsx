@@ -234,7 +234,7 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
     );
 };
 
-const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const RewardsModal = ({ isOpen, onClose, currentRankIndex }: { isOpen: boolean, onClose: () => void, currentRankIndex: number }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -276,18 +276,26 @@ const RewardsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => voi
                         return rewardData.map((item, i) => {
                             const rank = RANKS[i];
                             const isTopRank = i === rewardData.length - 1;
+                            const isCurrentRank = i === currentRankIndex;
                             return (
                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.08 }}
-                                    className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 transition-all hover:scale-[1.02] ${isTopRank
-                                        ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
-                                        : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
+                                    className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 transition-all hover:scale-[1.02] ${isCurrentRank
+                                        ? 'from-blue-50 to-indigo-50 border-blue-400 shadow-lg shadow-blue-300/50 ring-2 ring-blue-400'
+                                        : isTopRank
+                                            ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
+                                            : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
                                         }`}
                                 >
-                                    {isTopRank && (
+                                    {isCurrentRank && (
+                                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-md animate-pulse border border-blue-200">
+                                            ⭐ Your Rank
+                                        </div>
+                                    )}
+                                    {isTopRank && !isCurrentRank && (
                                         <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 via-yellow-500 to-orange-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-md animate-pulse border border-yellow-200">
                                             🏆 Top Honor
                                         </div>
@@ -520,10 +528,21 @@ export default function RepublicDayHeroPage() {
                 {/* Header Section */}
                 <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-6 gap-2 sm:gap-4 shrink-0">
                     <div>
-                        <div className="flex items-center gap-2 mb-1 bg-orange-50 w-fit px-3 py-1 rounded-full border border-orange-100">
-                            <IndianFlag size={18} />
-                            <span className="text-xs font-bold tracking-wider text-[#000080] uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>Republic Day Special</span>
-                            <IndianFlag size={18} />
+                        <div className="flex items-center gap-2 mb-1">
+                            {/* Back Button - Smaller and positioned before Republic Day Special */}
+                            <button
+                                onClick={() => router.push('/SEC/home')}
+                                className="p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white hover:scale-110 transition-all active:scale-95 border border-slate-200"
+                                aria-label="Go back to home"
+                            >
+                                <ChevronLeft className="text-slate-700" size={18} />
+                            </button>
+
+                            <div className="flex items-center gap-2 bg-orange-50 w-fit px-3 py-1 rounded-full border border-orange-100">
+                                <IndianFlag size={18} />
+                                <span className="text-xs font-bold tracking-wider text-[#000080] uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>Republic Day Special</span>
+                                <IndianFlag size={18} />
+                            </div>
                         </div>
                         <h1 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.03em' }}>
                             Honour & Glory <span className="text-[#FF9933]">Path</span>
@@ -1068,7 +1087,7 @@ export default function RepublicDayHeroPage() {
                 {/* Modals */}
                 <AnimatePresence>
                     {showTerms && <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />}
-                    {showRewards && <RewardsModal isOpen={showRewards} onClose={() => setShowRewards(false)} />}
+                    {showRewards && <RewardsModal isOpen={showRewards} onClose={() => setShowRewards(false)} currentRankIndex={currentRankIndex} />}
                 </AnimatePresence>
             </main>
 

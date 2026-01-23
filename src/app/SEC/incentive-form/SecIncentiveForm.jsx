@@ -583,7 +583,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   </option>
                   {plans.map((plan) => (
                     <option key={plan.id} value={plan.id}>
-                      {plan.label} - ₹{plan.price}
+                      {plan.label}
                     </option>
                   ))}
                 </select>
