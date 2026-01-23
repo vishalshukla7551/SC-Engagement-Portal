@@ -1,6 +1,6 @@
 'use client';
 
-import { useRequireAuth } from '@/lib/clientAuth';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -9,7 +9,7 @@ export default function SECLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { loading, user } = useRequireAuth({ enabled: true });
+  const { loading, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [checkingProfile, setCheckingProfile] = useState(true);

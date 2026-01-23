@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import RepublicDayBonusPopup from '@/components/RepublicDayBonusPopup';
 
 // Rank Data Configuration
 const RANKS = [
@@ -502,6 +503,8 @@ export default function RepublicDayHeroPage() {
             className="h-screen bg-slate-50 relative overflow-hidden font-sans"
             onClick={handleGlobalInteraction}
         >
+            {/* Republic Day Bonus Popup */}
+            <RepublicDayBonusPopup />
 
             {/* SEPARATE ANIMATION LAYER */}
             {/* This container handles all background animations and jets to isolate repaints */}

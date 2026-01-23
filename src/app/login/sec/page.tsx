@@ -54,20 +54,8 @@ export default function SECLogin() {
   }, [otpSent]);
 
   // If already logged in, redirect away from SEC login.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const raw = window.localStorage.getItem('authUser');
-    if (!raw) return;
-    try {
-      const user = JSON.parse(raw) as { role?: string };
-      if (user?.role) {
-        const target = getHomePathForRole(user.role);
-        router.replace(target);
-      }
-    } catch {
-      // ignore parse errors
-    }
-  }, [router]);
+  // REMOVED: authUser is only for UI display, not for auth decisions
+  // Auth is handled by cookies/tokens via AuthProvider
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;

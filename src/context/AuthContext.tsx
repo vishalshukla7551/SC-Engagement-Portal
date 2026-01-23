@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { clientLogout } from '@/lib/clientLogout';
 import { getHomePathForRole } from '@/lib/roleHomePath';
@@ -10,7 +10,14 @@ export type ClientAuthUser = {
   [key: string]: any;
 };
 
-// Map URL segments to required roles
+interface AuthContextType {
+  user: ClientAuthUser | null;
+  loading: boolean;
+  error: string | null;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 const URL_TO_ROLE_MAP: Record<string, string[]> = {
   'SEC': ['SEC'],
   'ASE': ['ASE'],
@@ -21,43 +28,28 @@ const URL_TO_ROLE_MAP: Record<string, string[]> = {
   'Samsung-Administrator': ['SAMSUNG_ADMINISTRATOR'],
 };
 
-/**
- * Extract required role from URL path
- */
 function getRequiredRoleFromUrl(pathname: string): string[] | null {
   const segments = pathname.split('/').filter(Boolean);
   const firstSegment = segments[0];
-
   return URL_TO_ROLE_MAP[firstSegment] || null;
 }
 
-/**
- * Read authUser from localStorage (client only). Returns null if missing or invalid.
- */
-export function readAuthUserFromStorage(): ClientAuthUser | null {
-  if (typeof window === 'undefined') return null;
-  const raw = window.localStorage.getItem('authUser');
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as ClientAuthUser;
-    return parsed ?? null;
-  } catch {
-    return null;
-  }
+const PUBLIC_PATHS = [
+  "/",
+  "/login/role",
+  "/login/sec",
+  "/signup",
+  "/terms",
+  "/privacy",
+];
+
+function isPublicPath(pathname: string) {
+  return PUBLIC_PATHS.some((p) =>
+    p === "/" ? pathname === "/" : pathname.startsWith(p)
+  );
 }
 
-/**
- * useRequireAuth
- *
- * Token-based auth verification with URL-based role enforcement.
- * - Tokens (HTTP-only cookies) are the single source of truth
- * - Required role is determined from URL path
- * - localStorage is only for UI display purposes
- *
- * Usage:
- *   const { user, loading, error } = useRequireAuth();
- */
-export function useRequireAuth(options?: { enabled?: boolean }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<ClientAuthUser | null>(null);
@@ -65,56 +57,74 @@ export function useRequireAuth(options?: { enabled?: boolean }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // If explicitly disabled (e.g. public routes), skip auth checks
-    if (options?.enabled === false) {
-      setLoading(false);
-      return;
-    }
-
     const verifyTokens = async () => {
       try {
-        // ✅ Get required role from URL
+        // Skip verification for public routes
+        if (isPublicPath(pathname)) {
+          setLoading(false);
+          return;
+        }
+
         const requiredRoles = getRequiredRoleFromUrl(pathname);
 
-        // ✅ Verify token with server (single source of truth)
         const res = await fetch('/api/auth/verify', {
-          credentials: 'include', // Send HTTP-only cookies
+          credentials: 'include',
         });
 
         if (!res.ok) {
           console.warn(`[auth] Token verification failed: ${res.status}`);
           void clientLogout();
+          setLoading(false);
           return;
         }
 
         const { data } = await res.json();
         const userRole = data.role;
 
-        console.log(`[auth] Token verified. User role: ${userRole}, Required: ${requiredRoles?.join(' or ') || 'any'}`);
-
-        // ✅ Check if user's role matches URL requirement
+        // Role-based URL protection
         if (requiredRoles && !requiredRoles.includes(userRole)) {
           setError(`Unauthorized: This page is for ${requiredRoles.join(' or ')} only`);
-          
-          // Redirect to user's correct home
           const homeUrl = getHomePathForRole(userRole);
           setTimeout(() => router.replace(homeUrl), 2000);
+          setLoading(false);
           return;
         }
 
-        // ✅ Update localStorage for UI display only (not for auth decisions)
+        // Update localStorage for UI display
         localStorage.setItem('authUser', JSON.stringify(data));
-
         setUser(data);
+        setError(null);
         setLoading(false);
       } catch (error) {
         console.error('[auth] Token verification error:', error);
         void clientLogout();
+        setLoading(false);
       }
     };
 
     verifyTokens();
-  }, [pathname, router, options?.enabled]);
+  }, [pathname, router]);
 
-  return { user, loading, error } as const;
+  return (
+    <AuthContext.Provider value={{ user, loading, error }}>
+      {error && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md text-center">
+            <h2 className="text-lg font-semibold text-red-600 mb-2">Access Denied</h2>
+            <p className="text-gray-700 mb-4">{error}</p>
+            <p className="text-sm text-gray-500">Redirecting in 2 seconds...</p>
+          </div>
+        </div>
+      )}
+      {!error && children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
 }

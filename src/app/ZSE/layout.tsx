@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useRequireAuth } from '@/lib/clientAuth';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ZSELayout({
   children,
@@ -10,7 +10,7 @@ export default function ZSELayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { loading } = useRequireAuth({ enabled: true });
+  const { loading } = useAuth();
 
   if (loading) {
     return null; // or a loading spinner
