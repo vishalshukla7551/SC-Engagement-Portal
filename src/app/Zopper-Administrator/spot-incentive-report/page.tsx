@@ -267,34 +267,78 @@ export default function SpotIncentiveReport() {
   const summary = data?.summary || { activeStores: 0, activeSECs: 0, totalReports: 0, totalIncentiveEarned: 0, totalIncentivePaid: 0 };
   const filters = data?.filters || { stores: [], planTypes: [] };
 
-  const exportExcel = () => {
-    const exportData = reports.map(report => ({
-      'Report ID': report.id,
-      'SEC ID': report.secUser.secId || 'Not Set',
-      'SEC Phone': report.secUser.phone,
-      'SEC Name': report.secUser.name || 'Not Set',
-      'Store Name': report.store.storeName,
-      'Store City': report.store.city,
-      'Device Category': report.samsungSKU.Category,
-      'Device Model': report.samsungSKU.ModelName,
-      'Plan Type': report.plan.planType.replace(/_/g, ' '),
-      'Plan Price': `₹${report.planPrice}`,
-      'IMEI': report.imei,
-      'Incentive Earned': `₹${report.incentiveEarned}`,
-      'Payment Status': report.isPaid ? 'Paid' : 'Pending',
-      'Submitted Date': formatDateWithTime(report.submittedAt).date,
-      'Submitted Time': formatDateWithTime(report.submittedAt).time,
-      'Voucher Code': report.voucherCode || '',
-      'Campaign Active': report.isCompaignActive ? 'Yes' : 'No',
-      'Paid Date': report.paidAt ? formatDateWithTime(report.paidAt).date : '',
-      'Action Required': report.isPaid ? 'None' : 'Mark Paid Available',
-      'Approved': '' // Empty column for manual approval marking
-    }));
+  const exportExcel = async () => {
+    try {
+      // Show loading state
+      setLoading(true);
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Spot Incentive Report');
-    XLSX.writeFile(wb, `spot-incentive-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+      // Build params with current filters but fetch ALL data (no pagination limit)
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '999999', // Large number to get all records
+      });
+
+      if (query) params.append('search', query);
+      if (storeFilter) params.append('storeId', storeFilter);
+      if (planFilter) params.append('planType', planFilter);
+      if (paymentFilter !== 'all') params.append('paymentStatus', paymentFilter);
+      if (startDate) {
+        params.append('startDate', startDate);
+        params.append('endDate', startDate);
+      }
+
+      // Fetch all data
+      const response = await fetch(`/api/zopper-administrator/spot-incentive-report?${params}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch data for export');
+      }
+
+      const result: ApiResponse = await response.json();
+
+      if (!result.success || !result.data.reports) {
+        throw new Error('No data available for export');
+      }
+
+      const allReports = result.data.reports;
+
+      // Transform data for Excel
+      const exportData = allReports.map(report => ({
+        'Report ID': report.id,
+        'SEC ID': report.secUser.secId || 'Not Set',
+        'SEC Phone': report.secUser.phone,
+        'SEC Name': report.secUser.name || 'Not Set',
+        'Store Name': report.store.storeName,
+        'Store City': report.store.city,
+        'Device Category': report.samsungSKU.Category,
+        'Device Model': report.samsungSKU.ModelName,
+        'Plan Type': report.plan.planType.replace(/_/g, ' '),
+        'Plan Price': `₹${report.planPrice}`,
+        'IMEI': report.imei,
+        'Incentive Earned': `₹${report.incentiveEarned}`,
+        'Payment Status': report.isPaid ? 'Paid' : 'Pending',
+        'Submitted Date': formatDateWithTime(report.submittedAt).date,
+        'Submitted Time': formatDateWithTime(report.submittedAt).time,
+        'Voucher Code': report.voucherCode || '',
+        'Campaign Active': report.isCompaignActive ? 'Yes' : 'No',
+        'Paid Date': report.paidAt ? formatDateWithTime(report.paidAt).date : '',
+        'Action Required': report.isPaid ? 'None' : 'Mark Paid Available',
+        'Approved': report.isPaid ? 'Already Approved' : '' // Show status for already approved sales
+      }));
+
+      // Create and download Excel file
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Spot Incentive Report');
+      XLSX.writeFile(wb, `spot-incentive-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+
+      alert(`Successfully exported ${allReports.length} reports!`);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      alert('Failed to export data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -719,9 +763,9 @@ export default function SpotIncentiveReport() {
                                       <td className="p-3 text-sm text-neutral-900 font-mono">{detail.reportId}</td>
                                       <td className="p-3">
                                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${detail.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                                            detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
-                                              detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
-                                                'bg-red-100 text-red-700'
+                                          detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
+                                            detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
+                                              'bg-red-100 text-red-700'
                                           }`}>
                                           {detail.status.replace('_', ' ')}
                                         </span>
