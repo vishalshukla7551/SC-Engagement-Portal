@@ -244,9 +244,9 @@ export default function SalesSubmissionsPage() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                     <div className="relative z-10 flex justify-between items-center">
                         <div>
-                            <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Total Earnings</p>
+                            <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Total Points</p>
                             <h2 className="text-3xl font-black tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                ₹{totalEarnings.toLocaleString('en-IN')}
+                                {totalEarnings.toLocaleString('en-IN')}
                             </h2>
                         </div>
                         <div className="text-right">
