@@ -922,7 +922,7 @@ export default function ProfilePage() {
                     setStoreSearch(e.target.value);
                     fetchAllStores(e.target.value);
                   }}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder:text-gray-500"
                 />
               </div>
 
@@ -997,7 +997,7 @@ export default function ProfilePage() {
                   onChange={(e) => setChangeReason(e.target.value)}
                   placeholder="Please provide a reason for requesting this store change..."
                   rows={3}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm placeholder:text-gray-500"
                 />
               </div>
 
