@@ -258,7 +258,22 @@ export default function RepublicDayHeroPage() {
         audio.preload = 'auto'; // Important for mobile
         audioRef.current = audio;
 
+        // Handle visibility change (pause in background, resume in foreground)
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                audio.pause();
+            } else {
+                // Resume only if it was previously playing (started)
+                if (audio.currentTime > 0) {
+                    audio.play().catch(e => console.log("Resume failed", e));
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
             audio.pause();
             audio.currentTime = 0;
         };

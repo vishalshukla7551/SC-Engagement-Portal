@@ -25,6 +25,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const router = useRouter();
   const [secPhone, setSecPhone] = useState('');
   const [secId, setSecId] = useState('');
+  const [isSecIdEditable, setIsSecIdEditable] = useState(false);
   const [dateOfSale, setDateOfSale] = useState('');
   const [storeId, setStoreId] = useState('');
   const [deviceId, setDeviceId] = useState('');
@@ -155,6 +156,46 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
     }
     fetchPlans();
   }, [deviceId]);
+
+  const handleToggleEdit = async () => {
+    if (isSecIdEditable) {
+      if (!secId.trim()) {
+        alert('SEC ID cannot be empty');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/sec/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ employeeId: secId })
+        });
+
+        if (res.ok) {
+          // Update LocalStorage
+          try {
+            const raw = window.localStorage.getItem('authUser');
+            if (raw) {
+              const auth = JSON.parse(raw);
+              auth.employeeId = secId; // Update standard field
+              auth.employId = secId;   // Update legacy field
+              window.localStorage.setItem('authUser', JSON.stringify(auth));
+            }
+          } catch (e) { console.error('Error updating localStorage', e); }
+
+          setIsSecIdEditable(false);
+          alert('SEC ID updated successfully');
+        } else {
+          alert('Failed to update SEC ID');
+        }
+      } catch (error) {
+        console.error('Error saving SEC ID:', error);
+        alert('Error updating SEC ID');
+      }
+    } else {
+      setIsSecIdEditable(true);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -454,14 +495,37 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               <label htmlFor="secId" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 SEC ID
               </label>
-              <input
-                type="text"
-                id="secId"
-                value={secId}
-                disabled
-                className="w-full px-4 py-3 bg-slate-200/50 border border-slate-200 rounded-xl text-slate-500 text-sm font-medium"
-                placeholder="SEC Phone Number"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  id="secId"
+                  value={secId}
+                  onChange={(e) => setSecId(e.target.value)}
+                  disabled={!isSecIdEditable}
+                  className={`w-full px-4 py-3 border rounded-xl text-sm font-medium transition-all ${isSecIdEditable
+                    ? 'bg-white border-orange-500 text-slate-800 ring-2 ring-orange-100'
+                    : 'bg-slate-200/50 border-slate-200 text-slate-500'
+                    }`}
+                  placeholder="SEC ID"
+                />
+                <button
+                  type="button"
+                  onClick={handleToggleEdit}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-[#000080] bg-white hover:bg-slate-50 rounded-lg border border-slate-200 shadow-sm transition-all active:scale-95"
+                  title={isSecIdEditable ? "Save" : "Edit SEC ID"}
+                >
+                  {isSecIdEditable ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Date of Sale */}

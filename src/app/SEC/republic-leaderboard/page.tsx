@@ -264,7 +264,21 @@ export default function RepublicLeaderboardPage() {
         audio.volume = 0.5;
         audioRef.current = audio;
 
+        // Handle visibility change
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                if (audioRef.current) audioRef.current.pause();
+            } else {
+                if (audioRef.current && audioRef.current.currentTime > 0) {
+                    audioRef.current.play().catch(e => console.log("Resume failed", e));
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
             if (audioRef.current) {
                 audioRef.current.pause();
                 audioRef.current = null;
