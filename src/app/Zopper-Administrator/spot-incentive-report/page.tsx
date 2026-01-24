@@ -546,14 +546,11 @@ export default function SpotIncentiveReport() {
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                     Timestamp
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[160px]">
                     Date of Sale
                   </th>
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[100px]">
-                    SEC ID
-                  </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider">
-                    Store Name
+                    SEC Name
                   </th>
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider">
                     Device Name
@@ -616,23 +613,23 @@ export default function SpotIncentiveReport() {
                           {formatDateWithTime(r.createdAt).time}
                         </div>
                       </td>
-                      <td className="p-2 md:p-3 text-neutral-700 text-sm">
+                      <td className="p-2 md:p-3 text-neutral-700 text-sm whitespace-nowrap">
                         <div className="text-xs">{formatDateWithTime(r.submittedAt).date}</div>
                         <div className="text-neutral-500 text-xs">
                           {formatDateWithTime(r.submittedAt).time}
                         </div>
                       </td>
                       <td className="p-2 md:p-3 text-neutral-900 text-sm font-medium">
-                        <div className="truncate">{r.secUser.secId || 'Not Set'}</div>
-                      </td>
-                      <td className="p-2 md:p-3 text-neutral-900 text-sm">
-                        <div className="truncate">{r.store.storeName}</div>
+                        <div className="truncate">{r.secUser.name || 'Not Set'}</div>
+                        <div className="text-neutral-500 text-xs">{r.store.storeName}</div>
+                        <div className="text-neutral-500 text-xs">{r.secUser.phone}</div>
                       </td>
                       <td className="p-2 md:p-3 text-neutral-700 text-sm">
                         <div className="truncate">{r.samsungSKU.ModelName}</div>
                       </td>
                       <td className="p-2 md:p-3 text-neutral-700 text-xs">
                         <div className="truncate">{r.plan.planType.replace(/_/g, ' ')}</div>
+                        <div className="text-neutral-500 text-xs">₹{r.plan.price}</div>
                       </td>
                       <td className="p-2 md:p-3 text-neutral-500 text-xs font-mono">
                         <div className="truncate">{r.imei}</div>

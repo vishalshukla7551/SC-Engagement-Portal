@@ -174,7 +174,7 @@ export async function GET(req: NextRequest) {
       voucherCode: report.voucherCode || '',
       isCompaignActive: report.isCompaignActive,
       secUser: {
-        secId: report.secUser.employeeId || report.secUser.id,
+        secId: report.secUser.employeeId || 'Unknown',
         phone: report.secUser.phone,
         name: report.secUser.fullName || 'Not Set'
       },

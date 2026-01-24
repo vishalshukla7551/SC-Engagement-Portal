@@ -4,7 +4,7 @@ import { GlobalAuthInterceptor } from "@/components/GlobalAuthInterceptor";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "SalesDost - Welcome",
+  title: "SalesDost",
   description: "Sales incentive management platform",
   icons: {
     icon: "/zopper-logo.png",

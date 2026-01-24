@@ -1,0 +1,1082 @@
+{
+  "timestamp": "2026-01-24T20:46:08.842Z",
+  "summary": {
+    "totalSecs": 914,
+    "secsWithEmployeeId": 243,
+    "secsWithObjectId": 119,
+    "secsWithoutEmployeeId": 671
+  },
+  "secsWithObjectIdInEmployeeId": [
+    {
+      "id": "6936c98be004c3f179f776fb",
+      "fullName": "Dummy Vikash Dubey",
+      "phone": "9955994340",
+      "employeeId": "6936c98be004c3f179f776fb",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "6936c98ce004c3f179f776fd",
+      "fullName": "SUVAM CHATTERJEE",
+      "phone": "7866952866",
+      "employeeId": "6936c98ce004c3f179f776fd",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "6936c98ce004c3f179f776ff",
+      "fullName": "Vinod Kumar Khatik",
+      "phone": "9327126229",
+      "employeeId": "6936c98ce004c3f179f776ff",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "6936c98de004c3f179f77700",
+      "fullName": "Shrusti",
+      "phone": "8660770668",
+      "employeeId": "6936c98de004c3f179f77700",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "6936c98de004c3f179f77702",
+      "fullName": "Shubham",
+      "phone": "9021428313",
+      "employeeId": "6936c98de004c3f179f77702",
+      "email": null,
+      "storeId": "store_00437",
+      "city": null
+    },
+    {
+      "id": "6936c990e004c3f179f7770e",
+      "fullName": "MOHIT HARIJAN",
+      "phone": "7499257797",
+      "employeeId": "6936c990e004c3f179f7770e",
+      "email": null,
+      "storeId": "store_00432",
+      "city": null
+    },
+    {
+      "id": "6936c990e004c3f179f77711",
+      "fullName": "Sanket sanjayrao andeo",
+      "phone": "8788991233",
+      "employeeId": "6936c990e004c3f179f77711",
+      "email": null,
+      "storeId": "store_00351",
+      "city": null
+    },
+    {
+      "id": "6936c992e004c3f179f7771a",
+      "fullName": "Nirmal Makwana",
+      "phone": "8435363145",
+      "employeeId": "6936c992e004c3f179f7771a",
+      "email": null,
+      "storeId": "store_00233",
+      "city": null
+    },
+    {
+      "id": "6936c993e004c3f179f77722",
+      "fullName": "VINEET CHOPRA",
+      "phone": "7289808873",
+      "employeeId": "6936c993e004c3f179f77722",
+      "email": null,
+      "storeId": "store_00191",
+      "city": null
+    },
+    {
+      "id": "6936c994e004c3f179f77723",
+      "fullName": "Rahul Ramratan Prajapati",
+      "phone": "7350139086",
+      "employeeId": "6936c994e004c3f179f77723",
+      "email": null,
+      "storeId": "store_00172",
+      "city": null
+    },
+    {
+      "id": "6936c996e004c3f179f77731",
+      "fullName": "AFZAL SHAIKH",
+      "phone": "9687017148",
+      "employeeId": "6936c996e004c3f179f77731",
+      "email": null,
+      "storeId": "store_00651",
+      "city": null
+    },
+    {
+      "id": "6936c997e004c3f179f7773a",
+      "fullName": "Shubham Rana",
+      "phone": "7018315588",
+      "employeeId": "6936c997e004c3f179f7773a",
+      "email": null,
+      "storeId": "store_00100",
+      "city": null
+    },
+    {
+      "id": "6936c998e004c3f179f7773d",
+      "fullName": "AAKASH SHINDE",
+      "phone": "8237952639",
+      "employeeId": "6936c998e004c3f179f7773d",
+      "email": null,
+      "storeId": "store_00647",
+      "city": null
+    },
+    {
+      "id": "6936c998e004c3f179f77741",
+      "fullName": "Abubakar Bin Mohd Bafanna",
+      "phone": "7013442789",
+      "employeeId": "6936c998e004c3f179f77741",
+      "email": null,
+      "storeId": "store_00213",
+      "city": null
+    },
+    {
+      "id": "6936c999e004c3f179f77747",
+      "fullName": "Alfhaj khan",
+      "phone": "9145777841",
+      "employeeId": "6936c999e004c3f179f77747",
+      "email": null,
+      "storeId": "store_00634",
+      "city": null
+    },
+    {
+      "id": "6936c99ae004c3f179f7774d",
+      "fullName": "Umer sayyed",
+      "phone": "9359012298",
+      "employeeId": "6936c99ae004c3f179f7774d",
+      "email": null,
+      "storeId": "store_00438",
+      "city": null
+    },
+    {
+      "id": "6936c99be004c3f179f77750",
+      "fullName": "Mohd Azeem",
+      "phone": "9030010782",
+      "employeeId": "6936c99be004c3f179f77750",
+      "email": null,
+      "storeId": "store_00210",
+      "city": null
+    },
+    {
+      "id": "6936c99be004c3f179f77752",
+      "fullName": "Mohammed junaid ahmed",
+      "phone": "9989715113",
+      "employeeId": "6936c99be004c3f179f77752",
+      "email": null,
+      "storeId": "store_00683",
+      "city": null
+    },
+    {
+      "id": "6936c99be004c3f179f77754",
+      "fullName": "BHAVESH MEHTA",
+      "phone": "9752607280",
+      "employeeId": "6936c99be004c3f179f77754",
+      "email": null,
+      "storeId": "store_00231",
+      "city": null
+    },
+    {
+      "id": "6936c99ce004c3f179f77758",
+      "fullName": "Ashish harsora",
+      "phone": "7700987551",
+      "employeeId": "6936c99ce004c3f179f77758",
+      "email": null,
+      "storeId": "store_00625",
+      "city": null
+    },
+    {
+      "id": "6936c99ce004c3f179f7775a",
+      "fullName": "Shaik ghouse pasha",
+      "phone": "9505027243",
+      "employeeId": "6936c99ce004c3f179f7775a",
+      "email": null,
+      "storeId": "store_00679",
+      "city": null
+    },
+    {
+      "id": "6936c99ce004c3f179f7775d",
+      "fullName": "Surinder singh",
+      "phone": "9990429329",
+      "employeeId": "6936c99ce004c3f179f7775d",
+      "email": null,
+      "storeId": "store_00588",
+      "city": null
+    },
+    {
+      "id": "6936c99de004c3f179f77761",
+      "fullName": "Saurabh yadav",
+      "phone": "8707258851",
+      "employeeId": "6936c99de004c3f179f77761",
+      "email": null,
+      "storeId": "store_00606",
+      "city": null
+    },
+    {
+      "id": "6936c99ee004c3f179f77767",
+      "fullName": "AKASH MARUTI MANE",
+      "phone": "8669570590",
+      "employeeId": "6936c99ee004c3f179f77767",
+      "email": null,
+      "storeId": "store_00635",
+      "city": null
+    },
+    {
+      "id": "6936c99ee004c3f179f7776a",
+      "fullName": "Irfan khan",
+      "phone": "9617844996",
+      "employeeId": "6936c99ee004c3f179f7776a",
+      "email": null,
+      "storeId": "store_00192",
+      "city": null
+    },
+    {
+      "id": "6936c99fe004c3f179f77772",
+      "fullName": "Akbar khan",
+      "phone": "9462008833",
+      "employeeId": "6936c99fe004c3f179f77772",
+      "email": null,
+      "storeId": "store_00245",
+      "city": null
+    },
+    {
+      "id": "6936c9a3e004c3f179f7778e",
+      "fullName": "Akash adlakha",
+      "phone": "8920239327",
+      "employeeId": "6936c9a3e004c3f179f7778e",
+      "email": null,
+      "storeId": "store_00159",
+      "city": null
+    },
+    {
+      "id": "6936c9a8e004c3f179f777a6",
+      "fullName": "Vishal kumar",
+      "phone": "7007863432",
+      "employeeId": "6936c9a8e004c3f179f777a6",
+      "email": null,
+      "storeId": "store_00184",
+      "city": null
+    },
+    {
+      "id": "6936c9a8e004c3f179f777ab",
+      "fullName": "MILLAN PRITI BRAHMA",
+      "phone": "9114348656",
+      "employeeId": "6936c9a8e004c3f179f777ab",
+      "email": null,
+      "storeId": "store_00140",
+      "city": null
+    },
+    {
+      "id": "6936c9a9e004c3f179f777ae",
+      "fullName": "Harvendra Singh",
+      "phone": "9643239850",
+      "employeeId": "6936c9a9e004c3f179f777ae",
+      "email": null,
+      "storeId": "store_00410",
+      "city": null
+    },
+    {
+      "id": "6936c9a9e004c3f179f777af",
+      "fullName": "HARISH KUMAR AHIRWAL",
+      "phone": "6266337763",
+      "employeeId": "6936c9a9e004c3f179f777af",
+      "email": null,
+      "storeId": "store_00474",
+      "city": null
+    },
+    {
+      "id": "6936c9aee004c3f179f777c9",
+      "fullName": "Shubham majumdar",
+      "phone": "7065223112",
+      "employeeId": "6936c9aee004c3f179f777c9",
+      "email": null,
+      "storeId": "store_00615",
+      "city": null
+    },
+    {
+      "id": "6936c9afe004c3f179f777cf",
+      "fullName": "Ganesh sudhir bhure",
+      "phone": "7276452315",
+      "employeeId": "6936c9afe004c3f179f777cf",
+      "email": null,
+      "storeId": "store_00640",
+      "city": null
+    },
+    {
+      "id": "6936c9b1e004c3f179f777e0",
+      "fullName": "Gaurav Tanwar",
+      "phone": "9818986325",
+      "employeeId": "6936c9b1e004c3f179f777e0",
+      "email": null,
+      "storeId": "store_00180",
+      "city": null
+    },
+    {
+      "id": "6936c9b1e004c3f179f777e2",
+      "fullName": "Aniket",
+      "phone": "8009252051",
+      "employeeId": "6936c9b1e004c3f179f777e2",
+      "email": null,
+      "storeId": "store_00185",
+      "city": null
+    },
+    {
+      "id": "6936c9b3e004c3f179f777f8",
+      "fullName": "Naveen dubey",
+      "phone": "9582576831",
+      "employeeId": "6936c9b3e004c3f179f777f8",
+      "email": null,
+      "storeId": "store_00183",
+      "city": null
+    },
+    {
+      "id": "6936c9b4e004c3f179f777fb",
+      "fullName": "HEMANT KUMAR SAHU",
+      "phone": "8770814838",
+      "employeeId": "6936c9b4e004c3f179f777fb",
+      "email": null,
+      "storeId": "store_00283",
+      "city": null
+    },
+    {
+      "id": "6936c9b5e004c3f179f77802",
+      "fullName": "Nikhil Talekar",
+      "phone": "9821774052",
+      "employeeId": "6936c9b5e004c3f179f77802",
+      "email": null,
+      "storeId": "store_00618",
+      "city": null
+    },
+    {
+      "id": "6936c9b6e004c3f179f77809",
+      "fullName": "Pavan Kumar dubey",
+      "phone": "9026788090",
+      "employeeId": "6936c9b6e004c3f179f77809",
+      "email": null,
+      "storeId": "store_00186",
+      "city": null
+    },
+    {
+      "id": "6936c9bae004c3f179f77820",
+      "fullName": "Sushila kumari Jay Kumar Singh",
+      "phone": "8999506359",
+      "employeeId": "6936c9bae004c3f179f77820",
+      "email": null,
+      "storeId": "store_00645",
+      "city": null
+    },
+    {
+      "id": "6936c9bae004c3f179f77825",
+      "fullName": "Yogesh Sonawane",
+      "phone": "8237963992",
+      "employeeId": "6936c9bae004c3f179f77825",
+      "email": null,
+      "storeId": "store_00643",
+      "city": null
+    },
+    {
+      "id": "6936c9bbe004c3f179f77828",
+      "fullName": "Salman Khan",
+      "phone": "7676060317",
+      "employeeId": "6936c9bbe004c3f179f77828",
+      "email": null,
+      "storeId": "store_00056",
+      "city": null
+    },
+    {
+      "id": "6936c9bbe004c3f179f7782a",
+      "fullName": "Mohammed Hasan",
+      "phone": "7337016584",
+      "employeeId": "6936c9bbe004c3f179f7782a",
+      "email": null,
+      "storeId": "store_00218",
+      "city": null
+    },
+    {
+      "id": "6936c9bee004c3f179f7783c",
+      "fullName": "Kadri Rehan Abrar",
+      "phone": "9082546823",
+      "employeeId": "6936c9bee004c3f179f7783c",
+      "email": null,
+      "storeId": "store_00709",
+      "city": null
+    },
+    {
+      "id": "6936c9bee004c3f179f7783e",
+      "fullName": "DHANRAJ",
+      "phone": "8949906024",
+      "employeeId": "6936c9bee004c3f179f7783e",
+      "email": null,
+      "storeId": "store_00241",
+      "city": null
+    },
+    {
+      "id": "6936c9bee004c3f179f77843",
+      "fullName": "Ayaz",
+      "phone": "9773202129",
+      "employeeId": "6936c9bee004c3f179f77843",
+      "email": null,
+      "storeId": "store_00325",
+      "city": null
+    },
+    {
+      "id": "6936c9bfe004c3f179f77845",
+      "fullName": "SOURAV KUMAR",
+      "phone": "9814654646",
+      "employeeId": "6936c9bfe004c3f179f77845",
+      "email": null,
+      "storeId": "store_00247",
+      "city": null
+    },
+    {
+      "id": "6936c9c0e004c3f179f7784f",
+      "fullName": "Tejeswini",
+      "phone": "7796096295",
+      "employeeId": "6936c9c0e004c3f179f7784f",
+      "email": null,
+      "storeId": "store_00172",
+      "city": null
+    },
+    {
+      "id": "6936c9c1e004c3f179f77854",
+      "fullName": "Salman khan",
+      "phone": "8766019836",
+      "employeeId": "6936c9c1e004c3f179f77854",
+      "email": null,
+      "storeId": "store_00694",
+      "city": null
+    },
+    {
+      "id": "6936c9c1e004c3f179f77858",
+      "fullName": "Mohd uzair",
+      "phone": "8602568498",
+      "employeeId": "6936c9c1e004c3f179f77858",
+      "email": null,
+      "storeId": "store_00086",
+      "city": null
+    },
+    {
+      "id": "6936c9c2e004c3f179f77860",
+      "fullName": "Sanjay yadav",
+      "phone": "8082018859",
+      "employeeId": "6936c9c2e004c3f179f77860",
+      "email": null,
+      "storeId": "store_00325",
+      "city": null
+    },
+    {
+      "id": "6936c9c4e004c3f179f7786c",
+      "fullName": "UMA SHANKAR",
+      "phone": "9632783196",
+      "employeeId": "6936c9c4e004c3f179f7786c",
+      "email": null,
+      "storeId": "store_00038",
+      "city": null
+    },
+    {
+      "id": "6936c9c4e004c3f179f7786e",
+      "fullName": "Dhruv Tailor",
+      "phone": "9602985606",
+      "employeeId": "6936c9c4e004c3f179f7786e",
+      "email": null,
+      "storeId": "store_00241",
+      "city": null
+    },
+    {
+      "id": "6936c9c5e004c3f179f77872",
+      "fullName": "Arvind",
+      "phone": "8700075610",
+      "employeeId": "6936c9c5e004c3f179f77872",
+      "email": null,
+      "storeId": "store_00392",
+      "city": null
+    },
+    {
+      "id": "6936c9c5e004c3f179f77873",
+      "fullName": "Ramandeep",
+      "phone": "7973390912",
+      "employeeId": "6936c9c5e004c3f179f77873",
+      "email": null,
+      "storeId": "store_00318",
+      "city": null
+    },
+    {
+      "id": "6936c9c7e004c3f179f77882",
+      "fullName": "Nawab sandimani",
+      "phone": "9538293353",
+      "employeeId": "6936c9c7e004c3f179f77882",
+      "email": null,
+      "storeId": "store_00200",
+      "city": null
+    },
+    {
+      "id": "6936c9c9e004c3f179f77893",
+      "fullName": "MOHAMMED TABEEHAN",
+      "phone": "8722727829",
+      "employeeId": "6936c9c9e004c3f179f77893",
+      "email": null,
+      "storeId": "store_00064",
+      "city": null
+    },
+    {
+      "id": "6936c9c9e004c3f179f77895",
+      "fullName": "SHIVANGI TIWARI",
+      "phone": "8305652788",
+      "employeeId": "6936c9c9e004c3f179f77895",
+      "email": null,
+      "storeId": "store_00240",
+      "city": null
+    },
+    {
+      "id": "6936c9cbe004c3f179f778a1",
+      "fullName": "Rahul rai",
+      "phone": "8010193101",
+      "employeeId": "6936c9cbe004c3f179f778a1",
+      "email": null,
+      "storeId": "store_00178",
+      "city": null
+    },
+    {
+      "id": "6936c9cce004c3f179f778a6",
+      "fullName": "Abdurrazzaque Sayed",
+      "phone": "8286460726",
+      "employeeId": "6936c9cce004c3f179f778a6",
+      "email": null,
+      "storeId": "store_00362",
+      "city": null
+    },
+    {
+      "id": "6936c9cce004c3f179f778a8",
+      "fullName": "ANASH AFZAL",
+      "phone": "7503059272",
+      "employeeId": "6936c9cce004c3f179f778a8",
+      "email": null,
+      "storeId": "store_00387",
+      "city": null
+    },
+    {
+      "id": "6936c9cde004c3f179f778ad",
+      "fullName": "Anjali Bohat",
+      "phone": "9323887036",
+      "employeeId": "6936c9cde004c3f179f778ad",
+      "email": null,
+      "storeId": "store_00619",
+      "city": null
+    },
+    {
+      "id": "6936c9cde004c3f179f778ae",
+      "fullName": "ANSARI SAJID SAJJAD AHMED",
+      "phone": "8208406748",
+      "employeeId": "6936c9cde004c3f179f778ae",
+      "email": null,
+      "storeId": "store_00442",
+      "city": null
+    },
+    {
+      "id": "6936c9cee004c3f179f778ba",
+      "fullName": "VIKAS BHAGWANDAS MEHRA",
+      "phone": "7666409560",
+      "employeeId": "6936c9cee004c3f179f778ba",
+      "email": null,
+      "storeId": "store_00635",
+      "city": null
+    },
+    {
+      "id": "6936c9cfe004c3f179f778c2",
+      "fullName": "Mohammed yunus akbar ali",
+      "phone": "8268162816",
+      "employeeId": "6936c9cfe004c3f179f778c2",
+      "email": null,
+      "storeId": "store_00690",
+      "city": null
+    },
+    {
+      "id": "6936c9d0e004c3f179f778c8",
+      "fullName": "Pradip Karmur",
+      "phone": "9106961403",
+      "employeeId": "6936c9d0e004c3f179f778c8",
+      "email": null,
+      "storeId": "store_00466",
+      "city": null
+    },
+    {
+      "id": "6936c9d1e004c3f179f778d5",
+      "fullName": "Aniket Ankush Main",
+      "phone": "9867950893",
+      "employeeId": "6936c9d1e004c3f179f778d5",
+      "email": null,
+      "storeId": "store_00626",
+      "city": null
+    },
+    {
+      "id": "6936c9d4e004c3f179f778ea",
+      "fullName": "RAKESH KUMAR",
+      "phone": "7011901395",
+      "employeeId": "6936c9d4e004c3f179f778ea",
+      "email": null,
+      "storeId": "store_00595",
+      "city": null
+    },
+    {
+      "id": "6936c9d4e004c3f179f778ef",
+      "fullName": "Yuvraj singh",
+      "phone": "8700074285",
+      "employeeId": "6936c9d4e004c3f179f778ef",
+      "email": null,
+      "storeId": "store_00608",
+      "city": null
+    },
+    {
+      "id": "6936c9d5e004c3f179f778f5",
+      "fullName": "JUBER",
+      "phone": "9044467509",
+      "employeeId": "6936c9d5e004c3f179f778f5",
+      "email": null,
+      "storeId": "store_00294",
+      "city": null
+    },
+    {
+      "id": "6936c9d6e004c3f179f778fb",
+      "fullName": "Avula suresh",
+      "phone": "6300562908",
+      "employeeId": "6936c9d6e004c3f179f778fb",
+      "email": null,
+      "storeId": "store_00046",
+      "city": null
+    },
+    {
+      "id": "6936c9dae004c3f179f7791b",
+      "fullName": "Syedfaizurrahman",
+      "phone": "6302673639",
+      "employeeId": "6936c9dae004c3f179f7791b",
+      "email": null,
+      "storeId": "store_00215",
+      "city": null
+    },
+    {
+      "id": "6936c9dae004c3f179f7791f",
+      "fullName": "Govinda Mahilange",
+      "phone": "9713096992",
+      "employeeId": "6936c9dae004c3f179f7791f",
+      "email": null,
+      "storeId": "store_00458",
+      "city": null
+    },
+    {
+      "id": "6936c9dce004c3f179f7792f",
+      "fullName": "Mukesh kumar",
+      "phone": "9899538328",
+      "employeeId": "6936c9dce004c3f179f7792f",
+      "email": null,
+      "storeId": "store_00394",
+      "city": null
+    },
+    {
+      "id": "6936c9dde004c3f179f77935",
+      "fullName": "Raghavendra sharma",
+      "phone": "9926434514",
+      "employeeId": "6936c9dde004c3f179f77935",
+      "email": null,
+      "storeId": "store_00191",
+      "city": null
+    },
+    {
+      "id": "6936c9dde004c3f179f77938",
+      "fullName": "MADHU R S",
+      "phone": "8971175512",
+      "employeeId": "6936c9dde004c3f179f77938",
+      "email": null,
+      "storeId": "store_00042",
+      "city": null
+    },
+    {
+      "id": "6936c9dfe004c3f179f77941",
+      "fullName": "MALANG GUAS BAGWAN",
+      "phone": "8080519053",
+      "employeeId": "6936c9dfe004c3f179f77941",
+      "email": null,
+      "storeId": "store_00077",
+      "city": null
+    },
+    {
+      "id": "6936c9e0e004c3f179f7794b",
+      "fullName": "Mayank sharma",
+      "phone": "8982705514",
+      "employeeId": "6936c9e0e004c3f179f7794b",
+      "email": null,
+      "storeId": "store_00134",
+      "city": null
+    },
+    {
+      "id": "6936c9e3e004c3f179f7795f",
+      "fullName": "Ajharul haque",
+      "phone": "6009139717",
+      "employeeId": "6936c9e3e004c3f179f7795f",
+      "email": null,
+      "storeId": "store_00049",
+      "city": null
+    },
+    {
+      "id": "6936c9e4e004c3f179f7796a",
+      "fullName": "TAMILSELVAM R",
+      "phone": "9092122212",
+      "employeeId": "6936c9e4e004c3f179f7796a",
+      "email": null,
+      "storeId": "store_00114",
+      "city": null
+    },
+    {
+      "id": "6936c9eae004c3f179f7799b",
+      "fullName": "Shaik azmath",
+      "phone": "7075035739",
+      "employeeId": "6936c9eae004c3f179f7799b",
+      "email": null,
+      "storeId": "store_00660",
+      "city": null
+    },
+    {
+      "id": "6936c9eae004c3f179f7799c",
+      "fullName": "MAKKALA SAIRAM",
+      "phone": "6300294702",
+      "employeeId": "6936c9eae004c3f179f7799c",
+      "email": null,
+      "storeId": "store_00681",
+      "city": null
+    },
+    {
+      "id": "6936c9efe004c3f179f779c1",
+      "fullName": "Dinesh kumar",
+      "phone": "9873662003",
+      "employeeId": "6936c9efe004c3f179f779c1",
+      "email": null,
+      "storeId": "store_00381",
+      "city": null
+    },
+    {
+      "id": "6936c9f3e004c3f179f779dd",
+      "fullName": "Imran Khan",
+      "phone": "9384622471",
+      "employeeId": "6936c9f3e004c3f179f779dd",
+      "email": null,
+      "storeId": "store_00107",
+      "city": null
+    },
+    {
+      "id": "6936c9f4e004c3f179f779ed",
+      "fullName": "Ram",
+      "phone": "9340959635",
+      "employeeId": "6936c9f4e004c3f179f779ed",
+      "email": null,
+      "storeId": "store_00473",
+      "city": null
+    },
+    {
+      "id": "6936c9f8e004c3f179f77a08",
+      "fullName": "Chirag",
+      "phone": "8866235063",
+      "employeeId": "6936c9f8e004c3f179f77a08",
+      "email": null,
+      "storeId": "store_00506",
+      "city": null
+    },
+    {
+      "id": "6936c9f8e004c3f179f77a0a",
+      "fullName": "PRABHUDDA T V",
+      "phone": "9818505994",
+      "employeeId": "6936c9f8e004c3f179f77a0a",
+      "email": null,
+      "storeId": "store_00050",
+      "city": null
+    },
+    {
+      "id": "6936c9f8e004c3f179f77a0e",
+      "fullName": "Ashwin Kunkalkar",
+      "phone": "9168214814",
+      "employeeId": "6936c9f8e004c3f179f77a0e",
+      "email": null,
+      "storeId": "store_00422",
+      "city": null
+    },
+    {
+      "id": "6936c9f9e004c3f179f77a14",
+      "fullName": "Faraz Nadeem",
+      "phone": "7827974838",
+      "employeeId": "6936c9f9e004c3f179f77a14",
+      "email": null,
+      "storeId": "store_00407",
+      "city": null
+    },
+    {
+      "id": "6936c9fbe004c3f179f77a21",
+      "fullName": "Y Meghana",
+      "phone": "8249426923",
+      "employeeId": "6936c9fbe004c3f179f77a21",
+      "email": null,
+      "storeId": "store_00687",
+      "city": null
+    },
+    {
+      "id": "6936c9fbe004c3f179f77a25",
+      "fullName": "Kapil Kumar",
+      "phone": "9350771004",
+      "employeeId": "6936c9fbe004c3f179f77a25",
+      "email": null,
+      "storeId": "store_00408",
+      "city": null
+    },
+    {
+      "id": "6936c9fce004c3f179f77a2b",
+      "fullName": "AKASH SAHA",
+      "phone": "9330991208",
+      "employeeId": "6936c9fce004c3f179f77a2b",
+      "email": null,
+      "storeId": "store_00199",
+      "city": null
+    },
+    {
+      "id": "69730af6d15b97151bfc9cf8",
+      "fullName": "Abhay thakur",
+      "phone": "8810306150",
+      "employeeId": "69730af6d15b97151bfc9cf8",
+      "email": null,
+      "storeId": "store_00378",
+      "city": null
+    },
+    {
+      "id": "69730b20d15b97151bfc9cfa",
+      "fullName": "Yoganshu Sharma",
+      "phone": "9518810236",
+      "employeeId": "69730b20d15b97151bfc9cfa",
+      "email": null,
+      "storeId": "store_00497",
+      "city": null
+    },
+    {
+      "id": "69730b47e8dc5f33099ed33b",
+      "fullName": "hardeep singh",
+      "phone": "8827811717",
+      "employeeId": "69730b47e8dc5f33099ed33b",
+      "email": null,
+      "storeId": "store_00231",
+      "city": null
+    },
+    {
+      "id": "69730ed496e44b1b98787510",
+      "fullName": "Venkat",
+      "phone": "6380556785",
+      "employeeId": "69730ed496e44b1b98787510",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "6973134b97d2486896493c7e",
+      "fullName": "Ayush",
+      "phone": "7042800465",
+      "employeeId": "6973134b97d2486896493c7e",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "69731fbdfbdc275719dd3754",
+      "fullName": "Nitin Pathak",
+      "phone": "8827550709",
+      "employeeId": "69731fbdfbdc275719dd3754",
+      "email": null,
+      "storeId": "store_00151",
+      "city": null
+    },
+    {
+      "id": "69732bd72a9e41ab9e6dace5",
+      "fullName": "ARBAZ KHAN",
+      "phone": "8871202936",
+      "employeeId": "69732bd72a9e41ab9e6dace5",
+      "email": null,
+      "storeId": "store_00088",
+      "city": null
+    },
+    {
+      "id": "69732c642a9e41ab9e6dace7",
+      "fullName": "Yogesh Chalisa",
+      "phone": "7999805986",
+      "employeeId": "69732c642a9e41ab9e6dace7",
+      "email": null,
+      "storeId": "store_00156",
+      "city": null
+    },
+    {
+      "id": "6973370d16ed47c52a62710f",
+      "fullName": "Mohammed Amer",
+      "phone": "9676530082",
+      "employeeId": "6973370d16ed47c52a62710f",
+      "email": null,
+      "storeId": "store_00204",
+      "city": null
+    },
+    {
+      "id": "6973395e3f18f226d578ea3d",
+      "fullName": "ANTIMA SINGH",
+      "phone": "8860349397",
+      "employeeId": "6973395e3f18f226d578ea3d",
+      "email": null,
+      "storeId": "store_00297",
+      "city": null
+    },
+    {
+      "id": "697345781fd1435d83db91d7",
+      "fullName": "SRISUDHAN M K",
+      "phone": "8220373790",
+      "employeeId": "697345781fd1435d83db91d7",
+      "email": null,
+      "storeId": "store_00136",
+      "city": null
+    },
+    {
+      "id": "697345bd1fd1435d83db91d9",
+      "fullName": "Hari s",
+      "phone": "8590345110",
+      "employeeId": "697345bd1fd1435d83db91d9",
+      "email": null,
+      "storeId": "store_00136",
+      "city": null
+    },
+    {
+      "id": "697349fdd34a6b7af8746585",
+      "fullName": "Anas Khan",
+      "phone": "9833101221",
+      "employeeId": "697349fdd34a6b7af8746585",
+      "email": null,
+      "storeId": "store_00619",
+      "city": null
+    },
+    {
+      "id": "69734bb5d34a6b7af874658c",
+      "fullName": "Ss",
+      "phone": "9871952226",
+      "employeeId": "69734bb5d34a6b7af874658c",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "69734c20d2ba72cba41fdbd2",
+      "fullName": "Amit",
+      "phone": "9717888059",
+      "employeeId": "69734c20d2ba72cba41fdbd2",
+      "email": null,
+      "storeId": "store_00320",
+      "city": null
+    },
+    {
+      "id": "697363001eee2f873b3e2f43",
+      "fullName": "Kunal pandey",
+      "phone": "8744876162",
+      "employeeId": "697363001eee2f873b3e2f43",
+      "email": null,
+      "storeId": "store_00405",
+      "city": null
+    },
+    {
+      "id": "69736739089bb61d616f6dda",
+      "fullName": "Ravi Varshney",
+      "phone": "8449060006",
+      "employeeId": "69736739089bb61d616f6dda",
+      "email": null,
+      "storeId": "store_00001",
+      "city": null
+    },
+    {
+      "id": "69736cdd6e3665efa22f4db4",
+      "fullName": "Aarti singh",
+      "phone": "7756998722",
+      "employeeId": "69736cdd6e3665efa22f4db4",
+      "email": null,
+      "storeId": "store_00625",
+      "city": null
+    },
+    {
+      "id": "697370decce5e9b09e7a16da",
+      "fullName": "Thimmaiah g",
+      "phone": "8147888964",
+      "employeeId": "697370decce5e9b09e7a16da",
+      "email": null,
+      "storeId": "store_00525",
+      "city": null
+    },
+    {
+      "id": "697376dcfecfb1c98a83c2f9",
+      "fullName": "Yaramala Gayatri",
+      "phone": "7672081104",
+      "employeeId": "697376dcfecfb1c98a83c2f9",
+      "email": null,
+      "storeId": "store_00413",
+      "city": null
+    },
+    {
+      "id": "69737bf60a49633f4355ac70",
+      "fullName": "Meena kumari",
+      "phone": "9999678004",
+      "employeeId": "69737bf60a49633f4355ac70",
+      "email": null,
+      "storeId": "store_00380",
+      "city": null
+    },
+    {
+      "id": "697389a1bf9ae26152e82339",
+      "fullName": "Test AbC",
+      "phone": "8368870159",
+      "employeeId": "697389a1bf9ae26152e82339",
+      "email": null,
+      "storeId": "store_00380",
+      "city": null
+    },
+    {
+      "id": "69738e0b3d8930493215a930",
+      "fullName": "AJAY KUMAR",
+      "phone": "9650518242",
+      "employeeId": "69738e0b3d8930493215a930",
+      "email": null,
+      "storeId": "store_00607",
+      "city": null
+    },
+    {
+      "id": "69743fd6a1d9e19f2a615645",
+      "fullName": "RITESH KUMAR",
+      "phone": "9718804101",
+      "employeeId": "69743fd6a1d9e19f2a615645",
+      "email": null,
+      "storeId": "store_00386",
+      "city": null
+    },
+    {
+      "id": "697441496e17ae93b917af8f",
+      "fullName": "Chotu singh",
+      "phone": "8851974624",
+      "employeeId": "697441496e17ae93b917af8f",
+      "email": null,
+      "storeId": "store_00182",
+      "city": null
+    },
+    {
+      "id": "69744a276279f06e9306030c",
+      "fullName": "Monu",
+      "phone": "7210101783",
+      "employeeId": "69744a276279f06e9306030c",
+      "email": null,
+      "storeId": "store_00412",
+      "city": null
+    },
+    {
+      "id": "697490858a1cd89f591c806c",
+      "fullName": "hasan",
+      "phone": "9060779558",
+      "employeeId": "697490858a1cd89f591c806c",
+      "email": null,
+      "storeId": "store_00375",
+      "city": null
+    }
+  ]
+}
