@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
         if (existingSEC && existingSEC.phone !== phone) {
           return NextResponse.json(
-            { error: 'SEC ID already in use' },
+            { error: 'Employee ID already in use' },
             { status: 400 },
           );
         }

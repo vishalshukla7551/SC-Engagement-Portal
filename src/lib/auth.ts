@@ -197,6 +197,13 @@ export async function getAuthenticatedUserFromCookies(
       },
     });
 
+    // If SEC user doesn't exist in database, reject the token
+    if (!secProfile) {
+      console.warn(`[auth] SEC user not found in database: ${secId}`);
+      clearAuthCookies(cookieStore, allowCookieMutation);
+      return null;
+    }
+
     // Fetch store details if storeId exists
     let storeDetails = null;
     if (secProfile?.storeId) {
@@ -217,12 +224,12 @@ export async function getAuthenticatedUserFromCookies(
       validation: 'APPROVED',
       metadata: {},
       profile: {
-        id: secProfile?.id || secId,
-        phone: secProfile?.phone || secId,
-        fullName: secProfile?.fullName || null,
+        id: secProfile.id,
+        phone: secProfile.phone,
+        fullName: secProfile.fullName,
         store: storeDetails,
-        employeeId: secProfile?.employeeId || null,
-        AgencyName: secProfile?.AgencyName || null,
+        employeeId: secProfile.employeeId,
+        AgencyName: secProfile.AgencyName,
       },
     } as any;
 

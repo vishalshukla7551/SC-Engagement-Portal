@@ -59,7 +59,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const verifyTokens = async () => {
       try {
-        // Skip verification for public routes
+        // Special handling for login pages - verify token but don't logout on failure
+        if (pathname.startsWith('/login')) {
+          try {
+            const res = await fetch('/api/auth/verify', {
+              credentials: 'include',
+            });
+
+            if (res.ok) {
+              const { data } = await res.json();
+              // User is already logged in, set user data
+              localStorage.setItem('authUser', JSON.stringify(data));
+              setUser(data);
+              setError(null);
+            }
+            // If verification fails, user stays null (normal login flow)
+          } catch (error) {
+            console.log('[auth] Login page - no valid session');
+          }
+          setLoading(false);
+          return;
+        }
+
+        // Skip verification for other public routes
         if (isPublicPath(pathname)) {
           setLoading(false);
           return;

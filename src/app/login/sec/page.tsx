@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion'; // Added framer-motion
 import { getHomePathForRole } from '@/lib/roleHomePath';
 import ButtonLoader from '@/components/ButtonLoader';
+import { useAuth } from '@/context/AuthContext';
 
 // Pre-calculate Ashok Chakra spokes to avoid hydration mismatch
 // Round to fixed precision to ensure exact SSR/client match
@@ -21,6 +22,7 @@ const ASHOK_CHAKRA_SPOKES = Array.from({ length: 24 }).map((_, i) => {
 
 export default function SECLogin() {
   const router = useRouter();
+  const { user } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const [otpSent, setOtpSent] = useState(false);
@@ -29,6 +31,14 @@ export default function SECLogin() {
   const [isValidNumber, setIsValidNumber] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && user.role) {
+      const homePath = getHomePathForRole(user.role);
+      router.push(homePath);
+    }
+  }, [user, router]);
 
   // Shared input styles – keep consistent with Phone Number field
   const inputBaseClasses =

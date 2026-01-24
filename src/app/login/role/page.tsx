@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getHomePathForRole } from '@/lib/roleHomePath';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RoleLogin() {
   const [username, setUsername] = useState('');
@@ -13,6 +14,15 @@ export default function RoleLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { user } = useAuth();
+  console.log("user",user);
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && user.role) {
+      const homePath = getHomePathForRole(user.role);
+      router.push(homePath);
+    }
+  }, [user, router]);
 
   // Reuse SEC login phone field typography & input styles
   const inputBaseClasses =
@@ -36,10 +46,6 @@ export default function RoleLogin() {
       passwordInput.style.setProperty('outline', 'none', 'important');
     }
   });
-
-  // If already logged in (authUser in localStorage), redirect to role home.
-  // REMOVED: authUser is only for UI display, not for auth decisions
-  // Auth is handled by cookies/tokens via AuthProvider
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

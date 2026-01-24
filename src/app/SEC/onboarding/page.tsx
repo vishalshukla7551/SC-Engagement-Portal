@@ -7,7 +7,7 @@ import { clientLogout } from '@/lib/clientLogout';
 export default function SECOnboardingPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState('');
-  const [secId, setSecId] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
   const [stores, setStores] = useState<
     { id: string; name: string; city?: string | null }[]
   >([]);
@@ -17,7 +17,7 @@ export default function SECOnboardingPage() {
   const [loadingStores, setLoadingStores] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [secIdError, setSecIdError] = useState<string | null>(null);
+  const [employeeIdError, setEmployeeIdError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -28,12 +28,12 @@ export default function SECOnboardingPage() {
 
       const auth = JSON.parse(raw) as any;
       const storedFullName = (auth?.fullName || '').trim();
-      const storedStoreId = (auth?.storeId || auth?.selectedStoreId || '').trim();
-      const storedSecId = (auth?.secId || auth?.employId || auth?.employeeId || '').trim();
+      const storedStoreId = (auth?.storeId || auth?.selectedStoreId || auth?.store?.id || '').trim();
+      const storedEmployeeId = (auth?.employeeId || '').trim();
 
       if (storedFullName) setFullName(storedFullName);
       if (storedStoreId) setSelectedStoreId(storedStoreId);
-      if (storedSecId) setSecId(storedSecId);
+      if (storedEmployeeId) setEmployeeId(storedEmployeeId);
     } catch {
       // ignore
     }
@@ -86,18 +86,18 @@ export default function SECOnboardingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSecIdError(null);
+    setEmployeeIdError(null);
 
     const trimmedFullName = fullName.trim();
-    const trimmedSecId = secId.trim();
+    const trimmedEmployeeId = employeeId.trim();
 
     if (!trimmedFullName) {
       setError('Please enter your full name');
       return;
     }
 
-    if (!trimmedSecId) {
-      setError('Please enter your SEC ID');
+    if (!trimmedEmployeeId) {
+      setError('Please enter your Employee ID');
       return;
     }
 
@@ -116,7 +116,7 @@ export default function SECOnboardingPage() {
           firstName: trimmedFullName,
           lastName: '',
           storeId: selectedStoreId,
-          employeeId: trimmedSecId,
+          employeeId: trimmedEmployeeId,
         }),
       });
 
@@ -124,9 +124,9 @@ export default function SECOnboardingPage() {
         const data = await res.json().catch(() => null);
         const errorMsg = data?.error || 'Failed to save your details';
 
-        // Show SEC ID specific error below the field
-        if (errorMsg === 'SEC ID already in use') {
-          setSecIdError(errorMsg);
+        // Show Employee ID specific error below the field
+        if (errorMsg === 'Employee ID already in use') {
+          setEmployeeIdError(errorMsg);
           return;
         }
 
@@ -146,7 +146,7 @@ export default function SECOnboardingPage() {
               storeId: responseData.storeId,
               store: responseData.store,
               secId: responseData.id,
-              employeeId: responseData.employeeId || trimmedSecId,
+              employeeId: responseData.employeeId || trimmedEmployeeId,
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
             window.location.href = '/SEC/home';
@@ -183,10 +183,10 @@ export default function SECOnboardingPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 mb-2">SEC ID</label>
-            <input type="text" value={secId} onChange={(e) => { setSecId(e.target.value); setSecIdError(null); }} placeholder="Enter your SEC ID" className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg text-black placeholder:text-gray-500" />
-            {secIdError && (
-              <p className="text-sm text-red-600 mt-1">{secIdError}</p>
+            <label className="block text-sm font-medium text-gray-900 mb-2">Employee ID</label>
+            <input type="text" value={employeeId} onChange={(e) => { setEmployeeId(e.target.value); setEmployeeIdError(null); }} placeholder="Enter your Employee ID" className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg text-black placeholder:text-gray-500" />
+            {employeeIdError && (
+              <p className="text-sm text-red-600 mt-1">{employeeIdError}</p>
             )}
           </div>
 
