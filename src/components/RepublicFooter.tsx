@@ -11,6 +11,7 @@ export default function RepublicFooter() {
         if (pathname.includes('/incentive-form')) return 'form';
         if (pathname.includes('/passbook') || pathname.includes('/incentive-passbook')) return 'passbook';
         if (pathname.includes('/training')) return 'training';
+        if (pathname.includes('/sales-submissions')) return 'submissions';
         if (pathname.includes('/republic-day-hero')) return 'ranking';
         if (pathname.includes('/leaderboard')) return 'leaderboard';
         if (pathname.includes('/republic-leaderboard')) return 'hall-of-fame';
@@ -62,12 +63,12 @@ export default function RepublicFooter() {
             ),
         },
         {
-            id: 'passbook',
-            label: 'Incentive\nPassbook',
-            href: '/SEC/passbook',
+            id: 'submissions',
+            label: 'My\nSubmissions',
+            href: '/SEC/sales-submissions',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 17.25h.007v.008H3.75V17.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                 </svg>
             ),
         },
