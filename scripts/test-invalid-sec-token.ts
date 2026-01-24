@@ -29,7 +29,7 @@ const invalidSecId = '9999999999'; // Random phone number that doesn't exist in 
 
 const payload: AuthTokenPayload = {
   secId: invalidSecId,
-  role: 'SEC',
+  role: 'tandom',
   projectId: process.env.PROJECT_ID || 'samsung',
 };
 

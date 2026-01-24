@@ -150,6 +150,14 @@ export async function getAuthenticatedUserFromCookies(
     return null;
   }
 
+  // Validate role is one of the valid roles
+  const VALID_ROLES = ['SEC', 'ASE', 'ABM', 'ZSM', 'ZSE', 'ZOPPER_ADMINISTRATOR', 'SAMSUNG_ADMINISTRATOR'];
+  if (!VALID_ROLES.includes(payload.role)) {
+    console.warn(`[auth] Invalid role in token: ${payload.role}. Clearing cookies.`);
+    clearAuthCookies(cookieStore, allowCookieMutation);
+    return null;
+  }
+
   // Special handling for SEC users.
   // For simple OTP-based SEC login we treat the SEC identity as the phone number
   // carried in `secId` inside the JWT payload, and we do not depend on a
