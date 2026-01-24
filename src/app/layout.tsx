@@ -6,6 +6,9 @@ import { AuthProvider } from "@/context/AuthContext";
 export const metadata: Metadata = {
   title: "SalesDost - Welcome",
   description: "Sales incentive management platform",
+  icons: {
+    icon: "/zopper-logo.png",
+  },
 };
 
 export default function RootLayout({
