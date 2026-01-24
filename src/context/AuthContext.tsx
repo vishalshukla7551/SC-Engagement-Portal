@@ -89,13 +89,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const requiredRoles = getRequiredRoleFromUrl(pathname);
 
+        // Check if cookies exist BEFORE verification
+        const hasCookies = document.cookie.includes('access_token') || document.cookie.includes('refresh_token');
+
         const res = await fetch('/api/auth/verify', {
           credentials: 'include',
         });
 
         if (!res.ok) {
           console.warn(`[auth] Token verification failed: ${res.status}`);
-          void clientLogout();
+          // Show toast only if user HAD cookies (session expired/invalid)
+          // If no cookies existed, just silently redirect (never logged in)
+          void clientLogout(undefined, hasCookies); //if hasCookies is true then show toast otherwise redirect sinlently
           setLoading(false);
           return;
         }
@@ -119,7 +124,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       } catch (error) {
         console.error('[auth] Token verification error:', error);
-        void clientLogout();
+        
+        // Check if cookies exist before showing toast
+        const hasCookies = document.cookie.includes('access_token') || document.cookie.includes('refresh_token');
+        
+        void clientLogout(undefined, hasCookies);
         setLoading(false);
       }
     };
