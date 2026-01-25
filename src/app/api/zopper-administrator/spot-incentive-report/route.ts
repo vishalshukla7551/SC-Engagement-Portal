@@ -195,14 +195,25 @@ export async function GET(req: NextRequest) {
       }
     }));
 
-    // Calculate summary statistics
-    const totalIncentiveEarned = reports.reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
-    const totalIncentivePaid = reports
+    // Calculate summary statistics from ALL reports (not just current page)
+    // Get all reports matching filters for accurate summary stats
+    const allReportsForStats = await prisma.spotIncentiveReport.findMany({
+      where,
+      select: {
+        storeId: true,
+        secId: true,
+        spotincentiveEarned: true,
+        spotincentivepaidAt: true
+      }
+    });
+
+    const totalIncentiveEarned = allReportsForStats.reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
+    const totalIncentivePaid = allReportsForStats
       .filter((report: any) => report.spotincentivepaidAt)
       .reduce((sum: number, report: any) => sum + report.spotincentiveEarned, 0);
 
-    const uniqueStores = new Set(reports.map((report: any) => report.storeId));
-    const uniqueSECs = new Set(reports.map((report: any) => report.secId));
+    const uniqueStores = new Set(allReportsForStats.map((report: any) => report.storeId));
+    const uniqueSECs = new Set(allReportsForStats.map((report: any) => report.secId));
 
     // Get available filters data
     const [stores, planTypes] = await Promise.all([
