@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+const BONUS_PHONE_NUMBERS = (process.env.REPUBLIC_DAY_BONUS_PHONES || '').split(',').filter(Boolean);
+
 // Map cities to regions
 const cityToRegionMap: Record<string, string> = {
     // NORTH
@@ -295,7 +297,13 @@ export async function GET(req: NextRequest) {
 
         // Calculate rank based on sales thresholds (matching leaderboard/hall of fame)
         const secsWithRank = Array.from(userSalesMap.values()).map(sec => {
-            let rank = 'Salesveer';
+            // Apply Bonus Logic (Hall of Fame Consistency)
+            const trimmedPhone = (sec.phone || '').trim();
+            if (BONUS_PHONE_NUMBERS.includes(trimmedPhone) && sec.salesAmount < 21000) {
+                sec.salesAmount += 21000;
+            }
+
+            let rank = 'Sales Veer';
             if (sec.salesAmount >= 200000) rank = 'Sales General';
             else if (sec.salesAmount >= 150000) rank = 'Sales Chief Marshal';
             else if (sec.salesAmount >= 120000) rank = 'Sales Commander';
@@ -321,7 +329,7 @@ export async function GET(req: NextRequest) {
             'Sales Major',
             'Sales Captain',
             'Sales Lieutenant',
-            'Salesveer'
+            'Sales Veer'
         ];
 
         const regions = ['NORTH', 'SOUTH', 'EAST', 'WEST', 'UNKNOWN'];
