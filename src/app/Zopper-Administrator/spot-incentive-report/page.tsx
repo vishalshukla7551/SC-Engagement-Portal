@@ -116,10 +116,13 @@ export default function SpotIncentiveReport() {
   const [importResult, setImportResult] = useState<any>(null);
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === reports.length && reports.length > 0) {
+    // Only select unpaid reports
+    const unpaidReports = reports.filter(r => !r.isPaid);
+
+    if (selectedIds.size === unpaidReports.length && unpaidReports.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(reports.map(r => r.id)));
+      setSelectedIds(new Set(unpaidReports.map(r => r.id)));
     }
   };
 
@@ -136,9 +139,43 @@ export default function SpotIncentiveReport() {
   const handleBulkAction = async (action: 'approve' | 'discard') => {
     if (selectedIds.size === 0) return;
 
-    const actionText = action === 'approve' ? 'approve' : 'discard/delete';
-    if (!confirm(`Are you sure you want to ${actionText} ${selectedIds.size} selected reports?`)) {
-      return;
+    // For approve action, filter out already paid reports
+    let idsToProcess = Array.from(selectedIds);
+    let alreadyPaidCount = 0;
+
+    if (action === 'approve') {
+      const unpaidIds: string[] = [];
+      selectedIds.forEach(id => {
+        const report = reports.find(r => r.id === id);
+        if (report) {
+          if (report.isPaid) {
+            alreadyPaidCount++;
+          } else {
+            unpaidIds.push(id);
+          }
+        }
+      });
+      idsToProcess = unpaidIds;
+
+      if (unpaidIds.length === 0) {
+        alert('All selected reports are already approved/paid. No action needed.');
+        return;
+      }
+
+      if (alreadyPaidCount > 0) {
+        if (!confirm(`${alreadyPaidCount} report(s) are already paid and will be skipped.\n\nDo you want to approve the remaining ${unpaidIds.length} unpaid report(s)?`)) {
+          return;
+        }
+      } else {
+        if (!confirm(`Are you sure you want to approve ${unpaidIds.length} selected report(s)?`)) {
+          return;
+        }
+      }
+    } else {
+      // For discard action, confirm normally
+      if (!confirm(`Are you sure you want to discard/delete ${idsToProcess.length} selected reports?`)) {
+        return;
+      }
     }
 
     try {
@@ -147,7 +184,7 @@ export default function SpotIncentiveReport() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ids: Array.from(selectedIds),
+          ids: idsToProcess,
           action
         })
       });
@@ -155,7 +192,11 @@ export default function SpotIncentiveReport() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        alert(result.message);
+        let message = result.message;
+        if (action === 'approve' && alreadyPaidCount > 0) {
+          message += `\n\n${alreadyPaidCount} already-paid report(s) were skipped.`;
+        }
+        alert(message);
         setSelectedIds(new Set()); // Clear selection
         fetchData(); // Refresh data
       } else {
@@ -534,9 +575,15 @@ export default function SpotIncentiveReport() {
                     <button
                       onClick={toggleSelectAll}
                       className="text-neutral-500 hover:text-indigo-600 transition-colors"
-                      title={selectedIds.size === reports.length ? "Deselect All" : "Select All"}
+                      title={
+                        reports.filter(r => !r.isPaid).length === 0
+                          ? "No unpaid reports to select"
+                          : selectedIds.size === reports.filter(r => !r.isPaid).length
+                            ? "Deselect All Unpaid"
+                            : "Select All Unpaid"
+                      }
                     >
-                      {reports.length > 0 && selectedIds.size === reports.length ? (
+                      {reports.filter(r => !r.isPaid).length > 0 && selectedIds.size === reports.filter(r => !r.isPaid).length ? (
                         <FaCheckSquare size={16} className="text-indigo-600" />
                       ) : (
                         <FaSquare size={16} />
@@ -598,7 +645,12 @@ export default function SpotIncentiveReport() {
                       <td className="p-2 md:p-3">
                         <button
                           onClick={() => toggleSelectRow(r.id)}
-                          className="text-neutral-400 hover:text-indigo-600 transition-colors block"
+                          disabled={r.isPaid}
+                          className={`transition-colors block ${r.isPaid
+                            ? 'text-neutral-300 cursor-not-allowed'
+                            : 'text-neutral-400 hover:text-indigo-600'
+                            }`}
+                          title={r.isPaid ? 'Already approved - cannot select' : 'Select this report'}
                         >
                           {selectedIds.has(r.id) ? (
                             <FaCheckSquare size={16} className="text-indigo-600" />

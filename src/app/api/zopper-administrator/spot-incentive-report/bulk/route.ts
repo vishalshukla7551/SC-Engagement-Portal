@@ -25,15 +25,40 @@ export async function POST(req: NextRequest) {
     let result;
     if (action === 'approve') {
       // Approve all selected reports
-      result = await prisma.spotIncentiveReport.updateMany({
+      console.log('=== BULK APPROVE DEBUG ===');
+      console.log('IDs received:', JSON.stringify(ids, null, 2));
+      console.log('Number of IDs:', ids.length);
+
+      // First, let's check how many of these reports exist and are unpaid
+      const existingReports = await prisma.spotIncentiveReport.findMany({
         where: {
-          id: { in: ids },
-          spotincentivepaidAt: null // Only approve not-already-paid
+          id: { in: ids }
         },
-        data: {
-          spotincentivepaidAt: new Date()
+        select: {
+          id: true,
+          spotincentivepaidAt: true,
+          imei: true
         }
       });
+
+      console.log('Existing reports found:', existingReports.length);
+
+      const unpaidReports = existingReports.filter(r => !r.spotincentivepaidAt);
+      console.log('Unpaid reports count:', unpaidReports.length);
+
+      // Use individual updates instead of updateMany (MongoDB limitation with Prisma)
+      const updatePromises = unpaidReports.map(report =>
+        prisma.spotIncentiveReport.update({
+          where: { id: report.id },
+          data: { spotincentivepaidAt: new Date() }
+        })
+      );
+
+      const updateResults = await Promise.all(updatePromises);
+      console.log('Successfully updated:', updateResults.length, 'reports');
+      console.log('=== END DEBUG ===');
+
+      result = { count: updateResults.length };
     } else if (action === 'discard') {
       // Discard/Delete all selected reports
       // Note: We might want to just delete them as per current single discard logic
