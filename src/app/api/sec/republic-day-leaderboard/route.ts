@@ -9,6 +9,7 @@ const BONUS_PHONE_NUMBERS = (process.env.REPUBLIC_DAY_BONUS_PHONES || '').split(
 
 // RANKS Updated to match Republic Day Hero Page thresholds
 const RANKS = [
+    { id: 'general', title: 'Sales General', minSales: 200000 },
     { id: 'brigadier', title: 'Sales Chief Marshal', minSales: 150000 },
     { id: 'colonel', title: 'Sales Commander', minSales: 120000 },
     { id: 'major', title: 'Sales Major', minSales: 80000 },
@@ -143,22 +144,20 @@ export async function GET(req: NextRequest) {
         });
 
         // Add bonus to all bonus users (whether they have sales or not)
+        // Bonus users ALWAYS get +21000, no matter their sales
         bonusUsersData.forEach(secUser => {
             const trimmedPhone = (secUser.phone || '').trim();
             const existingUserIndex = allUsers.findIndex(u => u.phone === trimmedPhone);
             
             if (existingUserIndex >= 0) {
-                // User already exists, update with bonus
+                // User already exists, always add 21000 bonus
                 const existingUser = allUsers[existingUserIndex];
-                if (existingUser.salesAmount < 21000) {
-                    // Only add bonus if not already added
-                    existingUser.salesAmount += 21000;
-                    // Recalculate rank with bonus
-                    const rankObj = getRank(existingUser.salesAmount);
-                    existingUser.rankId = rankObj.id;
-                    existingUser.rankTitle = rankObj.title;
-                    existingUser.minSalesForRank = rankObj.minSales;
-                }
+                existingUser.salesAmount += 21000;
+                // Recalculate rank with bonus
+                const rankObj = getRank(existingUser.salesAmount);
+                existingUser.rankId = rankObj.id;
+                existingUser.rankTitle = rankObj.title;
+                existingUser.minSalesForRank = rankObj.minSales;
             } else {
                 // User doesn't exist, add with only bonus
                 const bonusAmount = 21000;

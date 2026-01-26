@@ -168,7 +168,7 @@ const RANKS = [
     { title: 'Sales Major', shortTitle: 'Major', icon: Shield },
     { title: 'Sales Captain', shortTitle: 'Captain', icon: Target },
     { title: 'Sales Lieutenant', shortTitle: 'Lieutenant', icon: Star },
-    { title: 'Sales Veer', shortTitle: 'Sales Veer', icon: Shield }
+    { title: 'Salesveer', shortTitle: 'Salesveer', icon: Shield }
 ];
 
 // --- Mock Names for Detail View ---
@@ -365,9 +365,13 @@ export default function RegimentsPage() {
                                                         <row.icon size={18} />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="font-bold text-stone-700 uppercase tracking-tight text-[10px] sm:text-sm font-poppins hidden sm:block">{row.rank}</span>
+                                                        <span className="font-bold text-stone-700 uppercase tracking-tight text-[10px] sm:text-sm font-poppins hidden sm:block">
+                                                            {row.rank} <span className="text-stone-500 font-normal">({row.counts.NORTH + row.counts.SOUTH + row.counts.EAST + row.counts.WEST})</span>
+                                                        </span>
                                                         {/* Mobile Short Rank */}
-                                                        <span className="font-bold text-stone-700 uppercase tracking-tight text-xs sm:text-sm font-poppins sm:hidden">{row.shortRank}</span>
+                                                        <span className="font-bold text-stone-700 uppercase tracking-tight text-xs sm:text-sm font-poppins sm:hidden">
+                                                            {row.shortRank} <span className="text-stone-500 font-normal">({row.counts.NORTH + row.counts.SOUTH + row.counts.EAST + row.counts.WEST})</span>
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>

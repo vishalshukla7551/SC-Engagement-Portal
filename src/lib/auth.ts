@@ -94,9 +94,12 @@ type CookieReader = {
 // 4) Load the user from DB and ensure validation=APPROVED.
 // 5) If anything fails, clear auth cookies and return null.
 export async function getAuthenticatedUserFromCookies(
+  
   cookiesParam?: CookieReader,
   options?: { mutateCookies?: boolean },
 ): Promise<AuthenticatedUser | null> {
+     const isSecure = process.env.NODE_ENV === 'production';
+      console.log("isSecure",isSecure)
   const allowCookieMutation = options?.mutateCookies ?? true;
   // Prefer the explicit reader passed from route handlers; otherwise fall back to next/headers.
   // In Next.js 16, `cookies()` is async and returns a Promise, so we must await it
