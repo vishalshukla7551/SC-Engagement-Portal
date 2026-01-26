@@ -10,6 +10,7 @@ type Submission = {
     imei: string;
     Date_of_sale: string;
     createdAt: string;
+    spotincentivepaidAt: string | null;
     plan: {
         planType: string;
         price: number;
@@ -32,6 +33,11 @@ const IndianFlag = ({ size = 20 }: { size?: number }) => (
 
 export default function SalesSubmissionsPage() {
     const [submissions, setSubmissions] = useState<Submission[]>([]);
+    const [verifiedCount, setVerifiedCount] = useState(0);
+    const [unverifiedCount, setUnverifiedCount] = useState(0);
+    const [verifiedSalesTotal, setVerifiedSalesTotal] = useState(0);
+    const [bonusAmount, setBonusAmount] = useState(0);
+    const [totalPoints, setTotalPoints] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedDate, setSelectedDate] = useState(""); // State for date filter
@@ -43,6 +49,11 @@ export default function SalesSubmissionsPage() {
                 if (!res.ok) throw new Error("Failed to fetch data");
                 const data = await res.json();
                 setSubmissions(data.submissions);
+                setVerifiedCount(data.verifiedCount);
+                setUnverifiedCount(data.unverifiedCount);
+                setVerifiedSalesTotal(data.verifiedSalesTotal);
+                setBonusAmount(data.bonusAmount);
+                setTotalPoints(data.totalPoints);
             } catch (err) {
                 setError("Could not load submissions");
             } finally {
@@ -151,6 +162,7 @@ export default function SalesSubmissionsPage() {
 
         const deviceName = curr.samsungSKU?.ModelName || "Unknown Device";
         const planType = curr.plan?.planType || "Unknown Plan";
+        const isVerified = curr.spotincentivepaidAt !== null;
 
         const key = `${sortDate}|${deviceName}|${planType}`;
 
@@ -161,12 +173,19 @@ export default function SalesSubmissionsPage() {
                 shortDate,
                 deviceName,
                 planType,
-                units: 0
+                units: 0,
+                verifiedUnits: 0,
+                unverifiedUnits: 0
             };
         }
         acc[key].units += 1;
+        if (isVerified) {
+            acc[key].verifiedUnits += 1;
+        } else {
+            acc[key].unverifiedUnits += 1;
+        }
         return acc;
-    }, {} as Record<string, { sortDate: string; displayDate: string; shortDate: string; deviceName: string; planType: string; units: number }>);
+    }, {} as Record<string, { sortDate: string; displayDate: string; shortDate: string; deviceName: string; planType: string; units: number; verifiedUnits: number; unverifiedUnits: number }>);
 
     // Convert to array and sort by Date Descending
     const tableRows = Object.values(groupedTableData).sort((a, b) => b.sortDate.localeCompare(a.sortDate));
@@ -242,17 +261,37 @@ export default function SalesSubmissionsPage() {
                     className="mb-6 bg-gradient-to-r from-[#000080] to-[#1a1a90] rounded-2xl p-4 text-white shadow-lg relative overflow-hidden"
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                    <div className="relative z-10 flex justify-between items-center">
-                        <div>
-                            <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Total Points</p>
-                            <h2 className="text-3xl font-black tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                {totalEarnings.toLocaleString('en-IN')}
-                            </h2>
+                    <div className="relative z-10">
+                        <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-3">Points Breakdown</p>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            {/* Verified Sales */}
+                            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+                                <p className="text-[9px] text-green-200 font-semibold mb-1">✓ Admin Verified Sales</p>
+                                <p className="text-lg font-black tracking-tight">{verifiedSalesTotal.toLocaleString('en-IN')}</p>
+                                <p className="text-[8px] text-blue-100 mt-1">({verifiedCount} units)</p>
+                            </div>
+                            
+                            {/* Unverified Sales */}
+                            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+                                <p className="text-[9px] text-yellow-200 font-semibold mb-1">⏳ Pending Verification</p>
+                                <p className="text-lg font-black tracking-tight text-yellow-300">-</p>
+                                <p className="text-[8px] text-blue-100 mt-1">({unverifiedCount} units)</p>
+                            </div>
                         </div>
-                        <div className="text-right">
-                            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/10">
-                                <p className="text-[10px] text-blue-100">Total Units</p>
-                                <p className="text-lg font-bold">{filteredSubmissions.length}</p>
+                        
+                        <div className="border-t border-white/20 pt-3 grid grid-cols-2 gap-3">
+                            {/* Bonus Points */}
+                            {bonusAmount > 0 && (
+                                <div className="bg-gradient-to-br from-yellow-400/20 to-orange-400/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-yellow-300/30">
+                                    <p className="text-[9px] text-yellow-100 font-semibold mb-1">🎁 Bonus Points</p>
+                                    <p className="text-lg font-black tracking-tight text-yellow-200">+{bonusAmount.toLocaleString('en-IN')}</p>
+                                </div>
+                            )}
+                            
+                            {/* Total Points */}
+                            <div className="bg-gradient-to-br from-green-400/20 to-emerald-400/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-green-300/30">
+                                <p className="text-[9px] text-green-100 font-semibold mb-1">💰 Total Points</p>
+                                <p className="text-lg font-black tracking-tight text-green-200">{totalPoints.toLocaleString('en-IN')}</p>
                             </div>
                         </div>
                     </div>
@@ -329,10 +368,11 @@ export default function SalesSubmissionsPage() {
                         <table className="w-full text-left text-slate-600">
                             <thead className="text-[10px] font-bold text-slate-400 uppercase bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                    <th scope="col" className="px-3 py-3 w-[18%] text-[#000080]">Date</th>
-                                    <th scope="col" className="px-2 py-3 w-[35%] text-[#000080]">Device</th>
-                                    <th scope="col" className="px-2 py-3 w-[32%] text-[#000080]">Plan</th>
-                                    <th scope="col" className="px-2 py-3 w-[15%] text-center text-[#000080]">Qty</th>
+                                    <th scope="col" className="px-3 py-3 w-[15%] text-[#000080]">Date</th>
+                                    <th scope="col" className="px-2 py-3 w-[30%] text-[#000080]">Device</th>
+                                    <th scope="col" className="px-2 py-3 w-[25%] text-[#000080]">Plan</th>
+                                    <th scope="col" className="px-2 py-3 w-[10%] text-center text-[#000080]">Qty</th>
+                                    <th scope="col" className="px-2 py-3 w-[20%] text-center text-[#000080]">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="text-xs">
@@ -359,11 +399,27 @@ export default function SalesSubmissionsPage() {
                                             <td className="px-2 py-3 text-center text-orange-600 font-black text-sm align-top">
                                                 {row.units}
                                             </td>
+                                            <td className="px-2 py-3 text-center align-top">
+                                                <div className="flex flex-col gap-1">
+                                                    {row.verifiedUnits > 0 && (
+                                                        <span className="inline-flex items-center justify-center gap-1 px-2 py-1 rounded text-[9px] font-bold bg-green-100 text-green-700 border border-green-200">
+                                                            <span>✓</span>
+                                                            <span>{row.verifiedUnits} Verified</span>
+                                                        </span>
+                                                    )}
+                                                    {row.unverifiedUnits > 0 && (
+                                                        <span className="inline-flex items-center justify-center gap-1 px-2 py-1 rounded text-[9px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                                            <span>⏳</span>
+                                                            <span>{row.unverifiedUnits} Pending</span>
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
                                         </motion.tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={4} className="px-4 py-12 text-center text-slate-400 text-xs font-medium">
+                                        <td colSpan={5} className="px-4 py-12 text-center text-slate-400 text-xs font-medium">
                                             {selectedDate ? (
                                                 <div className="flex flex-col items-center gap-2">
                                                     <span>No sales found for this date.</span>
