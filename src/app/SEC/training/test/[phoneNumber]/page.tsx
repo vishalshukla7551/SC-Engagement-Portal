@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Camera, AlertTriangle, Shield } from 'lucide-react';
 import * as faceapi from 'face-api.js';
 import confetti from 'canvas-confetti';
@@ -47,7 +47,9 @@ type TestPhase = 'permission' | 'instructions' | 'test' | 'certificate' | 'revie
 export default function ProctoredTestPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const phoneNumber = params?.phoneNumber as string;
+  const testType = searchParams.get('testType') || 'CERTIFICATION';
 
   const [testData, setTestData] = useState<TestData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,8 +88,8 @@ export default function ProctoredTestPage() {
     const fetchQuestions = async () => {
       setLoading(true);
       try {
-        // Fetch 10 random questions from the database
-        const response = await fetch(`/api/sec/training/quiz/questions?testType=CERTIFICATION&limit=10`);
+        // Fetch questions based on testType
+        const response = await fetch(`/api/sec/training/quiz/questions?testType=${testType}&limit=50`);
         const result = await response.json();
 
         if (result.success && result.data) {

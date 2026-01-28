@@ -228,7 +228,11 @@ export default function TrainingPage() {
       alert('Unable to retrieve user phone number. Please log in again.');
       return;
     }
-    router.push(`/SEC/training/test/${phoneNumber}`);
+
+    const test = realTests.find((t) => t.id === testId);
+    const type = test?.testType || 'CERTIFICATION';
+
+    router.push(`/SEC/training/test/${phoneNumber}?testType=${type}`);
   };
 
   const handleVideoClick = (video: typeof trainingVideos[0]) => {
