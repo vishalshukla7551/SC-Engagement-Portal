@@ -20,7 +20,7 @@ export const RANKS = [
     { id: 'major', title: 'SALES MAJOR', minSales: 80000, color: 'bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
-    { id: 'general', title: 'SALES GENERAL', minSales: 150000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
+    { id: 'general', title: 'SALES GENERAL', minSales: 200000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
 ];
 
 interface TermsModalProps {

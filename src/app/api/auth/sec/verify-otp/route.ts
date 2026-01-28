@@ -120,6 +120,7 @@ export async function POST(req: NextRequest) {
       sameSite: 'lax',
       secure: isSecure,
       path: '/',
+      maxAge: 15 * 60, // 15 minutes in seconds
     });
 
     res.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, {
@@ -127,6 +128,7 @@ export async function POST(req: NextRequest) {
       sameSite: 'lax',
       secure: isSecure,
       path: '/',
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     });
 
     return res;
