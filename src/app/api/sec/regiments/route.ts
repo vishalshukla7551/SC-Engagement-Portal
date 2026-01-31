@@ -202,10 +202,10 @@ export async function GET(req: NextRequest) {
         });
 
         // Calculate rank based on sales thresholds (matching leaderboard/hall of fame)
+        // Sales General removed - will be assigned manually later
         const secsWithRank = Array.from(userSalesMap.values()).map(sec => {
             let rank = 'Salesveer';
-            if (sec.salesAmount >= 200000) rank = 'Sales General';
-            else if (sec.salesAmount >= 150000) rank = 'Sales Chief Marshal';
+            if (sec.salesAmount >= 150000) rank = 'Sales Chief Marshal';
             else if (sec.salesAmount >= 120000) rank = 'Sales Commander';
             else if (sec.salesAmount >= 80000) rank = 'Sales Major';
             else if (sec.salesAmount >= 51000) rank = 'Sales Captain';
@@ -223,7 +223,6 @@ export async function GET(req: NextRequest) {
         const personnelByRankAndRegion: Record<string, Record<string, any[]>> = {};
 
         const ranks = [
-            'Sales General',
             'Sales Chief Marshal',
             'Sales Commander',
             'Sales Major',
