@@ -127,13 +127,11 @@ export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: Rewards
             >
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-orange-50 via-white to-green-50">
                     <div className="flex items-center gap-3">
-                        <motion.div
+                        <div
                             className="bg-gradient-to-br from-orange-500 to-orange-600 p-2 rounded-xl text-white shadow-lg"
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
                         >
                             <Gift size={20} />
-                        </motion.div>
+                        </div>
                         <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>ProtectMaxYodha Rewards</h3>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400">
@@ -163,20 +161,20 @@ export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: Rewards
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.08 }}
-                                    className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 transition-all hover:scale-[1.02] ${isCurrentRank
+                                    className={`relative p-4 rounded-2xl bg-gradient-to-br border-2 ${isCurrentRank
                                         ? 'from-blue-50 to-indigo-50 border-blue-400 shadow-lg shadow-blue-300/50 ring-2 ring-blue-400'
                                         : isTopRank
                                             ? 'from-yellow-50 to-orange-50 border-orange-300 shadow-lg shadow-orange-200/50'
-                                            : 'from-slate-50 to-white border-slate-200 hover:border-orange-200'
+                                            : 'from-slate-50 to-white border-slate-200'
                                         }`}
                                 >
                                     {isCurrentRank && (
-                                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-md animate-pulse border border-blue-200">
+                                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-md border border-blue-200">
                                             ⭐ Your Rank
                                         </div>
                                     )}
                                     {isTopRank && !isCurrentRank && (
-                                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-lg z-20 animate-pulse border border-yellow-200">
+                                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-lg z-20 border border-yellow-200">
                                             🏆 Top Honor
                                         </div>
                                     )}
@@ -208,9 +206,9 @@ export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: Rewards
                         transition={{ delay: 0.6 }}
                         className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 flex items-start gap-3 shadow-sm"
                     >
-                        <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>
-                            <Star className="text-blue-600 fill-blue-600 shrink-0 mt-0.5" size={18} />
-                        </motion.div>
+                        <div className="mt-0.5">
+                            <Star className="text-blue-600 fill-blue-600 shrink-0" size={18} />
+                        </div>
                         <div>
                             <p className="text-sm font-black text-blue-800 uppercase mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Keep Pushing Forward!</p>
                             <p className="text-xs text-blue-700 leading-relaxed">Every sale brings you closer to glory. Stay motivated, keep climbing, and let your dedication shine! 🌟</p>
