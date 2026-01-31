@@ -50,8 +50,19 @@ export async function GET(req: NextRequest) {
         // Check if user is bonus user
         const hasBonus = BONUS_PHONE_NUMBERS.includes(secPhone);
 
-        // Bonus only on verified sales
-        const bonusAmount = hasBonus ? 21000 : 0;
+        // Calculate total bonus amount
+        let bonusAmount = 0;
+        
+        // Republic Day bonus (21000)
+        if (hasBonus) {
+            bonusAmount += 21000;
+        }
+        
+        // ProtectMax test bonus (10000)
+        if (secUser.hasProtectMaxBonus) {
+            bonusAmount += 10000;
+        }
+
         const totalPoints = verifiedSalesTotal + bonusAmount;
 
         return NextResponse.json({ 
@@ -61,7 +72,8 @@ export async function GET(req: NextRequest) {
             verifiedSalesTotal,
             bonusAmount,
             totalPoints,
-            hasBonus
+            hasBonus,
+            hasProtectMaxBonus: secUser.hasProtectMaxBonus
         });
 
     } catch (error) {

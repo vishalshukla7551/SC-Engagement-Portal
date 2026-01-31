@@ -38,6 +38,7 @@ export default function SalesSubmissionsPage() {
     const [verifiedSalesTotal, setVerifiedSalesTotal] = useState(0);
     const [bonusAmount, setBonusAmount] = useState(0);
     const [totalPoints, setTotalPoints] = useState(0);
+    const [hasProtectMaxBonus, setHasProtectMaxBonus] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedDate, setSelectedDate] = useState(""); // State for date filter
@@ -54,6 +55,7 @@ export default function SalesSubmissionsPage() {
                 setVerifiedSalesTotal(data.verifiedSalesTotal);
                 setBonusAmount(data.bonusAmount);
                 setTotalPoints(data.totalPoints);
+                setHasProtectMaxBonus(data.hasProtectMaxBonus || false);
             } catch (err) {
                 setError("Could not load submissions");
             } finally {
@@ -283,8 +285,16 @@ export default function SalesSubmissionsPage() {
                             {/* Bonus Points */}
                             {bonusAmount > 0 && (
                                 <div className="bg-gradient-to-br from-yellow-400/20 to-orange-400/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-yellow-300/30">
-                                    <p className="text-[9px] text-yellow-100 font-semibold mb-1">🎁 Bonus Points</p>
-                                    <p className="text-lg font-black tracking-tight text-yellow-200">+{bonusAmount.toLocaleString('en-IN')}</p>
+                                    <p className="text-[9px] text-yellow-100 font-semibold mb-2">🎁 Bonus Points</p>
+                                    <div className="space-y-1">
+                                        {bonusAmount >= 21000 && (
+                                            <p className="text-[8px] text-yellow-200">Republic Day: +21,000</p>
+                                        )}
+                                        {hasProtectMaxBonus && (
+                                            <p className="text-[8px] text-yellow-200">ProtectMax Test: +10,000</p>
+                                        )}
+                                    </div>
+                                    <p className="text-lg font-black tracking-tight text-yellow-200 mt-1">+{bonusAmount.toLocaleString('en-IN')}</p>
                                 </div>
                             )}
                             
