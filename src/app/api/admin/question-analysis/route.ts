@@ -3,161 +3,138 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
     try {
-        // 1. Fetch all questions to build a lookup map
-        const allQuestions = await (prisma as any).questionBank.findMany({
+        // 1. Fetch ALL questions from the QuestionBank database first (The Master Answer Key)
+        const dbQuestions = await prisma.questionBank.findMany({
             where: { isActive: true },
             select: {
                 questionId: true,
                 question: true,
+                options: true,
                 correctAnswer: true,
-                category: true,
-                options: true, // Need options to build the breakdown
+                category: true
             }
         });
 
-        // Map: questionId -> { details, stats, optionCounts }
-        const questionMap = new Map();
-        allQuestions.forEach((q: any) => {
-            // Initialize option counts
-            const optionCounts: Record<string, number> = {};
+        // Create a quick lookup map for questions
+        const questionMap = new Map<number, typeof dbQuestions[0]>();
+        dbQuestions.forEach(q => questionMap.set(q.questionId, q));
 
-            // Parse options if they are strings like "A) Text"
-            const parsedOptions = (q.options || []).map((optStr: string) => {
-                let optionChar = '';
-                let optionText = optStr;
-
-                // Try to extract "A) " or "A. " pattern
-                const match = optStr.match(/^([A-Z])[\)\.]\s+(.*)/);
-                if (match) {
-                    optionChar = match[1];
-                    optionText = match[2];
-                } else {
-                    // Fallback if just "Option Text", assign fictional letters if needed or handle otherwise
-                    // For now assuming A, B, C, D based on index if pattern fails is risky but check
-                }
-
-                if (optionChar) optionCounts[optionChar] = 0;
-
-                return {
-                    original: optStr,
-                    char: optionChar,
-                    text: optionText
-                };
-            });
-
-            // Also ensure A, B, C, D exist in counts if standard
-            ['A', 'B', 'C', 'D'].forEach(char => {
-                if (optionCounts[char] === undefined) optionCounts[char] = 0;
-            });
-
-            questionMap.set(String(q.questionId), {
-                id: String(q.questionId),
-                questionNumber: q.questionId,
-                questionText: q.question,
-                category: q.category,
-                correctAnswer: q.correctAnswer,
-                totalAttempts: 0,
-                correctCount: 0,
-                incorrectCount: 0,
-                optionCounts: optionCounts,
-                parsedOptions: parsedOptions
-            });
-        });
-
-        // 2. Fetch all test submissions with responses
-        const submissions = await (prisma as any).testSubmission.findMany({
+        // 2. Fetch all test submissions
+        const submissions = await prisma.testSubmission.findMany({
             select: {
+                id: true,
+                phone: true,
                 responses: true,
+                score: true,
+                createdAt: true
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         });
 
-        // 3. Aggregate statistics
-        submissions.forEach((submission: any) => {
-            if (!submission.responses || !Array.isArray(submission.responses)) return;
+        // Initialize question statistics with ALL DB questions (default 0s)
+        const questionStats = new Map<number, {
+            questionId: number;
+            questionText: string;
+            totalAttempts: number;
+            correctAttempts: number;
+            incorrectAttempts: number;
+            successRate: number;
+            category: string;
+        }>();
 
-            submission.responses.forEach((response: any) => {
-                const qId = String(response.questionId);
-                const stats = questionMap.get(qId);
+        // Pre-fill stats for every question in DB
+        dbQuestions.forEach(q => {
+            questionStats.set(q.questionId, {
+                questionId: q.questionId,
+                questionText: q.question,
+                totalAttempts: 0,
+                correctAttempts: 0,
+                incorrectAttempts: 0,
+                successRate: 0,
+                category: q.category || 'Unknown'
+            });
+        });
 
-                if (stats) {
-                    stats.totalAttempts++;
+        // 3. Process each submission
+        submissions.forEach(submission => {
+            if (!submission.responses) return;
+            const responses = submission.responses as any;
 
-                    const selected = response.selectedAnswer; // e.g., "A"
-                    if (stats.optionCounts[selected] !== undefined) {
-                        stats.optionCounts[selected]++;
-                    }
+            // Process each response
+            Object.entries(responses).forEach(([questionIdStr, answer]) => {
+                const questionId = parseInt(questionIdStr);
+                const question = questionMap.get(questionId);
 
-                    // Use isCorrect flag if available
-                    const isCorrect = response.isCorrect === true || response.isCorrect === 'true';
+                // If question not found in DB, skip (might be old deleted question)
+                if (!question) return;
 
-                    if (isCorrect) {
-                        stats.correctCount++;
-                    } else {
-                        stats.incorrectCount++;
-                    }
+                const stats = questionStats.get(questionId)!;
+                stats.totalAttempts++;
+
+                // Check if answer is correct (Case insensitive check just to be safe)
+                if (String(answer).trim().toUpperCase() === String(question.correctAnswer).trim().toUpperCase()) {
+                    stats.correctAttempts++;
+                } else {
+                    stats.incorrectAttempts++;
+                }
+
+                // Calculate success rate
+                if (stats.totalAttempts > 0) {
+                    stats.successRate = Math.round((stats.correctAttempts / stats.totalAttempts) * 100);
                 }
             });
         });
 
-        // 4. Transform to final format matches UI expectations roughly
-        const analysisResults = Array.from(questionMap.values())
-            .map((item) => {
-                const correctPercentage = item.totalAttempts > 0
-                    ? Math.round((item.correctCount / item.totalAttempts) * 100)
-                    : 0;
+        // Convert to array
+        const allQuestions = Array.from(questionStats.values());
 
-                const wrongPercentage = item.totalAttempts > 0
-                    ? 100 - correctPercentage
-                    : 0;
-
-                // Find most selected wrong option
-                let mostSelectedWrongOption = '-';
-                let maxWrongCount = -1;
-
-                Object.entries(item.optionCounts).forEach(([opt, count]) => {
-                    if (opt !== item.correctAnswer && (count as number) > maxWrongCount) {
-                        maxWrongCount = (count as number);
-                        mostSelectedWrongOption = opt;
-                    }
-                });
-
-                // Format options for UI
-                const optionsFormatted = item.parsedOptions.map((pOpt: any) => {
-                    const count = item.optionCounts[pOpt.char] || 0;
-                    return {
-                        option: pOpt.char,
-                        text: pOpt.text,
-                        selectedCount: item.totalAttempts > 0 ? Math.round((count / item.totalAttempts) * 100) : 0, // Sending percentage as 'selectedCount' for UI compatibility or raw count?
-                        // UI expects 'selectedCount' to be displayed as percentage in one place: "{opt.selectedCount}%"
-                        // But logical structure might imply count. 
-                        // Looking at existing UI: <div className="font-bold text-gray-900">{opt.selectedCount}%</div>
-                        // So it expects percentage.
-                        isCorrect: pOpt.char === item.correctAnswer
-                    };
-                });
-
-                return {
-                    id: item.id,
-                    questionNumber: item.questionNumber,
-                    questionText: item.questionText,
-                    correctPercentage,
-                    wrongPercentage,
-                    totalAttempts: item.totalAttempts,
-                    mostSelectedWrongOption,
-                    options: optionsFormatted
-                };
-            })
-            .sort((a, b) => a.correctPercentage - b.correctPercentage); // Hardest first (lowest correct %)
-
+        // 4. Return formatted data
         return NextResponse.json({
             success: true,
-            data: analysisResults
+            data: allQuestions
+                .sort((a, b) => {
+                    // Sort by attempts (desc) then by question ID
+                    if (b.totalAttempts !== a.totalAttempts) return b.totalAttempts - a.totalAttempts;
+                    return a.questionId - b.questionId;
+                })
+                .map((q) => {
+                    // Find database data for options
+                    const dbData = questionMap.get(q.questionId);
+
+                    // Format options if available
+                    const formattedOptions = dbData ? dbData.options.map((optString: string) => {
+                        const parts = optString.split(') ');
+                        const optLetter = parts[0].trim(); // "A"
+                        const optText = parts.slice(1).join(') ').trim(); // "Rest of text"
+
+                        return {
+                            option: optLetter,
+                            text: optText || optString, // Fallback if split fails
+                            selectedCount: 0, // Placeholder
+                            isCorrect: dbData.correctAnswer === optLetter
+                        };
+                    }) : [];
+
+                    return {
+                        id: `q-${q.questionId}`,
+                        questionNumber: q.questionId,
+                        questionText: q.questionText,
+                        // If 0 attempts, show 0% for both correct and wrong
+                        correctPercentage: q.totalAttempts > 0 ? q.successRate : 0,
+                        wrongPercentage: q.totalAttempts > 0 ? (100 - q.successRate) : 0,
+                        totalAttempts: q.totalAttempts,
+                        mostSelectedWrongOption: '-',
+                        options: formattedOptions
+                    };
+                })
         });
 
     } catch (error) {
         console.error('Error fetching question analysis:', error);
         return NextResponse.json(
-            { success: false, message: 'Failed to fetch question analysis data' },
+            { success: false, message: 'Failed to fetch question analysis' },
             { status: 500 }
         );
     }
