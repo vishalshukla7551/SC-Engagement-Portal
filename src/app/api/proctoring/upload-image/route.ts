@@ -10,6 +10,11 @@ cloudinary.config({
 
 export async function POST(req: Request) {
     try {
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            console.error('❌ Missing Cloudinary Environment Variables');
+            return NextResponse.json({ success: false, error: 'Server configuration error' }, { status: 500 });
+        }
+
         const { image, phoneNumber } = await req.json();
 
         if (!image) {
