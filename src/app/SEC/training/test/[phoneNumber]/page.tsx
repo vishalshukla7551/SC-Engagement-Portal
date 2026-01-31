@@ -48,9 +48,10 @@ export default function ProctoredTestPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  const phoneNumber = params?.phoneNumber as string;
+  const urlPhoneNumber = params?.phoneNumber as string;
   const testType = searchParams.get('testType') || 'CERTIFICATION';
 
+  const [phoneNumber, setPhoneNumber] = useState<string>(urlPhoneNumber);
   const [testData, setTestData] = useState<TestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState<TestPhase>('permission');
@@ -84,6 +85,20 @@ export default function ProctoredTestPage() {
     }
     return 'SEC User';
   };
+
+  useEffect(() => {
+    try {
+      const authUser = localStorage.getItem('authUser');
+      if (authUser) {
+        const userData = JSON.parse(authUser);
+        if (userData.phone && userData.phone !== urlPhoneNumber) {
+          setPhoneNumber(userData.phone);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking authUser phone:', error);
+    }
+  }, [urlPhoneNumber]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
