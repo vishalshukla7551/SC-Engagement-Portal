@@ -33,7 +33,7 @@ interface TermsModalProps {
 export const TermsModal = memo(({ isOpen, onClose }: TermsModalProps) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80" onClick={onClose}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -117,7 +117,7 @@ interface RewardsModalProps {
 export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: RewardsModalProps) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80" onClick={onClose}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -260,7 +260,7 @@ export const AnnouncementPopup = memo(({ isOpen, onClose }: AnnouncementPopupPro
 
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90" onClick={onClose}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
