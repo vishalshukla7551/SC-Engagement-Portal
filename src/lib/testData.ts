@@ -641,7 +641,7 @@ export async function getTestSubmissions(secId?: string): Promise<TestSubmission
     const queryParams = new URLSearchParams();
     if (secId) queryParams.set('secId', secId);
     queryParams.set('limit', '200'); // Fetch more submissions
-    
+
     const apiUrl = `${config.apiUrl}/admin/test-submissions?${queryParams.toString()}`;
     console.log('🔍 Fetching test submissions from', apiUrl);
 
@@ -649,7 +649,7 @@ export async function getTestSubmissions(secId?: string): Promise<TestSubmission
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch(apiUrl, { 
+    const response = await fetch(apiUrl, {
       signal: controller.signal,
       headers: {
         'Cache-Control': 'no-cache'
@@ -671,7 +671,7 @@ export async function getTestSubmissions(secId?: string): Promise<TestSubmission
 
     const result = await response.json();
     console.log('📦 API result success:', result.success, 'data length:', result.data?.length || 0);
-    
+
     if (result.success && result.data) {
       console.log(`✅ Found ${result.data.length} test submissions`);
       return result.data.map((item: any) => ({
@@ -686,7 +686,7 @@ export async function getTestSubmissions(secId?: string): Promise<TestSubmission
         submittedAt: item.submittedAt,
         completionTime: item.completionTime,
         isProctoringFlagged: item.isProctoringFlagged,
-        screenshotUrls: item.screenshotUrls || [],
+        screenshotUrls: item.screenshots || [],
         storeId: item.storeId,
         storeName: item.storeName,
         storeCity: item.storeCity,

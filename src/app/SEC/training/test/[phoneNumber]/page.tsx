@@ -70,6 +70,7 @@ export default function ProctoredTestPage() {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const faceDetectionInterval = useRef<NodeJS.Timeout | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
+  const [screenshots, setScreenshots] = useState<string[]>([]);
 
   // Get SEC user name from localStorage
   const getSecUserName = () => {
@@ -92,7 +93,7 @@ export default function ProctoredTestPage() {
       if (authUser) {
         const userData = JSON.parse(authUser);
         if (userData.phone && userData.phone !== urlPhoneNumber) {
-            router.replace(`/SEC/training/test/${userData.phone}?testType=${testType}`);
+          router.replace(`/SEC/training/test/${userData.phone}?testType=${testType}`);
         }
       }
     } catch (error) {
@@ -195,7 +196,57 @@ export default function ProctoredTestPage() {
 
   const logViolation = async (type: string, details?: string) => { try { await fetch('/api/proctoring/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, eventType: type, details }) }); } catch { } };
   const showWarning = (msg: string) => { setWarningMessage(msg); setTimeout(() => setWarningMessage(null), 3000); };
-  const startTest = async () => { try { await document.documentElement.requestFullscreen(); } catch { } setPhase('test'); };
+  const captureAndUpload = useCallback(async () => {
+    if (!cameraStream) return;
+
+    try {
+      const video = document.createElement('video');
+      video.srcObject = cameraStream;
+      video.muted = true;
+      await video.play();
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageBase64 = canvas.toDataURL('image/jpeg');
+
+        // Use the existing upload endpoint
+        fetch('/api/proctoring/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageBase64, phoneNumber })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.url) {
+              console.log("Cloudinary Image URL:", data.url);
+              setScreenshots(prev => [...prev, data.url]);
+            }
+          })
+          .catch(err => console.error('Upload failed', err));
+      }
+
+      video.pause();
+      video.srcObject = null;
+    } catch (e) {
+      console.error("Capture failed", e);
+    }
+  }, [cameraStream, phoneNumber]);
+
+  useEffect(() => {
+    if (phase !== 'test') return;
+    const interval = setInterval(captureAndUpload, 15000);
+    return () => clearInterval(interval);
+  }, [phase, captureAndUpload]);
+
+  const startTest = async () => {
+    captureAndUpload();
+    try { await document.documentElement.requestFullscreen(); } catch { }
+    setPhase('test');
+  };
   const handleAnswerSelect = async (questionId: string, option: string) => { setAnswers(prev => ({ ...prev, [questionId]: option })); try { await fetch('/api/sec/training/quiz/save-answer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, phoneNumber, questionId, selectedAnswer: option }) }); } catch { } };
   const handleNextQuestion = () => { if (testData && currentQuestion < testData.questions.length - 1) { setCurrentQuestion(prev => prev + 1); } };
 
@@ -203,12 +254,13 @@ export default function ProctoredTestPage() {
     if (!testData) return;
     let correct = 0; testData.questions.forEach(q => { if (answers[q.id] === q.correctAnswer) correct++; });
     const percentage = Math.round((correct / testData.questions.length) * 100);
-    
+
     // Calculate completion time: total duration minus time left
     const completionTimeInSeconds = (testData.duration * 60) - timeLeft;
-    
+
     setScore(percentage); setSubmittedAt(new Date().toLocaleString());
     try {
+      console.log('Submitting test with screenshots:', screenshots);
       const response = await fetch('/api/sec/training/quiz/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,7 +272,8 @@ export default function ProctoredTestPage() {
           score: percentage,
           totalQuestions: testData.questions.length,
           passed: percentage >= testData.passingPercentage,
-          completionTime: completionTimeInSeconds
+          completionTime: completionTimeInSeconds,
+          screenshots
         })
       });
       const result = await response.json();
@@ -231,7 +284,7 @@ export default function ProctoredTestPage() {
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
     if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
     setPhase('certificate');
-  }, [testData, answers, cameraStream, sessionToken, phoneNumber, timeLeft]);
+  }, [testData, answers, cameraStream, sessionToken, phoneNumber, timeLeft, screenshots]);
 
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 

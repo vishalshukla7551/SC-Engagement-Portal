@@ -382,6 +382,7 @@ model TestSubmission {
   storeId             String?  // Store identifier
   storeName           String?  // Store name
   certificateUrl      String?  // URL to the generated certificate
+  screenshots         String[] @default([]) // Array of Cloudinary URLs of screenshots
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 

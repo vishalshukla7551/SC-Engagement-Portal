@@ -6,7 +6,7 @@ import { Role } from '@prisma/client';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionToken, testId, testName, answers, score, totalQuestions, passed, completionTime } = body;
+    const { sessionToken, testId, testName, answers, score, totalQuestions, passed, completionTime, screenshots } = body;
 
     // Get authenticated SEC user
     const cookies = await (await import('next/headers')).cookies();
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
         isProctoringFlagged: false,
         storeId: sec.storeId,
         storeName: sec.store?.name,
+        screenshots: screenshots || [],
       },
     });
 

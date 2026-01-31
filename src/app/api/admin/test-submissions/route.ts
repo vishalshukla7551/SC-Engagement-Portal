@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
                 storeName: true,
                 certificateUrl: true,
                 createdAt: true,
+                screenshots: true,
             },
             orderBy: { createdAt: 'desc' },
             take: limit,
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
                 where: { id: { in: storeIds } },
                 select: { id: true, name: true, city: true }
             }) : [],
-            
+
             // Fetch SEC names
             uniqueSecIdentifiers.length > 0 ? prisma.sEC.findMany({
                 where: {
@@ -127,10 +128,10 @@ export async function GET(request: NextRequest) {
             // Process responses to get basic answer info
             let processedResponses: any[] = [];
             let responseCount = 0;
-            
+
             if (submission.responses) {
                 let rawResponses = submission.responses as any;
-                
+
                 // Handle different response formats
                 if (typeof rawResponses === 'string') {
                     try {
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
                         rawResponses = [];
                     }
                 }
-                
+
                 if (Array.isArray(rawResponses)) {
                     responseCount = rawResponses.length;
                     processedResponses = rawResponses.map((response: any, index: number) => ({
@@ -178,7 +179,7 @@ export async function GET(request: NextRequest) {
                 storeName: storeName || '',
                 storeCity: storeCity,
                 certificateUrl: submission.certificateUrl || null,
-                screenshotUrls: [], // Empty for performance - implement separately if needed
+                screenshotUrls: submission.screenshots || [],
             };
         });
 
