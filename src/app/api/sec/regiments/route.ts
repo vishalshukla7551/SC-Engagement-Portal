@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
                         fullName: true,
                         phone: true,
                         employeeId: true,
+                        hasProtectMaxBonus: true,
                         store: {
                             select: {
                                 id: true,
@@ -51,7 +52,8 @@ export async function GET(req: NextRequest) {
             storeName: string,
             city: string,
             region: string,
-            salesAmount: number
+            salesAmount: number,
+            hasProtectMaxBonus?: boolean
         }>();
 
         // Aggregate sales for users who have sales
@@ -78,6 +80,12 @@ export async function GET(req: NextRequest) {
 
             const userData = userSalesMap.get(secId)!;
             userData.salesAmount += sales;
+
+            // Add ProtectMax bonus if applicable
+            if (report.secUser.hasProtectMaxBonus && !userData.hasProtectMaxBonus) {
+                userData.salesAmount += 10000;
+                userData.hasProtectMaxBonus = true;
+            }
         });
 
         // Add bonus users who have no sales (matching leaderboard logic)
@@ -92,6 +100,7 @@ export async function GET(req: NextRequest) {
                 fullName: true,
                 phone: true,
                 employeeId: true,
+                hasProtectMaxBonus: true,
                 store: {
                     select: {
                         name: true,
@@ -105,7 +114,7 @@ export async function GET(req: NextRequest) {
         bonusUsersData.forEach(secUser => {
             const trimmedPhone = (secUser.phone || '').trim();
             const existingUser = Array.from(userSalesMap.values()).find(u => u.phone === trimmedPhone);
-            
+
             if (existingUser) {
                 // User already exists, always add 21000 bonus
                 existingUser.salesAmount += 21000;
@@ -114,7 +123,7 @@ export async function GET(req: NextRequest) {
                 const bonusAmount = 21000;
                 const city = secUser.store?.city || 'Unknown City';
                 const region = secUser.store?.region || 'UNKNOWN'; // Use region from Store
-                
+
                 userSalesMap.set(secUser.id, {
                     secId: secUser.id,
                     name: secUser.fullName || 'Unknown',
@@ -123,7 +132,65 @@ export async function GET(req: NextRequest) {
                     storeName: secUser.store?.name || 'Unknown Store',
                     city: city,
                     region: region,
-                    salesAmount: bonusAmount
+                    salesAmount: bonusAmount,
+                    hasProtectMaxBonus: secUser.hasProtectMaxBonus
+                });
+            }
+
+            // Add ProtectMax bonus if applicable
+            if (secUser.hasProtectMaxBonus && existingUser && !existingUser.hasProtectMaxBonus) {
+                existingUser.salesAmount += 10000;
+                existingUser.hasProtectMaxBonus = true;
+            }
+        });
+
+        // Add users with ProtectMax bonus who don't have sales yet
+        const protectMaxBonusUsers = await prisma.sEC.findMany({
+            where: {
+                hasProtectMaxBonus: true
+            },
+            select: {
+                id: true,
+                fullName: true,
+                phone: true,
+                employeeId: true,
+                hasProtectMaxBonus: true,
+                store: {
+                    select: {
+                        name: true,
+                        city: true,
+                        region: true
+                    }
+                }
+            }
+        });
+
+        protectMaxBonusUsers.forEach(secUser => {
+            const trimmedPhone = (secUser.phone || '').trim();
+            const existingUser = Array.from(userSalesMap.values()).find(u => u.phone === trimmedPhone);
+
+            if (existingUser) {
+                // User already exists, ensure they have the bonus
+                if (!existingUser.hasProtectMaxBonus) {
+                    existingUser.salesAmount += 10000;
+                    existingUser.hasProtectMaxBonus = true;
+                }
+            } else {
+                // User doesn't exist in sales, add with only ProtectMax bonus
+                const bonusAmount = 10000;
+                const city = secUser.store?.city || 'Unknown City';
+                const region = secUser.store?.region || 'UNKNOWN';
+
+                userSalesMap.set(secUser.id, {
+                    secId: secUser.id,
+                    name: secUser.fullName || 'Unknown',
+                    phone: trimmedPhone,
+                    employeeId: secUser.employeeId,
+                    storeName: secUser.store?.name || 'Unknown Store',
+                    city: city,
+                    region: region,
+                    salesAmount: bonusAmount,
+                    hasProtectMaxBonus: true
                 });
             }
         });

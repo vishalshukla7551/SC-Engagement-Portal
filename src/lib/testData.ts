@@ -165,12 +165,12 @@ export const allSamsungQuestions: Question[] = [
   {
     id: 5,
     question:
-      'A buyer lost the phone invoice but has the plan confirmation email. What will you advise before they raise a claim?',
+      'What is the maximum number of screen damage claims allowed under Samsung Protect Max ADLD in one year?',
     options: [
-      'A) Submit only a screenshot of the My Galaxy app.',
-      'B) They must provide both the device and plan invoice or get a copy.',
-      'C) No issue — the email alone is enough.',
-      'D) Ask them to file a police report first.',
+      'A) Only 1 screen claim per year',
+      'B) 2 screen claims maximum',
+      'C) Unlimited screen claims within invoice value',
+      'D) 3 screen claims only',
     ],
     correctAnswer: 'C',
     category: 'Section A',
@@ -178,14 +178,14 @@ export const allSamsungQuestions: Question[] = [
   {
     id: 6,
     question:
-      "A customer's phone was damaged on the same day as buying it and the plan. Can they raise a claim immediately?",
+      'Which of the following damages is NOT covered under Samsung Protect Max ADLD?',
     options: [
-      'A) Yes, damage after plan activation is covered.',
-      'B) No, because the plan starts 7 days later.',
-      'C) Yes, but only for manufacturing defects.',
-      'D) No, because claims before diagnostics are invalid.',
+      'A) Screen crack from accidental drop',
+      'B) Water damage from rain',
+      'C) Theft or loss of device',
+      'D) Liquid spill damage',
     ],
-    correctAnswer: 'A',
+    correctAnswer: 'C',
     category: 'Section A',
   },
   {

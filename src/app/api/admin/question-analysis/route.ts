@@ -1,218 +1,164 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { SEC_CERT_QUESTIONS, allSamsungQuestions } from '@/lib/testData';
 
-export const dynamic = 'force-dynamic';
-
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
-        // 1. Fetch all submissions
-        const submissions = await prisma.testSubmission.findMany({
-            select: { responses: true }
+        // 1. Fetch all questions to build a lookup map
+        const allQuestions = await (prisma as any).questionBank.findMany({
+            where: { isActive: true },
+            select: {
+                questionId: true,
+                question: true,
+                correctAnswer: true,
+                category: true,
+                options: true, // Need options to build the breakdown
+            }
         });
 
-        // 2. Fetch all dynamic questions from DB
-        const dbQuestions = await prisma.questionBank.findMany();
+        // Map: questionId -> { details, stats, optionCounts }
+        const questionMap = new Map();
+        allQuestions.forEach((q: any) => {
+            // Initialize option counts
+            const optionCounts: Record<string, number> = {};
 
-        // 3. Create a master map of all known questions for lookup
-        const questionMap = new Map<string, any>();
+            // Parse options if they are strings like "A) Text"
+            const parsedOptions = (q.options || []).map((optStr: string) => {
+                let optionChar = '';
+                let optionText = optStr;
 
-        // Add static questions
-        [...SEC_CERT_QUESTIONS, ...allSamsungQuestions].forEach(q => {
-            questionMap.set(String(q.id), {
-                id: q.id,
-                text: q.question,
-                correctAnswer: q.correctAnswer,
-                options: q.options
+                // Try to extract "A) " or "A. " pattern
+                const match = optStr.match(/^([A-Z])[\)\.]\s+(.*)/);
+                if (match) {
+                    optionChar = match[1];
+                    optionText = match[2];
+                } else {
+                    // Fallback if just "Option Text", assign fictional letters if needed or handle otherwise
+                    // For now assuming A, B, C, D based on index if pattern fails is risky but check
+                }
+
+                if (optionChar) optionCounts[optionChar] = 0;
+
+                return {
+                    original: optStr,
+                    char: optionChar,
+                    text: optionText
+                };
             });
-        });
 
-        // Add correct answers from DB questions
-        dbQuestions.forEach(q => {
+            // Also ensure A, B, C, D exist in counts if standard
+            ['A', 'B', 'C', 'D'].forEach(char => {
+                if (optionCounts[char] === undefined) optionCounts[char] = 0;
+            });
+
             questionMap.set(String(q.questionId), {
-                id: q.questionId,
-                text: q.question,
+                id: String(q.questionId),
+                questionNumber: q.questionId,
+                questionText: q.question,
+                category: q.category,
                 correctAnswer: q.correctAnswer,
-                options: q.options
+                totalAttempts: 0,
+                correctCount: 0,
+                incorrectCount: 0,
+                optionCounts: optionCounts,
+                parsedOptions: parsedOptions
             });
         });
 
-        // 4. Analysis Data Structures
-        const stats = new Map<string, {
-            id: string;
-            text: string;
-            totalAttempts: number;
-            correctCount: number;
-            wrongCounts: Record<string, number>; // Option -> Count
-        }>();
-
-        // 5. Process Submissions
-        for (const sub of submissions) {
-            let rawResponses = sub.responses as any;
-
-            // Normalize response format
-            if (typeof rawResponses === 'string') {
-                try {
-                    rawResponses = JSON.parse(rawResponses);
-                } catch { rawResponses = []; }
+        // 2. Fetch all test submissions with responses
+        const submissions = await (prisma as any).testSubmission.findMany({
+            select: {
+                responses: true,
             }
-
-            if (rawResponses && !Array.isArray(rawResponses) && Array.isArray(rawResponses.responses)) {
-                rawResponses = rawResponses.responses;
-            } else if (rawResponses && !Array.isArray(rawResponses) && typeof rawResponses === 'object') {
-                rawResponses = Object.entries(rawResponses).map(([k, v]) => ({ questionId: k, selectedAnswer: v }));
-            }
-
-            if (!Array.isArray(rawResponses)) continue;
-
-            for (const resp of rawResponses) {
-                const qId = String(resp.questionId);
-                const selected = resp.selectedAnswer;
-
-                // Initialize stats for this question if new
-                if (!stats.has(qId)) {
-                    // 1. Try to get text from the response itself (Best source of truth for what user saw)
-                    let displayText = resp.questionText;
-
-                    // 2. If response text missing/generic, try the master map
-                    if (!displayText || displayText === 'Question details unavailable') {
-                        const qData = questionMap.get(qId);
-                        if (qData) {
-                            displayText = qData.text;
-                        }
-                    }
-
-                    // 3. Last resort: Try ID-1000 fallback lookup
-                    if ((!displayText || displayText === 'Question details unavailable') && Number(qId) > 1000) {
-                        const fallbackId = String(Number(qId) - 1000);
-                        const fallbackQ = questionMap.get(fallbackId);
-                        if (fallbackQ) {
-                            displayText = fallbackQ.text;
-                            // Note: We keep the original qId for the key to separate "1001" from "1" if they are legally different, 
-                            // unless we want to merge them. Given user "uploaded new questions", merging might be wrong if 1001 is new and 1 is old.
-                            // Let's rely on the text we found.
-                        }
-                    }
-
-                    // 4. Ultimate fallback
-                    if (!displayText) {
-                        displayText = `Question ${qId}`;
-                    }
-
-                    stats.set(qId, {
-                        id: qId,
-                        text: displayText,
-                        totalAttempts: 0,
-                        correctCount: 0,
-                        wrongCounts: {}
-                    });
-                } else {
-                    // Update text if we have a better version from a new response
-                    const currentEntry = stats.get(qId)!;
-                    if ((currentEntry.text === `Question ${qId}` || currentEntry.text === 'Question details unavailable') && resp.questionText) {
-                        currentEntry.text = resp.questionText;
-                    }
-                }
-
-                // Get the entry
-                const entry = stats.get(qId);
-                if (!entry) continue;
-
-                entry.totalAttempts++;
-
-                // Determine correctness
-                // 1. Check if `isCorrect` is already stored (Primary Truth)
-                let isCorrect = resp.isCorrect;
-
-                // 2. If not, check against known correct answer from Map
-                if (typeof isCorrect !== 'boolean') {
-                    const qData = questionMap.get(qId);
-                    if (qData) {
-                        isCorrect = selected === qData.correctAnswer;
-                    } else if (Number(qId) > 1000) {
-                        // Try fallback ID for correctness check
-                        const fallbackQ = questionMap.get(String(Number(qId) - 1000));
-                        if (fallbackQ) {
-                            isCorrect = selected === fallbackQ.correctAnswer;
-                        }
-                    }
-                }
-
-                if (isCorrect) {
-                    entry.correctCount++;
-                } else {
-                    // Track wrong answer
-                    if (selected) {
-                        entry.wrongCounts[selected] = (entry.wrongCounts[selected] || 0) + 1;
-                    }
-                }
-            }
-        }
-
-        // 6. Final Calculation
-        const questionStats = Array.from(stats.values()).map(s => {
-            const correctPct = s.totalAttempts > 0
-                ? Math.round((s.correctCount / s.totalAttempts) * 100)
-                : 0;
-
-            // Find most wrong answer
-            let mostWrongAnswer = '-';
-            let maxCount = 0;
-            for (const [opt, count] of Object.entries(s.wrongCounts)) {
-                if (count > maxCount) {
-                    maxCount = count;
-                    mostWrongAnswer = opt; // e.g. "B" or "Option B"
-                }
-            }
-
-            // Format option if it's just a letter "A" -> "Option A"
-            if (mostWrongAnswer.length === 1 && /[A-Z]/.test(mostWrongAnswer)) {
-                mostWrongAnswer = `Option ${mostWrongAnswer}`;
-            }
-
-            return {
-                id: s.id,
-                text: s.text.length > 80 ? s.text.substring(0, 80) + '...' : s.text,
-                fullText: s.text,
-                totalAttempts: s.totalAttempts,
-                correctPercentage: correctPct,
-                wrongPercentage: 100 - correctPct,
-                mostWrongAnswer
-            };
         });
 
-        // 7. Sort by difficulty (lowest correct % first)
-        questionStats.sort((a, b) => a.correctPercentage - b.correctPercentage);
+        // 3. Aggregate statistics
+        submissions.forEach((submission: any) => {
+            if (!submission.responses || !Array.isArray(submission.responses)) return;
 
-        // 8. Global Insights
-        const validQuestions = questionStats.filter(q => q.totalAttempts > 0);
+            submission.responses.forEach((response: any) => {
+                const qId = String(response.questionId);
+                const stats = questionMap.get(qId);
 
-        let avgAccuracy = 0;
-        if (validQuestions.length > 0) {
-            const sumAccuracy = validQuestions.reduce((acc, q) => acc + q.correctPercentage, 0);
-            avgAccuracy = Math.round(sumAccuracy / validQuestions.length);
-        }
+                if (stats) {
+                    stats.totalAttempts++;
 
-        const summary = {
-            totalQuestions: validQuestions.length,
-            avgAccuracy,
-            easiestQuestion: validQuestions.length > 0
-                ? validQuestions.reduce((prev, curr) => prev.correctPercentage > curr.correctPercentage ? prev : curr)
-                : null,
-            hardestQuestion: validQuestions.length > 0
-                ? validQuestions[0] // Since it's sorted ascending by accuracy
-                : null
-        };
+                    const selected = response.selectedAnswer; // e.g., "A"
+                    if (stats.optionCounts[selected] !== undefined) {
+                        stats.optionCounts[selected]++;
+                    }
+
+                    // Use isCorrect flag if available
+                    const isCorrect = response.isCorrect === true || response.isCorrect === 'true';
+
+                    if (isCorrect) {
+                        stats.correctCount++;
+                    } else {
+                        stats.incorrectCount++;
+                    }
+                }
+            });
+        });
+
+        // 4. Transform to final format matches UI expectations roughly
+        const analysisResults = Array.from(questionMap.values())
+            .map((item) => {
+                const correctPercentage = item.totalAttempts > 0
+                    ? Math.round((item.correctCount / item.totalAttempts) * 100)
+                    : 0;
+
+                const wrongPercentage = item.totalAttempts > 0
+                    ? 100 - correctPercentage
+                    : 0;
+
+                // Find most selected wrong option
+                let mostSelectedWrongOption = '-';
+                let maxWrongCount = -1;
+
+                Object.entries(item.optionCounts).forEach(([opt, count]) => {
+                    if (opt !== item.correctAnswer && (count as number) > maxWrongCount) {
+                        maxWrongCount = (count as number);
+                        mostSelectedWrongOption = opt;
+                    }
+                });
+
+                // Format options for UI
+                const optionsFormatted = item.parsedOptions.map((pOpt: any) => {
+                    const count = item.optionCounts[pOpt.char] || 0;
+                    return {
+                        option: pOpt.char,
+                        text: pOpt.text,
+                        selectedCount: item.totalAttempts > 0 ? Math.round((count / item.totalAttempts) * 100) : 0, // Sending percentage as 'selectedCount' for UI compatibility or raw count?
+                        // UI expects 'selectedCount' to be displayed as percentage in one place: "{opt.selectedCount}%"
+                        // But logical structure might imply count. 
+                        // Looking at existing UI: <div className="font-bold text-gray-900">{opt.selectedCount}%</div>
+                        // So it expects percentage.
+                        isCorrect: pOpt.char === item.correctAnswer
+                    };
+                });
+
+                return {
+                    id: item.id,
+                    questionNumber: item.questionNumber,
+                    questionText: item.questionText,
+                    correctPercentage,
+                    wrongPercentage,
+                    totalAttempts: item.totalAttempts,
+                    mostSelectedWrongOption,
+                    options: optionsFormatted
+                };
+            })
+            .sort((a, b) => a.correctPercentage - b.correctPercentage); // Hardest first (lowest correct %)
 
         return NextResponse.json({
             success: true,
-            summary,
-            questions: questionStats, // Table data
-            topDifficult: questionStats.slice(0, 5) // Top 5 hardest
+            data: analysisResults
         });
 
     } catch (error) {
-        console.error('Error in question analysis:', error);
-        return NextResponse.json({ success: false, message: 'Analysis failed' }, { status: 500 });
+        console.error('Error fetching question analysis:', error);
+        return NextResponse.json(
+            { success: false, message: 'Failed to fetch question analysis data' },
+            { status: 500 }
+        );
     }
 }

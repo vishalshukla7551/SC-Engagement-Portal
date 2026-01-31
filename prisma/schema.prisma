@@ -272,6 +272,7 @@ model SEC {
   AgencyName   String?
   SpotIncentiveReport           SpotIncentiveReport[]
   dailyIncentiveReports       DailyIncentiveReport[]
+  hasProtectMaxBonus Boolean @default(false) // Tracks if SEC earned 10k bonus for 80%+ on ProtectMax test
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

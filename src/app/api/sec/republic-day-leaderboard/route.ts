@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
         if (authUser.role === 'SEC') {
             currentSec = await prisma.sEC.findUnique({
                 where: { phone: authUser.id },
-                select: { id: true, fullName: true }
+                select: { id: true, fullName: true, hasProtectMaxBonus: true }
             });
 
             if (!currentSec) {
@@ -73,6 +73,7 @@ export async function GET(req: NextRequest) {
                         fullName: true,
                         employeeId: true,
                         phone: true,
+                        hasProtectMaxBonus: true,
                         store: {
                             select: {
                                 name: true // Changed from city to name
@@ -89,7 +90,8 @@ export async function GET(req: NextRequest) {
             phone: string,
             name: string,
             storeName: string,
-            salesAmount: number
+            salesAmount: number,
+            hasProtectMaxBonus?: boolean
         }>();
 
         reports.forEach(report => {
@@ -110,6 +112,12 @@ export async function GET(req: NextRequest) {
 
             const userData = userSalesMap.get(secId)!;
             userData.salesAmount += sales;
+
+            // Add ProtectMax bonus if applicable
+            if (report.secUser.hasProtectMaxBonus && !userData.hasProtectMaxBonus) {
+                userData.salesAmount += 10000;
+                userData.hasProtectMaxBonus = true;
+            }
         });
 
         // 5. Process Ranks and Sort (WITHOUT bonus - will add later)
@@ -135,6 +143,7 @@ export async function GET(req: NextRequest) {
                 id: true,
                 fullName: true,
                 phone: true,
+                hasProtectMaxBonus: true,
                 store: {
                     select: {
                         name: true
@@ -148,7 +157,7 @@ export async function GET(req: NextRequest) {
         bonusUsersData.forEach(secUser => {
             const trimmedPhone = (secUser.phone || '').trim();
             const existingUserIndex = allUsers.findIndex(u => u.phone === trimmedPhone);
-            
+
             if (existingUserIndex >= 0) {
                 // User already exists, always add 21000 bonus
                 const existingUser = allUsers[existingUserIndex];
@@ -162,7 +171,7 @@ export async function GET(req: NextRequest) {
                 // User doesn't exist, add with only bonus
                 const bonusAmount = 21000;
                 const rankObj = getRank(bonusAmount);
-                
+
                 allUsers.push({
                     secId: secUser.id,
                     phone: trimmedPhone,
@@ -171,7 +180,75 @@ export async function GET(req: NextRequest) {
                     salesAmount: bonusAmount,
                     rankId: rankObj.id,
                     rankTitle: rankObj.title,
-                    minSalesForRank: rankObj.minSales
+                    minSalesForRank: rankObj.minSales,
+                    hasProtectMaxBonus: secUser.hasProtectMaxBonus
+                });
+            }
+
+            // Add ProtectMax bonus if applicable
+            if (secUser.hasProtectMaxBonus && existingUserIndex >= 0) {
+                const existingUser = allUsers[existingUserIndex];
+                if (!existingUser.hasProtectMaxBonus) {
+                    existingUser.salesAmount += 10000;
+                    existingUser.hasProtectMaxBonus = true;
+                    // Recalculate rank with ProtectMax bonus
+                    const rankObj = getRank(existingUser.salesAmount);
+                    existingUser.rankId = rankObj.id;
+                    existingUser.rankTitle = rankObj.title;
+                    existingUser.minSalesForRank = rankObj.minSales;
+                }
+            }
+        });
+
+        // Add users with ProtectMax bonus who don't have sales yet
+        const protectMaxBonusUsers = await prisma.sEC.findMany({
+            where: {
+                hasProtectMaxBonus: true
+            },
+            select: {
+                id: true,
+                fullName: true,
+                phone: true,
+                hasProtectMaxBonus: true,
+                store: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
+
+        protectMaxBonusUsers.forEach(secUser => {
+            const trimmedPhone = (secUser.phone || '').trim();
+            const existingUserIndex = allUsers.findIndex(u => u.phone === trimmedPhone);
+
+            if (existingUserIndex >= 0) {
+                // User already exists, ensure they have the bonus
+                const existingUser = allUsers[existingUserIndex];
+                if (!existingUser.hasProtectMaxBonus) {
+                    existingUser.salesAmount += 10000;
+                    existingUser.hasProtectMaxBonus = true;
+                    // Recalculate rank with ProtectMax bonus
+                    const rankObj = getRank(existingUser.salesAmount);
+                    existingUser.rankId = rankObj.id;
+                    existingUser.rankTitle = rankObj.title;
+                    existingUser.minSalesForRank = rankObj.minSales;
+                }
+            } else {
+                // User doesn't exist in sales, add with only ProtectMax bonus
+                const bonusAmount = 10000;
+                const rankObj = getRank(bonusAmount);
+
+                allUsers.push({
+                    secId: secUser.id,
+                    phone: trimmedPhone,
+                    name: secUser.fullName || 'Unknown',
+                    storeName: secUser.store?.name || '',
+                    salesAmount: bonusAmount,
+                    rankId: rankObj.id,
+                    rankTitle: rankObj.title,
+                    minSalesForRank: rankObj.minSales,
+                    hasProtectMaxBonus: true
                 });
             }
         });
@@ -201,10 +278,13 @@ export async function GET(req: NextRequest) {
                 const position = rankUsers.findIndex(u => u.secId === currentSec.id) + 1;
 
                 const nextRank = getNextRank(currentUserData.rankId);
-                
+
                 // Add bonus if user is in bonus list
                 const hasBonus = BONUS_PHONE_NUMBERS.includes(authUser.id);
-                const totalSalesAmount = currentUserData.salesAmount + (hasBonus ? 21000 : 0);
+                const hasProtectMaxBonus = currentSec.hasProtectMaxBonus || false;
+                let totalSalesAmount = currentUserData.salesAmount;
+                if (hasBonus) totalSalesAmount += 21000;
+                if (hasProtectMaxBonus) totalSalesAmount += 10000;
 
                 userResponse = {
                     secId: currentUserData.secId,
@@ -215,6 +295,7 @@ export async function GET(req: NextRequest) {
                     rankTitle: currentUserData.rankTitle,
                     positionInRank: position,
                     hasBonus: hasBonus,
+                    hasProtectMaxBonus: hasProtectMaxBonus,
                     nextRank: nextRank ? {
                         title: nextRank.title,
                         targetSales: nextRank.minSales,
@@ -224,7 +305,7 @@ export async function GET(req: NextRequest) {
             } else {
                 const hasBonus = BONUS_PHONE_NUMBERS.includes(authUser.id);
                 const bonusAmount = hasBonus ? 21000 : 0;
-                
+
                 userResponse = {
                     secId: currentSec.id,
                     name: currentSec.fullName,

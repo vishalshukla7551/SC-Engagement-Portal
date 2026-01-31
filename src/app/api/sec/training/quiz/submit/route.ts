@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
         phone: true,
         employeeId: true,
         storeId: true,
+        hasProtectMaxBonus: true,
         store: {
           select: {
             id: true,
@@ -65,11 +66,25 @@ export async function POST(request: NextRequest) {
       passed: passed
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    // Check if this is first time scoring 80%+ on ProtectMax test
+    let bonusAwarded = false;
+    if (score >= 80 && testName?.toLowerCase().includes('protect') && !sec.hasProtectMaxBonus) {
+      // Award 10,000 bonus points by setting the flag
+      await prisma.sEC.update({
+        where: { id: sec.id },
+        data: { hasProtectMaxBonus: true }
+      });
+      bonusAwarded = true;
+      console.log('🎉 Bonus awarded to SEC:', sec.phone);
+    }
+
+    return NextResponse.json({
+      success: true,
       passed,
       submissionId: testSubmission.id,
-      certificateEligible: score >= 70 // Assuming 70% is passing
+      certificateEligible: score >= 80,
+      bonusAwarded, // New field to trigger congratulations popup
+      bonusPoints: bonusAwarded ? 10000 : 0
     });
   } catch (error) {
     console.error('Error submitting test:', error);

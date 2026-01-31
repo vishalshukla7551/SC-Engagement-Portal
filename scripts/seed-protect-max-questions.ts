@@ -14,8 +14,8 @@ async function main() {
             where: { testType: testType },
             update: {
                 status: "ACTIVE",
-                totalQuestions: 15,
-                passingPercentage: 60, // Assuming 60% passing
+                totalQuestions: 16,
+                passingPercentage: 80, // Updated to 80% passing
                 name: "Samsung Protect Max Assessment",
                 description: "Official assessment for Samsung Protect Max product knowledge.",
             },
@@ -23,10 +23,10 @@ async function main() {
                 name: "Samsung Protect Max Assessment",
                 description: "Official assessment for Samsung Protect Max product knowledge.",
                 type: "QUIZ",
-                totalQuestions: 15,
+                totalQuestions: 16,
                 duration: 20, // 20 minutes
                 maxAttempts: 3,
-                passingPercentage: 60,
+                passingPercentage: 80,
                 status: "ACTIVE",
                 enableProctoring: true,
                 testType: testType,

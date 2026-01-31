@@ -8,12 +8,17 @@ export async function GET(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '10');
 
         // Fetch all active questions for the test type
-        const allQuestions = await (prisma as any).questionBank.findMany({
-            where: {
-                testType,
-                isActive: true
-            }
-        });
+        const [allQuestions, testConfig] = await Promise.all([
+            (prisma as any).questionBank.findMany({
+                where: {
+                    testType,
+                    isActive: true
+                }
+            }),
+            (prisma as any).test.findFirst({
+                where: { testType: testType }
+            })
+        ]);
 
         if (allQuestions.length === 0) {
             return NextResponse.json({
@@ -69,7 +74,12 @@ export async function GET(request: NextRequest) {
                 })),
                 correctAnswer: q.correctAnswer,
                 category: q.category
-            }))
+            })),
+            meta: {
+                passingPercentage: testConfig?.passingPercentage || 80,
+                duration: testConfig?.duration || 15,
+                totalQuestions: limit
+            }
         });
     } catch (error) {
         console.error('Error fetching questions:', error);

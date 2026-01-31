@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
         const sec = await prisma.sEC.findUnique({
             where: { phone: authUser.id },
-            select: { id: true }
+            select: { id: true, hasProtectMaxBonus: true }
         });
 
         if (!sec) {
@@ -43,12 +43,18 @@ export async function GET(req: NextRequest) {
             totalSales += 21000;
         }
 
+        // Add 10,000 bonus points for ProtectMax test achievement
+        if (sec.hasProtectMaxBonus) {
+            totalSales += 10000;
+        }
+
         return NextResponse.json({
             success: true,
             data: {
                 totalSales,
                 salesCount: reports.length,
-                hasBonus: BONUS_PHONE_NUMBERS.includes(authUser.id)
+                hasBonus: BONUS_PHONE_NUMBERS.includes(authUser.id),
+                hasProtectMaxBonus: sec.hasProtectMaxBonus
             }
         });
     } catch (error) {

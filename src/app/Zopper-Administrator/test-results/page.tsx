@@ -64,7 +64,7 @@ const MOCK_STATS = {
     MOCK_SUBMISSIONS.reduce((sum, s) => sum + s.score, 0) / MOCK_SUBMISSIONS.length,
   ),
   passRate: Math.round(
-    (MOCK_SUBMISSIONS.filter((s) => s.score >= 60).length / MOCK_SUBMISSIONS.length) * 100,
+    (MOCK_SUBMISSIONS.filter((s) => s.score >= 80).length / MOCK_SUBMISSIONS.length) * 100,
   ),
   averageTime: Math.round(
     MOCK_SUBMISSIONS.reduce((sum, s) => sum + s.completionTime, 0) /
@@ -118,9 +118,9 @@ export default function TestResults() {
 
     // Apply score filter
     if (filterScore === 'pass') {
-      filtered = filtered.filter((sub) => sub.score >= 60);
+      filtered = filtered.filter((sub) => sub.score >= 80);
     } else if (filterScore === 'fail') {
-      filtered = filtered.filter((sub) => sub.score < 60);
+      filtered = filtered.filter((sub) => sub.score < 80);
     }
 
     // Apply sorting
@@ -193,7 +193,7 @@ export default function TestResults() {
         'Total Questions': submission.totalQuestions,
         'Completion Time (min)': Math.round(submission.completionTime / 60),
         'Submitted At': new Date(submission.submittedAt).toLocaleString(),
-        Status: submission.score >= 60 ? 'PASS' : 'FAIL',
+        Status: submission.score >= 80 ? 'PASS' : 'FAIL',
         'Proctoring Flagged': submission.isProctoringFlagged ? 'YES' : 'NO',
         'Answer Details': answerDetails,
       };
@@ -223,7 +223,6 @@ export default function TestResults() {
 
   const getScoreColor = (score: number): string => {
     if (score >= 80) return 'text-green-600 bg-green-50';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-50';
     return 'text-red-600 bg-red-50';
   };
 
@@ -289,8 +288,8 @@ export default function TestResults() {
               className="border border-gray-300 rounded-md px-3 py-1 text-sm"
             >
               <option value="all">All Results</option>
-              <option value="pass">Pass (≥60%)</option>
-              <option value="fail">Fail (&lt;60%)</option>
+              <option value="pass">Pass (≥80%)</option>
+              <option value="fail">Fail (&lt;80%)</option>
             </select>
           </div>
 
@@ -405,7 +404,7 @@ export default function TestResults() {
                             : 'bg-red-100 text-red-800'
                             }`}
                         >
-                          {submission.score >= 60 ? 'PASS' : 'FAIL'}
+                          {submission.score >= 80 ? 'PASS' : 'FAIL'}
                         </span>
                         {submission.isProctoringFlagged && (
                           <button

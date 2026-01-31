@@ -36,7 +36,7 @@ export default function LandingPage({ userName = '' }) {
       imageSrc: '/images/banner1.jpeg',
       imageAlt: 'Republic Day Banner 1',
       showTextOverlay: false,
-      link: '/SEC/republic-day-hero',
+      link: '/SEC/training',
       showLiveBadge: true,
     },
     {

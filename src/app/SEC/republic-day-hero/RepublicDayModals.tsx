@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     Award,
@@ -9,7 +10,8 @@ import {
     FileText,
     X,
     Crown,
-    Lock
+    Lock,
+    ChevronRight,
 } from 'lucide-react';
 
 // Rank Configuration
@@ -222,6 +224,137 @@ export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: Rewards
                         style={{ fontFamily: 'Poppins, sans-serif' }}
                     >
                         Let&apos;s Conquer! 🚀
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+});
+
+interface AnnouncementPopupProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+export const AnnouncementPopup = memo(({ isOpen, onClose }: AnnouncementPopupProps) => {
+    const router = useRouter();
+
+    const handleAcceptChallenge = () => {
+        try {
+            const authUser = localStorage.getItem('authUser');
+            if (authUser) {
+                const userData = JSON.parse(authUser);
+                const phoneNumber = userData.phone || userData.id || userData.username;
+                if (phoneNumber) {
+                    router.push(`/SEC/training/test/${phoneNumber}?testType=SAMSUNG_PROTECT_MAX`);
+                    return;
+                }
+            }
+            // Fallback if no phone number found
+            router.push('/SEC/training');
+        } catch (e) {
+            console.error("Error navigating to test", e);
+            router.push('/SEC/training');
+        }
+    };
+
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+                transition={{ type: "spring", bounce: 0.5 }}
+                className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col relative border-4 border-[#000080]"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Decorative Elements */}
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]"></div>
+
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-20 bg-white/90 p-2 rounded-full shadow-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-red-500"
+                >
+                    <X size={20} strokeWidth={3} />
+                </button>
+
+                {/* Header */}
+                <div className="pt-10 pb-6 px-6 text-center bg-gradient-to-b from-blue-50 to-white relative overflow-hidden">
+                    <motion.div
+                        animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                        className="absolute top-2 left-1/2 -translate-x-1/2 w-32 h-32 bg-orange-100 rounded-full blur-[40px] opacity-60 pointer-events-none"
+                    />
+
+                    <div className="relative z-10">
+                        <motion.div
+                            initial={{ y: -20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            className="inline-block bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest mb-3 animate-pulse shadow-md border border-red-400"
+                        >
+                            🛑 Urgent Update
+                        </motion.div>
+                        <h2 className="text-3xl font-black text-slate-900 uppercase leading-none tracking-tighter" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <span className="text-[#FF9933]">Mission</span> <span className="text-[#000080]">Extended!</span>
+                        </h2>
+                        <p className="text-sm font-bold text-slate-500 mt-2 uppercase tracking-wide">Samsung Protect Max Yodha</p>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="px-6 pb-6 space-y-5" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <div className="bg-yellow-50 border-l-4 border-[#FF9933] p-4 rounded-r-xl shadow-sm">
+                        <p className="text-slate-800 font-medium leading-relaxed">
+                            Soldier! Due to <span className="font-extrabold text-red-600">HEAVY DEMAND</span>, the battlefield remains open until <span className="font-black bg-[#000080] text-white px-1.5 py-0.5 rounded mx-1">Monday, Feb 2nd</span>!
+                        </p>
+                    </div>
+
+                    <p className="text-slate-600 text-sm font-medium text-center">
+                        This is your <span className="underline decoration-wavy decoration-orange-400 decoration-2 font-bold text-slate-800">LAST CHANCE</span> to prove your mettle and crush the Hall of Fame!
+                    </p>
+
+                    {/* Objective Box */}
+                    <div className="bg-gradient-to-br from-indigo-900 via-blue-800 to-indigo-900 p-5 rounded-2xl text-white shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+
+                        <div className="flex items-center gap-4 relative z-10">
+                            <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm border border-white/30">
+                                <Award className="text-yellow-300 fill-yellow-300 drop-shadow-lg" size={32} />
+                            </div>
+                            <div>
+                                <h4 className="font-black text-yellow-300 text-lg uppercase tracking-tight">Mission Objective</h4>
+                                <p className="text-blue-100 text-xs font-semibold mt-0.5">Score <span className="text-white font-extrabold text-sm border-b border-yellow-300">&gt;80%</span> in Assessment</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between">
+                            <span className="text-xs uppercase tracking-wider font-bold text-blue-200">INSTANT REWARD</span>
+                            <div className="bg-yellow-400 text-[#000080] font-black px-3 py-1 rounded-full text-base shadow-lg animate-bounce flex items-center gap-1">
+                                <Star size={14} fill="#000080" /> +10,000 PTS
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center">
+                        <span className="text-xs font-semibold text-slate-500 italic bg-slate-100 px-3 py-1 rounded-full">
+                            "Push your ranks higher! Glory awaits the brave!"
+                        </span>
+                    </div>
+                </div>
+
+                {/* Footer Button */}
+                <div className="p-4 bg-slate-50 border-t border-slate-200">
+                    <button
+                        onClick={handleAcceptChallenge}
+                        className="w-full py-3.5 bg-gradient-to-r from-[#FF9933] via-[#000080] to-[#138808] text-white rounded-xl font-black uppercase tracking-widest shadow-lg hover:shadow-orange-500/30 active:scale-95 transition-all text-sm group relative overflow-hidden"
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            Accept Challenge <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" strokeWidth={3} />
+                        </span>
+                        {/* Shine Effect */}
+                        <div className="absolute inset-0 bg-white/20 skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
                     </button>
                 </div>
             </motion.div>

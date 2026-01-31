@@ -129,11 +129,11 @@ function AnswerReviewContent() {
                         <div className="relative z-10 flex gap-6 items-center w-full sm:w-auto pt-6 sm:pt-0 border-t sm:border-t-0 border-gray-50">
                             <div className="flex flex-col text-right">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Final Score</span>
-                                <span className={`text-6xl font-black tracking-tighter ${submission.score >= 60 ? 'text-green-600' : 'text-red-500'}`}>
+                                <span className={`text-6xl font-black tracking-tighter ${submission.score >= 80 ? 'text-green-600' : 'text-red-500'}`}>
                                     {submission.score}%
                                 </span>
-                                <span className={`text-[10px] font-black uppercase mt-1 ${submission.score >= 60 ? 'text-green-600' : 'text-red-500'}`}>
-                                    {submission.score >= 60 ? 'Passed ✅' : 'Failed ❌'}
+                                <span className={`text-[10px] font-black uppercase mt-1 ${submission.score >= 80 ? 'text-green-600' : 'text-red-500'}`}>
+                                    {submission.score >= 80 ? 'Passed ✅' : 'Failed ❌'}
                                 </span>
                             </div>
                         </div>

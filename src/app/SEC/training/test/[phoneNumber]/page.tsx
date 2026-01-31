@@ -27,7 +27,7 @@ const MOCK_TEST: TestData = {
   name: 'Samsung Protect Max Certification',
   duration: 15,
   totalQuestions: 10,
-  passingPercentage: 60,
+  passingPercentage: 80,
   questions: [
     { id: '1', questionText: 'What is the coverage period for Samsung Protect Max ADLD plan?', options: [{ option: 'A', text: '1 Year' }, { option: 'B', text: '2 Years' }, { option: 'C', text: '6 Months' }, { option: 'D', text: '3 Years' }], correctAnswer: 'A' },
     { id: '2', questionText: 'Which of the following is NOT covered under Samsung Protect Max?', options: [{ option: 'A', text: 'Accidental Damage' }, { option: 'B', text: 'Liquid Damage' }, { option: 'C', text: 'Theft' }, { option: 'D', text: 'Screen Crack' }], correctAnswer: 'C' },
@@ -61,6 +61,7 @@ export default function ProctoredTestPage() {
   const [sessionToken] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [submittedAt, setSubmittedAt] = useState<string>('');
   const [secUserName, setSecUserName] = useState<string>('SEC User');
+  const [bonusAwarded, setBonusAwarded] = useState(false);
 
   const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -89,19 +90,19 @@ export default function ProctoredTestPage() {
       setLoading(true);
       try {
         // Fetch questions based on testType
-        const response = await fetch(`/api/sec/training/quiz/questions?testType=${testType}&limit=50`);
+        const response = await fetch(`/api/sec/training/quiz/questions?testType=${testType}&limit=16`);
         const result = await response.json();
 
         if (result.success && result.data) {
           setTestData({
             id: 'dynamic_' + Date.now(),
             name: 'Samsung Protect Max Certification',
-            duration: 15, // Standard duration
+            duration: result.meta?.duration || 15, // Standard duration
             totalQuestions: result.data.length,
-            passingPercentage: 60,
+            passingPercentage: result.meta?.passingPercentage || 80,
             questions: result.data
           });
-          setTimeLeft(15 * 60);
+          setTimeLeft((result.meta?.duration || 15) * 60);
         } else {
           // Fallback to mock if API fails or is empty
           console.warn('Fallback to mock test data');
@@ -130,7 +131,7 @@ export default function ProctoredTestPage() {
   }, []);
 
   useEffect(() => {
-    if (phase === 'certificate' && score >= 60) {
+    if (phase === 'certificate' && score >= (testData?.passingPercentage || 80)) {
       const duration = 3000; const end = Date.now() + duration; const colors = ['#00C853', '#FFD600', '#2979FF'];
       const frame = () => { confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors }); confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors }); if (Date.now() < end) requestAnimationFrame(frame); };
       frame();
@@ -188,7 +189,25 @@ export default function ProctoredTestPage() {
     let correct = 0; testData.questions.forEach(q => { if (answers[q.id] === q.correctAnswer) correct++; });
     const percentage = Math.round((correct / testData.questions.length) * 100);
     setScore(percentage); setSubmittedAt(new Date().toLocaleString());
-    try { await fetch('/api/sec/training/quiz/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionToken, phoneNumber, testName: testData.name, answers, score: percentage, totalQuestions: testData.questions.length, passed: percentage >= testData.passingPercentage }) }); } catch { }
+    try {
+      const response = await fetch('/api/sec/training/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionToken,
+          phoneNumber,
+          testName: testData.name,
+          answers,
+          score: percentage,
+          totalQuestions: testData.questions.length,
+          passed: percentage >= testData.passingPercentage
+        })
+      });
+      const result = await response.json();
+      if (result.bonusAwarded) {
+        setBonusAwarded(true);
+      }
+    } catch { }
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
     if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
     setPhase('certificate');
@@ -282,11 +301,41 @@ export default function ProctoredTestPage() {
           <p className="text-gray-700 font-medium italic mb-8">&quot;Best wishes for your bright future ahead with Zopper 🌟&quot;</p>
           <div className="flex flex-wrap justify-center gap-3 mt-4">
             <button onClick={() => router.push('/SEC/home')} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium">Go to Dashboard</button>
+            <button onClick={() => window.location.reload()} className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg font-medium">Reattempt ↺</button>
             <button onClick={() => window.print()} className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg font-medium">Print Certificate</button>
             <button onClick={() => setPhase('review')} className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-5 py-2.5 rounded-lg font-medium">View All Results</button>
           </div>
           <div className="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 text-xs text-gray-400 flex items-center gap-1">Powered by <img src="/zopper-logo.png" alt="Zopper" className="inline w-10" /></div>
         </div>
+
+        {/* Bonus Congratulations Modal - Ultra Compact */}
+        {bonusAwarded && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-2xl w-[85vw] max-w-sm p-4 border-2 border-yellow-400">
+              <div className="text-center">
+                <div className="text-4xl mb-2">🏆</div>
+                <h2 className="text-lg font-black text-gray-900 mb-2">
+                  🎉 Bonus Unlocked!
+                </h2>
+                <div className="bg-white rounded-lg p-3 mb-3 shadow-inner">
+                  <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-600">
+                    +10,000
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium">Points Added!</p>
+                </div>
+                <p className="text-xs text-gray-600 mb-3">
+                  For scoring 80%+
+                </p>
+                <button
+                  onClick={() => setBonusAwarded(false)}
+                  className="w-full py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-bold rounded-lg hover:from-yellow-600 hover:to-orange-600 shadow-lg active:scale-95 transition-all"
+                >
+                  Got it! 🚀
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -306,7 +355,13 @@ export default function ProctoredTestPage() {
               </div>
             );
           })}
-          <div className="flex gap-3"><button onClick={() => setPhase('certificate')} className="flex-1 py-4 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700">← Back to Certificate</button><button onClick={() => router.push('/SEC/training')} className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700">Back to Training</button></div>
+          <div className="flex flex-col gap-3">
+            <button onClick={() => window.location.reload()} className="w-full py-4 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 shadow-md">Reattempt Test ↺</button>
+            <div className="flex gap-3">
+              <button onClick={() => setPhase('certificate')} className="flex-1 py-4 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700">← Back to Certificate</button>
+              <button onClick={() => router.push('/SEC/training')} className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700">Back to Training</button>
+            </div>
+          </div>
         </div>
       </div>
     );
