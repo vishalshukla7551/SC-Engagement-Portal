@@ -40,6 +40,14 @@ export default function LandingPage({ userName = '' }) {
       showLiveBadge: true,
     },
     {
+      id: 4,
+      title: 'SPECIAL BANNER',
+      isImageBanner: true,
+      imageSrc: '/images/banner2.jpeg',
+      imageAlt: 'Special Banner',
+      link: '#',
+    },
+    {
       id: 2,
       title: 'PITCH SULTAN',
       subtitle: 'SPECIAL PROMOTION',
