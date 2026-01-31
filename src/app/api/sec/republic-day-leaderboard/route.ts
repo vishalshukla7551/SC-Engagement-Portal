@@ -162,14 +162,27 @@ export async function GET(req: NextRequest) {
                 // User already exists, always add 21000 bonus
                 const existingUser = allUsers[existingUserIndex];
                 existingUser.salesAmount += 21000;
-                // Recalculate rank with bonus
+
+                // Add ProtectMax bonus if applicable
+                if (secUser.hasProtectMaxBonus && !existingUser.hasProtectMaxBonus) {
+                    existingUser.salesAmount += 10000;
+                    existingUser.hasProtectMaxBonus = true;
+                }
+
+                // Recalculate rank with all bonuses
                 const rankObj = getRank(existingUser.salesAmount);
                 existingUser.rankId = rankObj.id;
                 existingUser.rankTitle = rankObj.title;
                 existingUser.minSalesForRank = rankObj.minSales;
             } else {
-                // User doesn't exist, add with only bonus
-                const bonusAmount = 21000;
+                // User doesn't exist, add with bonus
+                let bonusAmount = 21000;
+
+                // Add ProtectMax bonus if applicable
+                if (secUser.hasProtectMaxBonus) {
+                    bonusAmount += 10000;
+                }
+
                 const rankObj = getRank(bonusAmount);
 
                 allUsers.push({
@@ -183,20 +196,6 @@ export async function GET(req: NextRequest) {
                     minSalesForRank: rankObj.minSales,
                     hasProtectMaxBonus: secUser.hasProtectMaxBonus
                 });
-            }
-
-            // Add ProtectMax bonus if applicable
-            if (secUser.hasProtectMaxBonus && existingUserIndex >= 0) {
-                const existingUser = allUsers[existingUserIndex];
-                if (!existingUser.hasProtectMaxBonus) {
-                    existingUser.salesAmount += 10000;
-                    existingUser.hasProtectMaxBonus = true;
-                    // Recalculate rank with ProtectMax bonus
-                    const rankObj = getRank(existingUser.salesAmount);
-                    existingUser.rankId = rankObj.id;
-                    existingUser.rankTitle = rankObj.title;
-                    existingUser.minSalesForRank = rankObj.minSales;
-                }
             }
         });
 

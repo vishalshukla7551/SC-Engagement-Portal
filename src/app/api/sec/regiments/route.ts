@@ -118,11 +118,23 @@ export async function GET(req: NextRequest) {
             if (existingUser) {
                 // User already exists, always add 21000 bonus
                 existingUser.salesAmount += 21000;
+
+                // Add ProtectMax bonus if applicable
+                if (secUser.hasProtectMaxBonus && !existingUser.hasProtectMaxBonus) {
+                    existingUser.salesAmount += 10000;
+                    existingUser.hasProtectMaxBonus = true;
+                }
             } else {
-                // User doesn't exist, add with only bonus
-                const bonusAmount = 21000;
+                // User doesn't exist, add with bonus
+                let bonusAmount = 21000;
+
+                // Add ProtectMax bonus if applicable
+                if (secUser.hasProtectMaxBonus) {
+                    bonusAmount += 10000;
+                }
+
                 const city = secUser.store?.city || 'Unknown City';
-                const region = secUser.store?.region || 'UNKNOWN'; // Use region from Store
+                const region = secUser.store?.region || 'UNKNOWN';
 
                 userSalesMap.set(secUser.id, {
                     secId: secUser.id,
@@ -135,12 +147,6 @@ export async function GET(req: NextRequest) {
                     salesAmount: bonusAmount,
                     hasProtectMaxBonus: secUser.hasProtectMaxBonus
                 });
-            }
-
-            // Add ProtectMax bonus if applicable
-            if (secUser.hasProtectMaxBonus && existingUser && !existingUser.hasProtectMaxBonus) {
-                existingUser.salesAmount += 10000;
-                existingUser.hasProtectMaxBonus = true;
             }
         });
 
