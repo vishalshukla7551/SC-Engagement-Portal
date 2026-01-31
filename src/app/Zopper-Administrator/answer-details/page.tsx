@@ -82,7 +82,7 @@ function AnswerReviewContent() {
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Review Unavailable</h2>
                 <p className="text-gray-500 mb-8">{error || 'The requested test result could not be found.'}</p>
                 <button
-                    onClick={() => router.push('/Zopper-Administrator/test-results')}
+                    onClick={() => router.push('/Zopper-Administrator/test/results')}
                     className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 uppercase tracking-widest text-xs hover:bg-blue-700 transition-all"
                 >
                     Back to All Results
@@ -237,7 +237,7 @@ function AnswerReviewContent() {
 
                     <div className="mt-16 flex flex-col sm:flex-row gap-4">
                         <button
-                            onClick={() => router.push('/Zopper-Administrator/test-results')}
+                            onClick={() => router.push('/Zopper-Administrator/test/results')}
                             className="flex-1 py-5 bg-gray-900 text-white font-black rounded-2xl hover:bg-black shadow-xl transition-all uppercase tracking-widest text-xs"
                         >
                             Return to Results

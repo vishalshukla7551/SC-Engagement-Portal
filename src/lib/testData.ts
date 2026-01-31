@@ -20,6 +20,7 @@ export interface TestResponse {
 export interface TestSubmission {
   id?: string;
   secId: string;
+  secName?: string;
   phone?: string;
   sessionToken: string;
   responses: TestResponse[];
@@ -33,6 +34,7 @@ export interface TestSubmission {
   storeName?: string;
   storeCity?: string;
 }
+
 
 // Samsung Protect Max Certification Questions (The 10 standard questions)
 export const SEC_CERT_QUESTIONS: Question[] = [
@@ -636,15 +638,23 @@ import { config } from '@/lib/config';
 
 export async function getTestSubmissions(secId?: string): Promise<TestSubmission[]> {
   try {
-    const queryParams = secId ? `?secId=${encodeURIComponent(secId)}` : '';
-    const apiUrl = `${config.apiUrl}/admin/test-submissions${queryParams}`;
+    const queryParams = new URLSearchParams();
+    if (secId) queryParams.set('secId', secId);
+    queryParams.set('limit', '200'); // Fetch more submissions
+    
+    const apiUrl = `${config.apiUrl}/admin/test-submissions?${queryParams.toString()}`;
     console.log('🔍 Fetching test submissions from', apiUrl);
 
-    // Timeout after 10s to avoid indefinite loading if API is down
+    // Reduce timeout to 5s for faster fallback to mock data
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch(apiUrl, { signal: controller.signal });
+    const response = await fetch(apiUrl, { 
+      signal: controller.signal,
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
     clearTimeout(timeout);
 
     console.log('📡 Response status:', response.status, response.statusText);
@@ -656,20 +666,21 @@ export async function getTestSubmissions(secId?: string): Promise<TestSubmission
         response.status,
         contentType,
       );
-      // Fall back to empty array; UI will use mock data if configured
       return [];
     }
 
     const result = await response.json();
-    console.log('📦 API result:', result);
+    console.log('📦 API result success:', result.success, 'data length:', result.data?.length || 0);
+    
     if (result.success && result.data) {
       console.log(`✅ Found ${result.data.length} test submissions`);
       return result.data.map((item: any) => ({
         id: item.id,
         secId: item.secId,
+        secName: item.secName,
         phone: item.phone || (item.secId && /^\d{10}$/.test(item.secId) ? item.secId : undefined),
         sessionToken: item.sessionToken,
-        responses: item.responses,
+        responses: item.responses || [],
         score: item.score,
         totalQuestions: item.totalQuestions,
         submittedAt: item.submittedAt,

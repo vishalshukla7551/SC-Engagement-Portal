@@ -84,7 +84,7 @@ export default function QuestionAnalysisPage() {
                 {/* Header */}
                 <div className="flex justify-between items-center">
                     <button
-                        onClick={() => router.push('/Zopper-Administrator/test-results')}
+                        onClick={() => router.push('/Zopper-Administrator/test/results')}
                         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors uppercase font-bold text-sm tracking-widest"
                     >
                         <ArrowLeft size={18} /> Back to Results

@@ -60,75 +60,94 @@ export async function GET() {
         // 3. Process each submission
         submissions.forEach(submission => {
             if (!submission.responses) return;
-            const responses = submission.responses as any;
+            const rawResponses = submission.responses as any;
 
-            // Process each response
-            Object.entries(responses).forEach(([questionIdStr, answer]) => {
-                const questionId = parseInt(questionIdStr);
-                const question = questionMap.get(questionId);
+            let normalizedResponses: { questionId: number | string, selectedAnswer: string }[] = [];
 
+            if (Array.isArray(rawResponses)) {
+                normalizedResponses = rawResponses.map((r: any) => ({
+                    questionId: r.questionId,
+                    selectedAnswer: r.selectedAnswer
+                }));
+            } else if (typeof rawResponses === 'object') {
+                // Determine if it's the { responses: [...] } wrapper or direct map
+                if (Array.isArray(rawResponses.responses)) {
+                    normalizedResponses = rawResponses.responses.map((r: any) => ({
+                        questionId: r.questionId,
+                        selectedAnswer: r.selectedAnswer
+                    }));
+                } else {
+                    // Assume map { "1": "A", "2": "B" }
+                    normalizedResponses = Object.entries(rawResponses).map(([k, v]) => ({
+                        questionId: k,
+                        selectedAnswer: v as string
+                    }));
+                }
+            }
+
+            // Process normalized responses
+            normalizedResponses.forEach(({ questionId, selectedAnswer }) => {
+                const qId = Number(questionId);
+                if (isNaN(qId)) return;
+
+                const question = questionMap.get(qId);
                 // If question not found in DB, skip (might be old deleted question)
                 if (!question) return;
 
-                const stats = questionStats.get(questionId)!;
+                const stats = questionStats.get(qId);
+                if (!stats) return;
+
                 stats.totalAttempts++;
 
                 // Check if answer is correct (Case insensitive check just to be safe)
-                if (String(answer).trim().toUpperCase() === String(question.correctAnswer).trim().toUpperCase()) {
+                if (String(selectedAnswer).trim().toUpperCase() === String(question.correctAnswer).trim().toUpperCase()) {
                     stats.correctAttempts++;
                 } else {
                     stats.incorrectAttempts++;
                 }
-
-                // Calculate success rate
-                if (stats.totalAttempts > 0) {
-                    stats.successRate = Math.round((stats.correctAttempts / stats.totalAttempts) * 100);
-                }
             });
+        });
+
+        // Calculate success rates after gathering all counts
+        questionStats.forEach(stats => {
+            if (stats.totalAttempts > 0) {
+                stats.successRate = Math.round((stats.correctAttempts / stats.totalAttempts) * 100);
+            }
         });
 
         // Convert to array
         const allQuestions = Array.from(questionStats.values());
 
         // 4. Return formatted data
+        // 4. Return formatted data matching frontend interface
+        const formattedQuestions = allQuestions
+            .map((q) => {
+                const dbData = questionMap.get(q.questionId);
+                return {
+                    id: q.questionId,
+                    text: q.questionText,
+                    category: q.category,
+                    correctAnswer: dbData?.correctAnswer || '',
+                    attempts: q.totalAttempts,
+                    correct: q.correctAttempts,
+                    incorrect: q.incorrectAttempts,
+                    accuracy: q.successRate
+                };
+            })
+            .sort((a, b) => b.attempts - a.attempts); // Sort by popularity by default
+
+        // Calculate top 5 hardest (lowest accuracy, but with at least some attempts)
+        const top5Hardest = [...formattedQuestions]
+            .filter(q => q.attempts > 0)
+            .sort((a, b) => a.accuracy - b.accuracy)
+            .slice(0, 5);
+
         return NextResponse.json({
             success: true,
-            data: allQuestions
-                .sort((a, b) => {
-                    // Sort by attempts (desc) then by question ID
-                    if (b.totalAttempts !== a.totalAttempts) return b.totalAttempts - a.totalAttempts;
-                    return a.questionId - b.questionId;
-                })
-                .map((q) => {
-                    // Find database data for options
-                    const dbData = questionMap.get(q.questionId);
-
-                    // Format options if available
-                    const formattedOptions = dbData ? dbData.options.map((optString: string) => {
-                        const parts = optString.split(') ');
-                        const optLetter = parts[0].trim(); // "A"
-                        const optText = parts.slice(1).join(') ').trim(); // "Rest of text"
-
-                        return {
-                            option: optLetter,
-                            text: optText || optString, // Fallback if split fails
-                            selectedCount: 0, // Placeholder
-                            isCorrect: dbData.correctAnswer === optLetter
-                        };
-                    }) : [];
-
-                    return {
-                        id: `q-${q.questionId}`,
-                        questionNumber: q.questionId,
-                        questionText: q.questionText,
-                        // If 0 attempts, show 0% for both correct and wrong
-                        correctPercentage: q.totalAttempts > 0 ? q.successRate : 0,
-                        wrongPercentage: q.totalAttempts > 0 ? (100 - q.successRate) : 0,
-                        totalAttempts: q.totalAttempts,
-                        mostSelectedWrongOption: '-',
-                        options: formattedOptions
-                    };
-                })
+            data: {
+                allQuestions: formattedQuestions,
+                top5Hardest: top5Hardest
+            }
         });
 
     } catch (error) {

@@ -203,6 +203,10 @@ export default function ProctoredTestPage() {
     if (!testData) return;
     let correct = 0; testData.questions.forEach(q => { if (answers[q.id] === q.correctAnswer) correct++; });
     const percentage = Math.round((correct / testData.questions.length) * 100);
+    
+    // Calculate completion time: total duration minus time left
+    const completionTimeInSeconds = (testData.duration * 60) - timeLeft;
+    
     setScore(percentage); setSubmittedAt(new Date().toLocaleString());
     try {
       const response = await fetch('/api/sec/training/quiz/submit', {
@@ -215,7 +219,8 @@ export default function ProctoredTestPage() {
           answers,
           score: percentage,
           totalQuestions: testData.questions.length,
-          passed: percentage >= testData.passingPercentage
+          passed: percentage >= testData.passingPercentage,
+          completionTime: completionTimeInSeconds
         })
       });
       const result = await response.json();
@@ -226,7 +231,7 @@ export default function ProctoredTestPage() {
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
     if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
     setPhase('certificate');
-  }, [testData, answers, cameraStream, sessionToken, phoneNumber]);
+  }, [testData, answers, cameraStream, sessionToken, phoneNumber, timeLeft]);
 
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 

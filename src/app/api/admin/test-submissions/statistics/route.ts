@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         const totalScore = submissions.reduce((sum, sub) => sum + sub.score, 0);
         const averageScore = Math.round(totalScore / totalSubmissions);
 
-        const passedCount = submissions.filter((sub) => sub.score >= 60).length;
+        const passedCount = submissions.filter((sub) => sub.score >= 80).length;
         const passRate = Math.round((passedCount / totalSubmissions) * 100);
 
         const totalTime = submissions.reduce((sum, sub) => sum + sub.completionTime, 0);

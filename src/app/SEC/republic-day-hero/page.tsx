@@ -61,36 +61,14 @@ const FloatingKite = ({ delay, duration, startX, scale, color }: { delay: number
 
 const AmbientBackground = () => (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* Saffron Orb - Moving Top Left - Increased visibility */}
-        <motion.div
-            animate={{
-                x: [0, 50, 0],
-                y: [0, 30, 0],
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.5, 0.3]
-            }}
-            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-orange-500 rounded-full blur-[100px]"
-        />
+        {/* Saffron Orb - Static for performance */}
+        <div className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-orange-500 rounded-full blur-[60px] opacity-30" />
 
-        {/* Green Orb - Moving Bottom Right - Increased visibility */}
-        <motion.div
-            animate={{
-                x: [0, -50, 0],
-                y: [0, -30, 0],
-                scale: [1, 1.25, 1],
-                opacity: [0.3, 0.5, 0.3]
-            }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute -bottom-20 -right-20 w-[700px] h-[700px] bg-green-600 rounded-full blur-[120px]"
-        />
+        {/* Green Orb - Static for performance */}
+        <div className="absolute -bottom-20 -right-20 w-[700px] h-[700px] bg-green-600 rounded-full blur-[80px] opacity-30" />
 
-        {/* White/Blue Center Glow - Increased visibility */}
-        <motion.div
-            animate={{ opacity: [0.1, 0.3, 0.1], scale: [1, 1.3, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-blue-200 rounded-full blur-[150px]"
-        />
+        {/* White/Blue Center Glow - Static for performance */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-blue-200 rounded-full blur-[100px] opacity-20" />
 
         {/* Floating Kites Layer */}
         <FloatingKite delay={0} duration={15} startX={10} scale={1.2} color="orange-500" />
@@ -513,18 +491,9 @@ export default function RepublicDayHeroPage() {
                                                     }}
                                                     className="relative w-24 h-28 drop-shadow-2xl"
                                                 >
-                                                    {/* Blue Flicker Glow - Tightened & Sharpened */}
-                                                    <motion.div
-                                                        animate={{
-                                                            opacity: [0.6, 0.9, 0.6],
-                                                            scale: [1, 1.1, 1]
-                                                        }}
-                                                        transition={{
-                                                            duration: 1.5,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-blue-500 rounded-full blur-[20px]"
+                                                    {/* Blue Flicker Glow - Static */}
+                                                    <div
+                                                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-blue-500 rounded-full blur-[20px] opacity-75"
                                                         style={{
                                                             boxShadow: '0 0 15px rgba(59, 130, 246, 0.6)'
                                                         }}
@@ -576,19 +545,10 @@ export default function RepublicDayHeroPage() {
                                                     : 'none'
                                             }}
                                         >
-                                            {/* Animated Glow Effect for Current Rank */}
+                                            {/* Animated Glow Effect for Current Rank - Static */}
                                             {isCurrent && (
-                                                <motion.div
-                                                    animate={{
-                                                        opacity: [0.3, 0.6, 0.3],
-                                                        scale: [1, 1.1, 1]
-                                                    }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                    className="absolute inset-0 rounded-3xl bg-gradient-to-r from-orange-400 via-yellow-300 to-green-400 blur-xl"
+                                                <div
+                                                    className="absolute inset-0 rounded-3xl bg-gradient-to-r from-orange-400 via-yellow-300 to-green-400 blur-xl opacity-40"
                                                     style={{ zIndex: -1 }}
                                                 />
                                             )}
@@ -670,25 +630,8 @@ export default function RepublicDayHeroPage() {
                                                 }}
                                             />
 
-                                            {/* Rank Icon Badge - Medal Style with Animations */}
-                                            <motion.div
-                                                animate={isCurrent ? {
-                                                    rotate: [0, -10, 10, -10, 10, 0],
-                                                    scale: [1, 1.1, 1]
-                                                } : {}}
-                                                transition={isCurrent ? {
-                                                    rotate: {
-                                                        duration: 2,
-                                                        repeat: Infinity,
-                                                        repeatDelay: 3,
-                                                        ease: "easeInOut"
-                                                    },
-                                                    scale: {
-                                                        duration: 1.5,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }
-                                                } : {}}
+                                            {/* Rank Icon Badge - Medal Style */}
+                                            <div
                                                 className={`
                                                     ${rank.id === 'general' ? 'w-16 h-16 md:w-20 md:h-20 mb-3' : 'w-10 h-10 md:w-12 md:h-12 mb-1.5'} rounded-full flex items-center justify-center z-10
                                                     ${isUnlocked ? `bg-gradient-to-tr ${rank.color} to-white` : 'bg-slate-200'}
@@ -696,19 +639,10 @@ export default function RepublicDayHeroPage() {
                                                 `}
                                                 style={{ '--tw-ring-color': isUnlocked ? '#FFD700' : 'transparent' } as React.CSSProperties}
                                             >
-                                                {/* Animated Golden Ring for Current */}
+                                                {/* Animated Golden Ring for Current - Static */}
                                                 {isCurrent && (
-                                                    <motion.div
-                                                        animate={{
-                                                            scale: [1, 1.3, 1],
-                                                            opacity: [0.5, 0.8, 0.5]
-                                                        }}
-                                                        transition={{
-                                                            duration: 2,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                        className="absolute inset-0 rounded-full border-2 border-yellow-400"
+                                                    <div
+                                                        className="absolute inset-0 rounded-full border-2 border-yellow-400 opacity-60"
                                                         style={{ filter: 'blur(2px)' }}
                                                     />
                                                 )}
@@ -716,42 +650,20 @@ export default function RepublicDayHeroPage() {
                                                 {/* Inner Circle for depth */}
                                                 <div className={`absolute inset-1 rounded-full border border-white/30 ${isUnlocked ? rank.color : ''}`}></div>
 
-                                                {/* Animated Icon */}
-                                                <motion.div
-                                                    animate={isCurrent ? {
-                                                        scale: [1, 1.2, 1]
-                                                    } : {}}
-                                                    transition={{
-                                                        duration: 1.5,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                >
+                                                {/* Animated Icon - Static */}
+                                                <div>
                                                     {isLocked ? <Lock size={rank.id === 'general' ? 24 : 14} className="text-slate-500" /> : <rank.icon size={rank.id === 'general' ? 32 : 18} className="text-white drop-shadow-md" />}
-                                                </motion.div>
+                                                </div>
 
                                                 {/* Animated Success Check */}
                                                 {isUnlocked && !isCurrent && (
-                                                    <motion.div
-                                                        initial={{ scale: 0 }}
-                                                        animate={{ scale: 1 }}
-                                                        transition={{
-                                                            type: "spring",
-                                                            stiffness: 500,
-                                                            damping: 15,
-                                                            delay: index * 0.15 + 0.3
-                                                        }}
-                                                        whileHover={{
-                                                            scale: 1.3,
-                                                            rotate: 360,
-                                                            transition: { duration: 0.5 }
-                                                        }}
+                                                    <div
                                                         className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-white shadow-sm z-20"
                                                     >
                                                         <CheckCircle size={10} className="text-white" />
-                                                    </motion.div>
+                                                    </div>
                                                 )}
-                                            </motion.div>
+                                            </div>
 
                                             {/* Rank Title */}
                                             <p className={`

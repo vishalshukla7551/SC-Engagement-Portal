@@ -12,7 +12,7 @@ interface Segment {
 const segments: Segment[] = [
   { id: 'manage', label: 'Manage Tests', icon: '📋', path: '/Zopper-Administrator/test/manage' },
   { id: 'results', label: 'Test Results', icon: '📊', path: '/Zopper-Administrator/test/results' },
-  { id: 'analysis', label: 'Analysis', icon: '📈', path: '/Zopper-Administrator/test/analysis' },
+  { id: 'analysis', label: 'Analysis', icon: '📈', path: '/Zopper-Administrator/question-analysis' },
   { id: 'invites', label: 'Send Invites', icon: '📨', path: '/Zopper-Administrator/test/invites' },
   { id: 'questions', label: 'Question Bank', icon: '📝', path: '/Zopper-Administrator/test/questions' },
 ];
