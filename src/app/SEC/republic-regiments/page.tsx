@@ -162,7 +162,6 @@ const REGIMENTS = [
 ];
 
 const RANKS = [
-    { title: 'Sales General', shortTitle: 'General', icon: Crown },
     { title: 'Sales Chief Marshal', shortTitle: 'Chief Marshal', icon: Star },
     { title: 'Sales Commander', shortTitle: 'Commander', icon: Target },
     { title: 'Sales Major', shortTitle: 'Major', icon: Shield },

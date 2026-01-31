@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 const BONUS_PHONE_NUMBERS = (process.env.REPUBLIC_DAY_BONUS_PHONES || '').split(',').filter(Boolean);
 
 // RANKS Updated to match Republic Day Hero Page thresholds
+// Sales General removed - will be assigned manually later
 const RANKS = [
-    { id: 'general', title: 'Sales General', minSales: 200000 },
     { id: 'brigadier', title: 'Sales Chief Marshal', minSales: 150000 },
     { id: 'colonel', title: 'Sales Commander', minSales: 120000 },
     { id: 'major', title: 'Sales Major', minSales: 80000 },

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 // Rank Configuration
+// Sales General removed - will be assigned manually later
 export const RANKS = [
     { id: 'cadet', title: 'SALESVEER', minSales: 0, color: 'bg-stone-400', icon: Shield },
     { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 21000, color: 'bg-emerald-500', icon: Star },
@@ -22,7 +23,6 @@ export const RANKS = [
     { id: 'major', title: 'SALES MAJOR', minSales: 80000, color: 'bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
-    { id: 'general', title: 'SALES GENERAL', minSales: 200000, color: 'bg-gradient-to-r from-red-600 to-orange-600', icon: Crown },
 ];
 
 interface TermsModalProps {
@@ -148,8 +148,7 @@ export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: Rewards
                             { title: 'SALES CAPTAIN', message: 'Don\'t stop here—after all, you are the Sales Captain of Sales!', reward: 'Prestige', minSales: 51000 },
                             { title: 'SALES MAJOR', message: 'Outstanding achievement! Your dedication is paying off.', reward: '₹500', minSales: 80000 },
                             { title: 'SALES COMMANDER', message: 'Exceptional performance! Lead by example and inspire others.', reward: '₹1,500', minSales: 120000 },
-                            { title: 'SALES CHIEF MARSHAL', message: 'Elite status achieved! You\'re among the top performers.', reward: '₹2,500', minSales: 150000 },
-                            { title: 'SALES GENERAL', message: 'Supreme excellence! Only ONE person tops the Hall of Fame!', reward: '₹5,000', minSales: 150000 }
+                            { title: 'SALES CHIEF MARSHAL', message: 'Elite status achieved! You\'re among the top performers. The ultimate rank awaits!', reward: '₹2,500', minSales: 150000 }
                         ];
                         return rewardData.map((item, i) => {
                             const rank = RANKS[i];
@@ -187,7 +186,7 @@ export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: Rewards
                                             <p className="text-xs text-slate-600 leading-relaxed mb-2">{item.message}</p>
                                             <div className="flex items-center gap-2 mt-2">
                                                 <span className="text-[10px] text-slate-400 font-semibold uppercase">Honour Points:</span>
-                                                <span className="text-xs font-bold text-[#000080]">{item.minSales === 0 ? '0' : item.title === 'SALES GENERAL' ? '1.5 lacs plus' : item.minSales.toLocaleString('en-IN')}</span>
+                                                <span className="text-xs font-bold text-[#000080]">{item.minSales === 0 ? '0' : item.minSales.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
