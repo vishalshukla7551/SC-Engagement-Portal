@@ -130,7 +130,7 @@ export default function LandingPage({ userName = '' }) {
               className="flex transition-transform duration-500 ease-in-out h-full"
               style={{ transform: `translateX(-${activeSlide * 100}%)` }}
             >
-              {banners.map((banner) => (
+              {banners.map((banner, index) => (
                 <div
                   key={banner.id}
                   className="w-full flex-shrink-0 h-full"
@@ -181,7 +181,7 @@ export default function LandingPage({ userName = '' }) {
 
                       {/* LIVE Badge for special banners */}
                       {banner.showLiveBadge && (
-                        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-5 md:right-5 bg-red-600 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-lg border-2 border-white animate-pulse flex items-center gap-1">
+                        <div className={`absolute top-3 sm:top-4 md:top-5 ${index === 1 ? 'left-3 sm:left-4 md:left-5' : 'right-3 sm:right-4 md:right-5'} bg-red-600 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-lg border-2 border-white animate-pulse flex items-center gap-1`}>
                           <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>

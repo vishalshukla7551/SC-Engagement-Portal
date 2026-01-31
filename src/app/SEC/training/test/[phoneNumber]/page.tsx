@@ -92,13 +92,13 @@ export default function ProctoredTestPage() {
       if (authUser) {
         const userData = JSON.parse(authUser);
         if (userData.phone && userData.phone !== urlPhoneNumber) {
-          setPhoneNumber(userData.phone);
+            router.replace(`/SEC/training/test/${userData.phone}?testType=${testType}`);
         }
       }
     } catch (error) {
       console.error('Error checking authUser phone:', error);
     }
-  }, [urlPhoneNumber]);
+  }, [urlPhoneNumber, router, testType]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
