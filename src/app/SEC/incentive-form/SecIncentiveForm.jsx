@@ -540,7 +540,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
                   min="2026-01-23"
-                  max="2026-01-31"
+                  max="2026-02-02"
                   onClick={(e) => e.target.showPicker?.()}
                   className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   placeholder="dd/mm/yyyy"
