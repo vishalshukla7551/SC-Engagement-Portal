@@ -150,4 +150,3 @@ add2YrScreenProtectionForLuxury()
         console.error('💥 Script failed:', error);
         process.exit(1);
     });
-//test
