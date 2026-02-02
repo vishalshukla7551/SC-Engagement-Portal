@@ -89,29 +89,47 @@ export default function TestResultsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [filterScore, setFilterScore] = useState<'all' | 'pass' | 'fail'>('all');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+  const [totalItems, setTotalItems] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         console.log('🔄 Starting to fetch test data...');
-        
-        // Fetch data with timeout handling
-        const [apiData, apiStats] = await Promise.allSettled([
-          getTestSubmissions(),
+
+        // Fetch data with pagination
+        // Note: getTestSubmissions now returns { data, meta }
+        // We cast it to any because we updated the signature but TS might complain until full compile
+        const [apiDataResult, apiStats] = await Promise.allSettled([
+          getTestSubmissions(undefined, currentPage, itemsPerPage),
           getTestStatistics()
         ]);
 
         let data: TestSubmission[] = [];
         let statistics = MOCK_STATS;
+        let total = 0;
 
         // Handle submissions data
-        if (apiData.status === 'fulfilled' && apiData.value && apiData.value.length > 0) {
-          data = apiData.value;
-          console.log('✅ Using API data:', data.length, 'submissions');
+        if (apiDataResult.status === 'fulfilled') {
+          // Check if it returned the new structure { data, meta }
+          const result = apiDataResult.value as any;
+          if (result.data) {
+            data = result.data;
+            total = result.meta?.total || 0;
+            console.log('✅ Using API data:', data.length, 'submissions, Total:', total);
+          } else if (Array.isArray(result)) {
+            // Fallback for old signature if not updated perfectly in memory
+            data = result;
+            total = result.length;
+          }
         } else {
           data = MOCK_SUBMISSIONS;
+          total = MOCK_SUBMISSIONS.length;
           console.log('⚠️ Using mock data:', data.length, 'submissions');
         }
 
@@ -125,8 +143,9 @@ export default function TestResultsPage() {
 
         setSubmissions(data);
         setFilteredSubmissions(data);
+        setTotalItems(total);
         setStats(statistics);
-        
+
       } catch (err) {
         console.error('❌ Error in fetchData:', err);
         setError('Failed to load test results');
@@ -138,11 +157,15 @@ export default function TestResultsPage() {
         setLoading(false);
       }
     };
-    
+
     fetchData();
-  }, []);
+  }, [currentPage, itemsPerPage]); // Refetch when page changes
 
   useEffect(() => {
+    // Client-side filtering/sorting acts on the CURRENT PAGE data only
+    // Ideally filtering/sorting should be server-side for proper pagination,
+    // but for now we apply it to the fetched batch.
+
     let filtered = [...submissions];
 
     if (filterScore === 'pass') {
@@ -250,8 +273,10 @@ export default function TestResultsPage() {
     return 'text-red-600 bg-red-50';
   };
 
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       {/* Loading State */}
       {loading && (
         <div className="bg-white rounded-lg shadow p-8">
@@ -321,7 +346,7 @@ export default function TestResultsPage() {
 
           {/* Filters and Controls */}
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex flex-wrap gap-4 items-center justify-between">
               <div className="flex items-center space-x-2">
                 <label className="text-sm font-bold text-gray-900">Filter:</label>
                 <select
@@ -336,7 +361,7 @@ export default function TestResultsPage() {
               </div>
 
               <div className="text-sm font-bold text-gray-900">
-                Showing {filteredSubmissions.length} of {submissions.length} results
+                Showing {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
               </div>
             </div>
           </div>
@@ -528,6 +553,87 @@ export default function TestResultsPage() {
               </div>
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {totalItems > 0 && (
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
+                    <span className="font-medium">{totalItems}</span> results
+                  </p>
+                </div>
+                <div>
+                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                    >
+                      <span className="sr-only">Previous</span>
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    {/* Page Numbers */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      // Logic to show generic window of pages centered around current
+                      let pageNum = i + 1;
+                      if (totalPages > 5) {
+                        if (currentPage > 3) {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        if (pageNum > totalPages) {
+                          pageNum = totalPages - (4 - i);
+                        }
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          aria-current={currentPage === pageNum ? 'page' : undefined}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === pageNum
+                            ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                            }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                    >
+                      <span className="sr-only">Next</span>
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

@@ -41,23 +41,35 @@ export async function POST(request: NextRequest) {
     // Create enhanced session token with test name for better identification
     const enhancedSessionToken = `${testName?.toLowerCase().replace(/\s+/g, '_') || 'test'}_${sessionToken || Date.now()}`;
 
-    // Save test submission to database
-    const testSubmission = await prisma.testSubmission.create({
-      data: {
-        secId: sec.employeeId || sec.id,
-        phone: sec.phone,
-        sessionToken: enhancedSessionToken,
-        testName: testName || 'SEC Knowledge Assessment',
-        responses: answers || {},
-        score: score || 0,
-        totalQuestions: totalQuestions || 0,
-        completionTime: completionTime || 0,
-        isProctoringFlagged: false,
-        storeId: sec.storeId,
-        storeName: sec.store?.name,
-        screenshots: screenshots || [],
-      },
+    // Check for existing submission to prevent duplicates
+    const existingSubmission = await prisma.testSubmission.findFirst({
+      where: { sessionToken: enhancedSessionToken }
     });
+
+    let testSubmission;
+
+    if (existingSubmission) {
+      console.log('Duplicate submission prevented for session:', enhancedSessionToken);
+      testSubmission = existingSubmission;
+    } else {
+      // Save test submission to database
+      testSubmission = await prisma.testSubmission.create({
+        data: {
+          secId: sec.employeeId || sec.id,
+          phone: sec.phone,
+          sessionToken: enhancedSessionToken,
+          testName: testName || 'SEC Knowledge Assessment',
+          responses: answers || {},
+          score: score || 0,
+          totalQuestions: totalQuestions || 0,
+          completionTime: completionTime || 0,
+          isProctoringFlagged: false,
+          storeId: sec.storeId,
+          storeName: sec.store?.name,
+          screenshots: screenshots || [],
+        },
+      });
+    }
 
     console.log('Test submission saved:', {
       id: testSubmission.id,

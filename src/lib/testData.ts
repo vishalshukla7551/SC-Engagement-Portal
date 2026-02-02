@@ -636,11 +636,14 @@ export const sampleQuestions: Question[] = allSamsungQuestions.slice(0, 10);
  */
 import { config } from '@/lib/config';
 
-export async function getTestSubmissions(secId?: string): Promise<TestSubmission[]> {
+export async function getTestSubmissions(secId?: string, page: number = 1, limit: number = 50): Promise<{ data: TestSubmission[], meta: any }> {
   try {
     const queryParams = new URLSearchParams();
     if (secId) queryParams.set('secId', secId);
-    queryParams.set('limit', '200'); // Fetch more submissions
+    queryParams.set('page', page.toString());
+    queryParams.set('limit', limit.toString());
+    const offset = (page - 1) * limit;
+    queryParams.set('offset', offset.toString());
 
     const apiUrl = `${config.apiUrl}/admin/test-submissions?${queryParams.toString()}`;
     console.log('🔍 Fetching test submissions from', apiUrl);
@@ -666,7 +669,7 @@ export async function getTestSubmissions(secId?: string): Promise<TestSubmission
         response.status,
         contentType,
       );
-      return [];
+      return { data: [], meta: { total: 0 } };
     }
 
     const result = await response.json();
@@ -674,33 +677,36 @@ export async function getTestSubmissions(secId?: string): Promise<TestSubmission
 
     if (result.success && result.data) {
       console.log(`✅ Found ${result.data.length} test submissions`);
-      return result.data.map((item: any) => ({
-        id: item.id,
-        secId: item.secId,
-        secName: item.secName,
-        phone: item.phone || (item.secId && /^\d{10}$/.test(item.secId) ? item.secId : undefined),
-        sessionToken: item.sessionToken,
-        responses: item.responses || [],
-        score: item.score,
-        totalQuestions: item.totalQuestions,
-        submittedAt: item.submittedAt,
-        completionTime: item.completionTime,
-        isProctoringFlagged: item.isProctoringFlagged,
-        screenshotUrls: item.screenshots || [],
-        storeId: item.storeId,
-        storeName: item.storeName,
-        storeCity: item.storeCity,
-      }));
+      return {
+        data: result.data.map((item: any) => ({
+          id: item.id,
+          secId: item.secId,
+          secName: item.secName,
+          phone: item.phone || (item.secId && /^\d{10}$/.test(item.secId) ? item.secId : undefined),
+          sessionToken: item.sessionToken,
+          responses: item.responses || [],
+          score: item.score,
+          totalQuestions: item.totalQuestions,
+          submittedAt: item.submittedAt,
+          completionTime: item.completionTime,
+          isProctoringFlagged: item.isProctoringFlagged,
+          screenshotUrls: item.screenshots || [],
+          storeId: item.storeId,
+          storeName: item.storeName,
+          storeCity: item.storeCity,
+        })),
+        meta: result.meta || { total: result.data.length }
+      };
     }
     console.warn('⚠️ No data found in API response');
-    return [];
+    return { data: [], meta: { total: 0 } };
   } catch (error) {
     if ((error as any)?.name === 'AbortError') {
       console.error('❌ Fetch test submissions timed out');
     } else {
       console.error('❌ Error fetching test submissions:', error);
     }
-    return [];
+    return { data: [], meta: { total: 0 } };
   }
 }
 

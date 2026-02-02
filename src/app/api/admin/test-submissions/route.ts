@@ -36,36 +36,39 @@ export async function GET(request: NextRequest) {
         }
 
         // Fetch submissions with responses included
-        const submissions = await prisma.testSubmission.findMany({
-            where,
-            select: {
-                id: true,
-                secId: true,
-                phone: true,
-                sessionToken: true,
-                testName: true,
-                responses: true, // Include responses
-                score: true,
-                totalQuestions: true,
-                completionTime: true,
-                isProctoringFlagged: true,
-                storeId: true,
-                storeName: true,
-                certificateUrl: true,
-                createdAt: true,
-                screenshots: true,
-            },
-            orderBy: { createdAt: 'desc' },
-            take: limit,
-            skip: offset,
-        });
+        const [total, submissions] = await prisma.$transaction([
+            prisma.testSubmission.count({ where }),
+            prisma.testSubmission.findMany({
+                where,
+                select: {
+                    id: true,
+                    secId: true,
+                    phone: true,
+                    sessionToken: true,
+                    testName: true,
+                    responses: true, // Include responses
+                    score: true,
+                    totalQuestions: true,
+                    completionTime: true,
+                    isProctoringFlagged: true,
+                    storeId: true,
+                    storeName: true,
+                    certificateUrl: true,
+                    createdAt: true,
+                    screenshots: true,
+                },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                skip: offset,
+            })
+        ]);
 
         if (submissions.length === 0) {
             return NextResponse.json({
                 success: true,
                 data: [],
                 meta: {
-                    total: 0,
+                    total,
                     limit,
                     offset,
                 },
@@ -187,10 +190,10 @@ export async function GET(request: NextRequest) {
             success: true,
             data: processedSubmissions,
             meta: {
-                total: processedSubmissions.length,
+                total,
                 limit,
                 offset,
-                hasMore: processedSubmissions.length === limit
+                hasMore: offset + submissions.length < total
             },
         });
     } catch (error) {
