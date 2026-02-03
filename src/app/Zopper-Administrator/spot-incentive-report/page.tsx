@@ -774,7 +774,7 @@ export default function SpotIncentiveReport() {
                     {importResult.success ? (
                       <div>
                         {/* Summary */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                           <div className="bg-blue-50 rounded-lg p-4">
                             <div className="text-xs text-blue-600 font-medium mb-1">Total Rows</div>
                             <div className="text-2xl font-bold text-blue-900">{importResult.summary.total}</div>
@@ -782,6 +782,10 @@ export default function SpotIncentiveReport() {
                           <div className="bg-emerald-50 rounded-lg p-4">
                             <div className="text-xs text-emerald-600 font-medium mb-1">Approved</div>
                             <div className="text-2xl font-bold text-emerald-900">{importResult.summary.approved}</div>
+                          </div>
+                          <div className="bg-purple-50 rounded-lg p-4">
+                            <div className="text-xs text-purple-600 font-medium mb-1">Deleted</div>
+                            <div className="text-2xl font-bold text-purple-900">{importResult.summary.deleted || 0}</div>
                           </div>
                           <div className="bg-amber-50 rounded-lg p-4">
                             <div className="text-xs text-amber-600 font-medium mb-1">Skipped</div>
@@ -812,9 +816,10 @@ export default function SpotIncentiveReport() {
                                       <td className="p-3 text-sm text-neutral-900 font-mono">{detail.reportId}</td>
                                       <td className="p-3">
                                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${detail.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                                          detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
-                                            detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
-                                              'bg-red-100 text-red-700'
+                                            detail.status === 'deleted' ? 'bg-purple-100 text-purple-700' :
+                                              detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
+                                                detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
+                                                  'bg-red-100 text-red-700'
                                           }`}>
                                           {detail.status.replace('_', ' ')}
                                         </span>
