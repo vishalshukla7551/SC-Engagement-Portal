@@ -16,7 +16,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import RepublicDayBonusPopup from '@/components/RepublicDayBonusPopup';
-import { RANKS, TermsModal, RewardsModal, AnnouncementPopup } from './RepublicDayModals';
+import { RANKS, TermsModal, RewardsModal } from './RepublicDayModals';
 
 
 
@@ -143,15 +143,6 @@ export default function RepublicDayHeroPage() {
     const [showRewards, setShowRewards] = useState(false);
 
     const [hasBonus, setHasBonus] = useState(false);
-    const [showAnnouncement, setShowAnnouncement] = useState(false);
-
-    useEffect(() => {
-        // Show announcement shortly after mount to grab attention
-        const timer = setTimeout(() => {
-            setShowAnnouncement(true);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
 
     const [animatedRankIndex, setAnimatedRankIndex] = useState(0); // For progressive avatar jump animation
 
@@ -313,15 +304,7 @@ export default function RepublicDayHeroPage() {
             {/* Republic Day Bonus Popup */}
             <RepublicDayBonusPopup hasBonus={hasBonus} />
 
-            {/* Announcement / Urgent Update Popup */}
-            <AnimatePresence>
-                {showAnnouncement && (
-                    <AnnouncementPopup
-                        isOpen={showAnnouncement}
-                        onClose={() => setShowAnnouncement(false)}
-                    />
-                )}
-            </AnimatePresence>
+
 
             {/* SEPARATE ANIMATION LAYER */}
             {/* This container handles all background animations and jets to isolate repaints */}

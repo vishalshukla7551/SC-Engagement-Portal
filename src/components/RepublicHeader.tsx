@@ -83,7 +83,40 @@ export default function RepublicHeader({ userName = 'Guest', hideGreeting = fals
         } catch {
             // ignore JSON parse errors
         }
+    });
+
+    const [salesData, setSalesData] = useState({ totalSales: 0, rankIndex: 0, loading: true });
+
+    // Replicating Rank Config locally for header to avoid circular deps or heavy refactors
+    const HEADER_RANKS = [
+        { id: 'cadet', title: 'SALESVEER', minSales: 0, icon: '🪁', color: 'from-stone-400 to-stone-500' },
+        { id: 'lieutenant', title: 'SALES LIEUTENANT', minSales: 21000, icon: '🛡️', color: 'from-emerald-500 to-emerald-600' },
+        { id: 'captain', title: 'SALES CAPTAIN', minSales: 51000, icon: '⚓', color: 'from-blue-500 to-blue-600' },
+        { id: 'major', title: 'SALES MAJOR', minSales: 80000, icon: '⭐', color: 'from-indigo-500 to-indigo-600' },
+        { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, icon: '⚔️', color: 'from-purple-500 to-purple-600' },
+        { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, icon: '🎖️', color: 'from-orange-500 to-orange-600' },
+    ];
+
+    useEffect(() => {
+        const fetchRank = async () => {
+            try {
+                const res = await fetch('/api/sec/republic-hero');
+                const data = await res.json();
+                if (data.success) {
+                    const sales = data.data.totalSales || 0;
+                    const rankIndex = HEADER_RANKS.findLastIndex(r => sales >= r.minSales);
+                    setSalesData({ totalSales: sales, rankIndex: Math.max(0, rankIndex), loading: false });
+                }
+            } catch (err) {
+                console.error("Header rank fetch error", err);
+                setSalesData(prev => ({ ...prev, loading: false }));
+            }
+        };
+        fetchRank();
     }, []);
+
+    const currentRank = HEADER_RANKS[salesData.rankIndex];
+    const nextRank = HEADER_RANKS[salesData.rankIndex + 1];
 
     return (
         <header className="relative bg-white shadow-sm pb-1 pt-4">
@@ -190,55 +223,117 @@ export default function RepublicHeader({ userName = 'Guest', hideGreeting = fals
                     </div>
                 )}
 
-                {/* Profile Button with Ripple Effect */}
-                <div ref={menuRef} className="relative z-50">
-                    <button
-                        onClick={() => setShowProfileMenu(!showProfileMenu)}
-                        className="group w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-white hover:shadow-md hover:border-[#FF9933]/30 transition-all duration-300 focus:ring-2 focus:ring-[#FF9933]/20 relative overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-tr from-[#FF9933]/10 to-[#138808]/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <svg className="w-6 h-6 relative z-10" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                    </button>
+                <div className="flex items-center gap-3">
+                    {/* Achievements Button */}
+                    {/* Current Badge Button */}
 
-                    {/* Profile Dropdown Menu */}
-                    {showProfileMenu && (
-                        <div
-                            className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-[slideUpFade_0.3s_ease-out]"
-                            style={{ zIndex: 99999 }}
+                    {/* Dynamic Rank Badge with Hover Tooltip */}
+                    <div className="group relative">
+                        <button
+                            className="cursor-default w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white/50 relative overflow-hidden transition-transform group-hover:scale-110"
+                            style={{ backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))` }}
                         >
-                            <button
-                                onClick={() => {
-                                    setShowProfileMenu(false);
-                                    window.location.href = '/SEC/profile';
-                                }}
-                                className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors group"
-                            >
-                                <div className="p-1.5 rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
+                            <div className={`absolute inset-0 bg-gradient-to-br ${currentRank.color}`}></div>
+                            <span className="text-lg drop-shadow-md relative z-10">{currentRank.icon}</span>
+
+                            {/* Shine effect */}
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                        </button>
+
+                        {/* HOVER TOOLTIP */}
+                        <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-blue-100 p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[100]">
+                            {/* Arrow */}
+                            <div className="absolute -top-2 right-3 w-4 h-4 bg-white transform rotate-45 border-t border-l border-blue-100"></div>
+
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${currentRank.color} flex items-center justify-center text-xl shadow-md`}>
+                                        {currentRank.icon}
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Current Rank</p>
+                                        <h4 className="font-extrabold text-slate-800 text-sm leading-tight">{currentRank.title}</h4>
+                                    </div>
                                 </div>
-                                <span className="text-sm font-medium">My Account</span>
-                            </button>
-                            <div className="border-t border-gray-100 my-1"></div>
-                            <button
-                                onClick={() => {
-                                    setShowProfileMenu(false);
-                                    handleLogout();
-                                }}
-                                className="w-full px-4 py-2.5 text-left text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors group"
-                            >
-                                <div className="p-1.5 rounded-full bg-red-50 text-red-500 group-hover:bg-red-100 transition-colors">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                    </svg>
+
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-semibold text-gray-500 mb-1">
+                                        <span>Current Sales</span>
+                                        <span className="text-[#000080]">₹{salesData.totalSales.toLocaleString('en-IN')}</span>
+                                    </div>
+
+                                    {nextRank ? (
+                                        <>
+                                            <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                                <div
+                                                    className={`h-full bg-gradient-to-r ${currentRank.color}`}
+                                                    style={{ width: `${Math.min(100, (salesData.totalSales / nextRank.minSales) * 100)}%` }}
+                                                ></div>
+                                            </div>
+                                            <p className="text-[10px] text-center text-gray-400 mt-1">
+                                                Next Rank: <span className="font-bold text-gray-600">{nextRank.title}</span> (₹{nextRank.minSales.toLocaleString('en-IN')})
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className="text-[10px] text-center text-green-600 font-bold bg-green-50 rounded py-1">
+                                            🎉 Maximum Rank Achieved!
+                                        </p>
+                                    )}
                                 </div>
-                                <span className="text-sm font-medium">Logout</span>
-                            </button>
+                            </div>
                         </div>
-                    )}
+                    </div>
+
+                    {/* Profile Button with Ripple Effect */}
+                    <div ref={menuRef} className="relative z-50">
+                        <button
+                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                            className="group w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-white hover:shadow-md hover:border-[#FF9933]/30 transition-all duration-300 focus:ring-2 focus:ring-[#FF9933]/20 relative overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-tr from-[#FF9933]/10 to-[#138808]/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <svg className="w-6 h-6 relative z-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                        </button>
+
+                        {/* Profile Dropdown Menu */}
+                        {showProfileMenu && (
+                            <div
+                                className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-[slideUpFade_0.3s_ease-out]"
+                                style={{ zIndex: 99999 }}
+                            >
+                                <button
+                                    onClick={() => {
+                                        setShowProfileMenu(false);
+                                        window.location.href = '/SEC/profile';
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors group"
+                                >
+                                    <div className="p-1.5 rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <span className="text-sm font-medium">My Account</span>
+                                </button>
+                                <div className="border-t border-gray-100 my-1"></div>
+                                <button
+                                    onClick={() => {
+                                        setShowProfileMenu(false);
+                                        handleLogout();
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors group"
+                                >
+                                    <div className="p-1.5 rounded-full bg-red-50 text-red-500 group-hover:bg-red-100 transition-colors">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                    </div>
+                                    <span className="text-sm font-medium">Logout</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
