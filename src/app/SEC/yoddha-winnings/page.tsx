@@ -19,9 +19,13 @@ import {
     Fingerprint,
     Music,
     Repeat,
-    Shield
+    Shield,
+    Download
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toJpeg } from 'html-to-image';
+import JSZip from 'jszip';
+import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
 // --- VISUAL ASSETS (SVG Shapes) ---
 
@@ -114,8 +118,8 @@ const AshokaChakra = ({ className }: { className?: string }) => (
     </svg>
 );
 
-const PatrioticBackground = ({ theme, variant = 'default' }: { theme: any, variant?: 'default' | 'radar' | 'spotlight' | 'regal' | 'rising' | 'cobra' | 'battalion' | 'honor' | 'elite' | 'laser' }) => (
-    <div className="absolute inset-0 overflow-hidden bg-[#001233]"> {/* Deep Navy Blue Base */}
+const PatrioticBackground = ({ theme, variant = 'default', isRendering = false }: { theme: any, variant?: 'default' | 'radar' | 'spotlight' | 'regal' | 'rising' | 'cobra' | 'battalion' | 'honor' | 'elite' | 'laser', isRendering?: boolean }) => (
+    <div className="absolute inset-0 overflow-hidden bg-[#001233]"> {/* Reverted to original deep navy */}
 
         {/* --- COMMON: Camouflage Texture Overlay --- */}
         <motion.div
@@ -541,9 +545,15 @@ const SquiggleLines = ({ theme }: { theme: any }) => (
     </div>
 );
 
-const AnimatedNumber = ({ value }: { value: number }) => {
-    const [display, setDisplay] = useState(0);
+const AnimatedNumber = ({ value, isRendering = false }: { value: number, isRendering?: boolean }) => {
+    const [display, setDisplay] = useState(isRendering ? value : 0);
+
     useEffect(() => {
+        if (isRendering) {
+            setDisplay(value);
+            return;
+        }
+
         let start = 0;
         const duration = 2000;
         const stepTime = 20;
@@ -560,27 +570,30 @@ const AnimatedNumber = ({ value }: { value: number }) => {
             }
         }, stepTime);
         return () => clearInterval(timer);
-    }, [value]);
+    }, [value, isRendering]);
 
     return <span>{display.toLocaleString()}</span>;
 };
 
 // --- SLIDE RENDERERS ---
 
-const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, regionData, leaderboardData, rankTitle, userName, hallOfFameData, globalRank, globalStats, onGenerateVideo, isRecording }: { slide: any, theme: any, currentPoints: number, unitsSold: number, longestStreak: number, regionData?: { region: string, rank: number | string, topPercent: number }, leaderboardData?: any[], rankTitle?: string, userName?: string, hallOfFameData?: any[], globalRank?: number | string, globalStats?: { rank: string | number, total: number, percent: number }, onGenerateVideo?: () => void, isRecording?: boolean }) => {
+const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, regionData, leaderboardData, rankTitle, userName, hallOfFameData, globalRank, globalStats, onDownloadVideo, isRendering, renderProgress }: { slide: any, theme: any, currentPoints: number, unitsSold: number, longestStreak: number, regionData?: { region: string, rank: number | string, topPercent: number }, leaderboardData?: any[], rankTitle?: string, userName?: string, hallOfFameData?: any[], globalRank?: number | string, globalStats?: { rank: string | number, total: number, percent: number }, onDownloadVideo?: () => void, isRendering?: boolean, renderProgress?: number }) => {
     // Force consistent theme usage
     const pTheme = THEMES[0];
+
+    // Helper to get duration for current slide
+    const duration = slide.duration || 5000;
 
     switch (slide.type) {
         case 'intro':
             return (
                 <div className="relative w-full h-full flex flex-col items-center justify-center p-0 z-10 overflow-hidden">
-                    <PatrioticBackground theme={pTheme} />
+                    <PatrioticBackground theme={pTheme} isRendering={isRendering} />
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
+                        initial={isRendering ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3, duration: 0.8, type: "spring" }}
+                        transition={isRendering ? { duration: 0 } : { delay: 0.3, duration: 0.8, type: "spring" }}
                         className="relative z-20 text-center w-full"
                     >
                         {/* Saffron Header */}
@@ -606,12 +619,12 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
         case 'stats':
             return (
                 <div className="w-full h-full flex flex-col items-center justify-center p-8 relative z-10 text-center">
-                    <PatrioticBackground theme={pTheme} variant="radar" />
+                    <PatrioticBackground theme={pTheme} variant="radar" isRendering={isRendering} />
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        initial={isRendering ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "backOut" }}
+                        transition={isRendering ? { duration: 0 } : { duration: 0.8, ease: "backOut" }}
                         className="relative z-20 w-full max-w-sm"
                     >
                         <div className="bg-black/80 backdrop-blur-xl border border-[#FF9933]/30 p-8 rounded-3xl relative overflow-hidden group shadow-[0_0_30px_rgba(255,153,51,0.2)]">
@@ -640,9 +653,9 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
 
                                 <div className="space-y-6">
                                     <motion.div
-                                        initial={{ opacity: 0, x: -20 }}
+                                        initial={isRendering ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 }}
+                                        transition={isRendering ? { duration: 0 } : { delay: 0.4 }}
                                         whileHover={{ scale: 1.05, borderColor: 'rgba(255,153,51,0.5)' }}
                                         className="bg-white/5 rounded-xl p-4 border border-white/5 transition-colors cursor-crosshair relative overflow-hidden"
                                     >
@@ -651,28 +664,28 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                                             Total Points
                                         </div>
                                         <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#FFD700] to-white drop-shadow-sm">
-                                            <AnimatedNumber value={currentPoints} />
+                                            <AnimatedNumber value={currentPoints} isRendering={isRendering} />
                                         </div>
                                     </motion.div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
+                                            initial={isRendering ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.6 }}
+                                            transition={isRendering ? { duration: 0 } : { delay: 0.6 }}
                                             whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
                                             className="bg-white/5 rounded-xl p-4 border border-white/5 cursor-crosshair"
                                         >
                                             <div className="text-[10px] font-bold text-gray-400 uppercase mb-2">Units Sold</div>
                                             <div className="text-3xl font-black text-white">
-                                                <AnimatedNumber value={unitsSold} />
+                                                <AnimatedNumber value={unitsSold} isRendering={isRendering} />
                                             </div>
                                         </motion.div>
 
                                         <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
+                                            initial={isRendering ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.8 }}
+                                            transition={isRendering ? { duration: 0 } : { delay: 0.8 }}
                                             whileHover={{ scale: 1.05, backgroundColor: 'rgba(19,136,8,0.2)' }}
                                             className="bg-white/5 rounded-xl p-4 border border-white/5 cursor-crosshair"
                                         >
@@ -692,7 +705,7 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
         case 'highlight':
             return (
                 <div className="w-full h-full p-0 relative z-10 bg-[#001233] overflow-hidden flex flex-col items-center justify-center">
-                    <PatrioticBackground theme={pTheme} variant="elite" />
+                    <PatrioticBackground theme={pTheme} variant="elite" isRendering={isRendering} />
 
                     <div className="relative z-20 text-center">
                         <div className="w-64 h-80 border-[6px] border-[#FF9933] bg-gradient-to-br from-black via-[#1a1a1a] to-[#001233] backdrop-blur-md relative flex flex-col items-center justify-center p-6 shadow-2xl skew-x-[-6deg]">
@@ -726,7 +739,12 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
 
             const rLower = displayRank.toLowerCase();
 
-            if (rLower.includes('chief marshal')) {
+            if (currentPoints === 0) {
+                // Should show "Better Luck next time" for 0 points
+                mainDisplayStr = 'Better Luck next time';
+                topSubStr = '';
+                bottomDescStr = 'You missed the chance to win INR 5000 voucher';
+            } else if (rLower.includes('chief marshal')) {
                 isPercentage = true;
                 percentageVal = 5;
             } else if (rLower.includes('commander')) {
@@ -745,9 +763,6 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                 bottomDescStr = 'Push more to rise the ranks next time.';
             } else {
                 // Default fallback or Salesveer
-                // Assuming 'Salesveer' or 'Cadet' falls here or explicitly check
-                // User said "For SALESVEER show GREAT START"
-                // We will treat any non-ranked/non-lieutenant as Salesveer/Great Start logic for safety, or check string
                 isGreatStart = true;
                 mainDisplayStr = 'GREAT START';
                 topSubStr = 'Welcome to the battlefield';
@@ -756,11 +771,12 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
 
             return (
                 <div className="w-full h-full flex flex-col items-center justify-center p-6 relative z-10 text-center text-white">
-                    <PatrioticBackground theme={pTheme} variant="laser" />
+                    <PatrioticBackground theme={pTheme} variant="laser" isRendering={isRendering} />
 
                     <motion.div
-                        initial={{ scale: 0.5, opacity: 0 }}
+                        initial={isRendering ? { scale: 1, opacity: 1 } : { scale: 0.5, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
+                        transition={isRendering ? { duration: 0 } : { type: "spring", duration: 0.8 }}
                         className="relative z-20 bg-gradient-to-br from-[#000040] to-black border-2 border-[#FFD700] rounded-3xl p-8 shadow-2xl max-w-sm w-full"
                     >
                         <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-tr from-[#FFD700] to-[#B8860B] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,215,0,0.4)]">
@@ -799,7 +815,7 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
         case 'leaderboard':
             return (
                 <div className="w-full h-full flex flex-col items-center justify-center p-6 relative z-10 text-center">
-                    <PatrioticBackground theme={pTheme} variant="battalion" />
+                    <PatrioticBackground theme={pTheme} variant="battalion" isRendering={isRendering} />
 
                     <div className="relative z-20 bg-white text-black p-8 rounded-sm shadow-[10px_10px_0px_#FF9933] border-4 border-black max-w-sm w-full transform rotate-1">
                         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-[#000080] text-white px-4 py-1 font-bold text-xs uppercase tracking-widest border-2 border-white">
@@ -824,7 +840,7 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
 
             return (
                 <div className="w-full h-full flex flex-col items-center justify-center p-6 relative z-10 bg-[#001233] overflow-hidden">
-                    <PatrioticBackground theme={pTheme} variant="regal" />
+                    <PatrioticBackground theme={pTheme} variant="regal" isRendering={isRendering} />
 
                     <div className="text-center mb-8 z-20 relative">
                         <h2 className="text-[#FFD700] text-3xl font-black uppercase tracking-[0.2em] mb-2 drop-shadow-md">My Rank</h2>
@@ -833,9 +849,9 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
 
                     {/* Main Active Badge (ID Card Style) */}
                     <motion.div
-                        initial={{ scale: 0.8, y: 50, opacity: 0 }}
+                        initial={isRendering ? { scale: 1, y: 0, opacity: 1 } : { scale: 0.8, y: 50, opacity: 0 }}
                         animate={{ scale: 1, y: 0, opacity: 1 }}
-                        transition={{ type: "spring", duration: 1.2, bounce: 0.4 }}
+                        transition={isRendering ? { duration: 0 } : { type: "spring", duration: 1.2, bounce: 0.4 }}
                         className="relative z-30 mb-12"
                     >
                         {/* ID Card Container */}
@@ -904,9 +920,9 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                             return (
                                 <motion.div
                                     key={rank}
-                                    initial={{ opacity: 0, y: 20 }}
+                                    initial={isRendering ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
                                     animate={{ opacity: isActive ? 1 : 0.4, y: 0, scale: isActive ? 1.1 : 0.9 }}
-                                    transition={{ delay: 0.5 + (i * 0.1) }}
+                                    transition={isRendering ? { duration: 0 } : { delay: 0.5 + (i * 0.1) }}
                                     className={`flex flex-col items-center min-w-[60px] ${isActive ? 'grayscale-0' : 'grayscale'}`}
                                 >
                                     <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${Style.gradient} flex items-center justify-center shadow-lg border-2 ${isActive ? 'border-[#FFD700]' : 'border-transparent'}`}>
@@ -940,31 +956,38 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
 
                     <div className="w-full max-w-sm relative z-20">
                         <motion.div
-                            initial={{ y: 100, opacity: 0 }}
+                            initial={isRendering ? { y: 0, opacity: 1 } : { y: 100, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            transition={{ type: "spring", damping: 20, stiffness: 100 }}
+                            transition={isRendering ? { duration: 0 } : { type: "spring", damping: 20, stiffness: 100 }}
                             className="flex flex-col gap-3"
                         >
                             {surroundingPeers.map((peer, i) => (
                                 <motion.div
                                     key={i}
-                                    initial={{ x: -50, opacity: 0 }}
-                                    animate={{ x: 0, opacity: peer.isUser ? 1 : 0.6 }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className={`flex items-center justify-between p-4 rounded-lg border ${peer.isUser
-                                        ? 'bg-gradient-to-r from-[#1a1a1a] to-black text-[#FFD700] border-[#FFD700] scale-105 shadow-xl z-20'
-                                        : 'bg-white/10 text-white border-white/10'
+                                    initial={isRendering ? { x: 0, opacity: 0 } : { x: -50, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={isRendering ? { duration: 0 } : { delay: i * 0.1 }}
+                                    className={`flex items-center justify-between p-4 rounded-lg border transition-all ${peer.isUser
+                                        ? 'bg-gradient-to-r from-[#1a1a1a] to-black text-[#FFD700] border-[#FFD700] scale-105 shadow-[0_0_20px_rgba(255,215,0,0.2)] z-20'
+                                        : 'bg-white/5 text-white/90 border-white/10'
                                         }`}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={`font-black text-xl ${peer.isUser ? 'text-[#FF9933]' : 'text-gray-500'}`}>
+                                        <div className={`font-black text-xl w-10 ${peer.isUser ? 'text-[#FF9933]' : 'text-gray-500'}`}>
                                             #{peer.rank}
                                         </div>
-                                        <div className="font-bold uppercase tracking-tight">
-                                            {peer.name}
+                                        <div className="flex flex-col">
+                                            <div className="font-bold uppercase tracking-tight text-sm">
+                                                {peer.name}
+                                            </div>
+                                            {peer.rankTitle && (
+                                                <div className={`text-[10px] font-bold uppercase tracking-widest ${peer.isUser ? 'text-[#FFD700]' : 'text-white/40'}`}>
+                                                    {peer.rankTitle}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="font-mono font-bold opacity-80">
+                                    <div className="font-mono font-bold text-sm">
                                         {peer.points}
                                     </div>
                                 </motion.div>
@@ -1003,13 +1026,13 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                         <p className="text-white/60 font-bold tracking-widest mt-2 uppercase">See You In Next Contest</p>
                     </div>
 
-                    <div className="w-full max-w-xs space-y-4 relative z-20">
+                    <div className="w-full max-w-xs space-y-4 relative z-20 pointer-events-auto">
                         <button
-                            onClick={onGenerateVideo}
-                            disabled={isRecording}
-                            className={`w-full py-4 ${isRecording ? 'bg-red-600 animate-pulse' : 'bg-[#138808]'} text-white font-black uppercase rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-lg`}
+                            onClick={onDownloadVideo}
+                            disabled={isRendering}
+                            className={`w-full py-4 ${isRendering ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#138808]'} text-white font-black uppercase rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-lg`}
                         >
-                            {isRecording ? 'Recording in Progress...' : 'Generate Video Reel'} <Play className="w-5 h-5" />
+                            {isRendering ? `Generating... ${Math.round(renderProgress || 0)}%` : 'Share your achievement'} <Share2 className="w-5 h-5" />
                         </button>
 
                         <button
@@ -1066,10 +1089,330 @@ export default function YoddhaVideoPage() {
 
     // Video Generation Logic
     const [isRecording, setIsRecording] = useState(false);
+    const [isCleanMode, setIsCleanMode] = useState(false); // New state for mobile fallback
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const recordedChunksRef = useRef<Blob[]>([]);
 
+    // State for Frame-by-Frame Rendering
+    const [isRendering, setIsRendering] = useState(false);
+
+    const [renderProgress, setRenderProgress] = useState(0);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [generatedVideoFile, setGeneratedVideoFile] = useState<File | null>(null);
+
+    // Audio Logic
+    const [isMuted, setIsMuted] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [hasStarted, setHasStarted] = useState(false);
+
+    const handleStartExperience = () => {
+        setHasStarted(true);
+        if (audioRef.current) {
+            audioRef.current.volume = 0.5;
+            audioRef.current.play().then(() => {
+                setIsMuted(false);
+            }).catch(e => {
+                console.log("Audio play failed on start:", e);
+                setIsMuted(true);
+            });
+        }
+    };
+
+    useEffect(() => {
+        // SMART START: Try to autopay immediately
+        if (audioRef.current) {
+            audioRef.current.volume = 0.5;
+            audioRef.current.play()
+                .then(() => {
+                    // Success! Start the experience automatically
+                    setHasStarted(true);
+                    setIsMuted(false);
+                })
+                .catch(() => {
+                    // Blocked by browser (standard) - we'll wait for user to click button
+                    console.log("Autoplay blocked - awaiting user interaction");
+                });
+        }
+    }, []);
+
+    const toggleAudio = () => {
+        if (audioRef.current) {
+            if (isMuted) {
+                audioRef.current.play();
+                setIsMuted(false);
+            } else {
+                audioRef.current.pause();
+                setIsMuted(true);
+            }
+        }
+    };
+
+    const handleDownloadVideo = async () => {
+        setIsRendering(true);
+        setRenderProgress(0);
+        const imagesForZip: File[] = [];
+
+        try {
+            const slideContainer = document.getElementById('yoddha-slide-container');
+            if (!slideContainer) throw new Error("No container found");
+
+            // Check video support
+            const hasVideoSupport = 'VideoEncoder' in window;
+
+            setIsPaused(true);
+
+            // Setup Audio context for decoding the track
+            const audioSrc = "/audio track/iam attaching lyrics for the song, the t.mp3";
+            let audioBuffer: AudioBuffer | null = null;
+            try {
+                const audioCtx = new AudioContext();
+                const res = await fetch(audioSrc);
+                const arrayBuffer = await res.arrayBuffer();
+                audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            } catch (err) {
+                console.warn("Could not load audio for video:", err);
+            }
+
+            // Setup Video Encoder if supported
+            let muxer: Muxer<ArrayBufferTarget> | null = null;
+            let videoEncoder: VideoEncoder | null = null;
+            let audioEncoder: AudioEncoder | null = null;
+            const fps = 30;
+
+            if (hasVideoSupport) {
+                // Muxer will be initialized on first frame when we know dimensions
+            }
+
+            // Loop slides
+            const slidesToCapture = slides.slice(0, slides.length - 1);
+            let frameTimestamp = 0;
+
+            for (let i = 0; i < slidesToCapture.length; i++) {
+                setCurrentSlide(i);
+                setRenderProgress((i / slidesToCapture.length) * 100);
+
+                // Wait for animations (instant due to isRendering prop)
+                // Small buffer still needed for DOM update and font rendering
+                await new Promise(r => setTimeout(r, 600));
+
+                // 1. Capture Image
+                // We must use integer dimensions.
+                const rect = slideContainer.getBoundingClientRect();
+                const intWidth = Math.floor(rect.width);
+                const intHeight = Math.floor(rect.height);
+
+                // Force even numbers (VideoEncoder requirement)
+                const renderWidth = intWidth % 2 === 0 ? intWidth : intWidth - 1;
+                const renderHeight = intHeight % 2 === 0 ? intHeight : intHeight - 1;
+
+                const dataUrl = await toJpeg(slideContainer, {
+                    width: renderWidth,
+                    height: renderHeight,
+                    pixelRatio: 3, // Keep sharpness
+                    backgroundColor: '#001233', // Reverted to original
+                    quality: 1,
+                    style: {
+                        // Removed filters
+                    }
+                });
+
+                if (!dataUrl) continue;
+
+                // Convert DataURL to Blob
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+
+                // Save for ZIP fallback
+                const file = new File([blob], `Yoddha_Slide_${i + 1}.jpg`, { type: 'image/jpeg' });
+                imagesForZip.push(file);
+
+                // 2. Add to Video
+                if (hasVideoSupport) {
+                    const bitmap = await createImageBitmap(blob);
+
+                    // Lazy Init Encoder
+                    if (!videoEncoder || !muxer) {
+                        const vW = bitmap.width;
+                        const vH = bitmap.height;
+
+                        if (vW % 2 !== 0 || vH % 2 !== 0) {
+                            console.warn("Bitmap dimensions are odd, encoder might fail", vW, vH);
+                        }
+
+                        // Initialize MP4 Muxer (avc = H.264, aac = Audio)
+                        muxer = new Muxer({
+                            target: new ArrayBufferTarget(),
+                            video: { codec: 'avc', width: vW, height: vH },
+                            audio: audioBuffer ? {
+                                codec: 'aac',
+                                numberOfChannels: 2,
+                                sampleRate: 44100
+                            } : undefined,
+                            fastStart: 'in-memory'
+                        });
+
+                        videoEncoder = new VideoEncoder({
+                            output: (chunk, meta) => muxer!.addVideoChunk(chunk, meta),
+                            error: (e) => {
+                                console.error("Encoder Error", e);
+                                alert("Encoder Error: " + e.message);
+                            }
+                        });
+
+                        // Configure for H.264 (AVC) Level 5.1
+                        videoEncoder.configure({
+                            codec: 'avc1.4d0033', // H.264 Main Profile Level 5.1 (Supports 4K)
+                            width: vW,
+                            height: vH,
+                            bitrate: 8_000_000, // Slightly higher for 4K-ish density
+                            framerate: fps
+                        });
+
+                        // Configure Audio Encoder if buffer exists
+                        if (audioBuffer && 'AudioEncoder' in window) {
+                            audioEncoder = new AudioEncoder({
+                                output: (chunk, meta) => muxer!.addAudioChunk(chunk, meta),
+                                error: (e) => console.error("Audio Encoder Error", e)
+                            });
+                            audioEncoder.configure({
+                                codec: 'mp4a.40.2', // AAC-LC
+                                numberOfChannels: 2,
+                                sampleRate: 44100,
+                                bitrate: 128_000
+                            });
+                        }
+                    }
+
+                    // Encode Frames for Duration with Cinematic Motion (Ken Burns Effect)
+                    const durationMs = slides[i].duration || 5000;
+                    const framesNeeded = Math.ceil((durationMs / 1000) * fps);
+
+                    // Offscreen canvas for Ken Burns effect
+                    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                    const ctx = canvas.getContext('2d')!;
+
+                    for (let f = 0; f < framesNeeded; f++) {
+                        const progress = f / framesNeeded;
+
+                        // Clean Canvas
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        // KEN BURNS EFFECT: Zoom from 1.0 to 1.1 + Subtle Pan
+                        const scale = 1.0 + (progress * 0.1);
+                        const xShift = (progress - 0.5) * (canvas.width * 0.04); // Slide 4% width
+                        const yShift = (progress - 0.5) * (canvas.height * 0.02); // Slide 2% height
+
+                        ctx.save();
+                        ctx.translate(canvas.width / 2, canvas.height / 2);
+                        ctx.scale(scale, scale);
+                        ctx.translate(-canvas.width / 2 + xShift, -canvas.height / 2 + yShift);
+                        ctx.drawImage(bitmap, 0, 0);
+                        ctx.restore();
+
+                        const frame = new VideoFrame(canvas, { timestamp: frameTimestamp * 1000 });
+                        if (videoEncoder.state === "configured") {
+                            videoEncoder.encode(frame, { keyFrame: (frameTimestamp * fps) % 30 === 0 });
+                        }
+                        frame.close();
+                        frameTimestamp += (1000 / fps);
+                    }
+                    bitmap.close();
+                }
+            }
+
+            setRenderProgress(100);
+
+            // Audio Encoding pass
+            if (audioEncoder && audioBuffer) {
+                const totalDurationSec = frameTimestamp / 1000;
+                const sampleRate = 44100;
+                const totalSamples = Math.floor(totalDurationSec * sampleRate);
+
+                const audioData = new AudioData({
+                    format: 'f32-planar',
+                    sampleRate: 44100,
+                    numberOfFrames: totalSamples,
+                    numberOfChannels: 2,
+                    timestamp: 0,
+                    data: new Float32Array(totalSamples * 2).map((_, i) => {
+                        const channel = Math.floor(i / totalSamples);
+                        const sampleIdx = i % totalSamples;
+                        return audioBuffer!.getChannelData(channel)[sampleIdx] || 0;
+                    })
+                });
+
+                audioEncoder.encode(audioData);
+                audioData.close();
+                await audioEncoder.flush();
+            }
+
+            // Finish Video
+            if (hasVideoSupport && videoEncoder && muxer) {
+                await videoEncoder.flush();
+                muxer.finalize();
+
+                const { buffer } = muxer.target;
+                const videoBlob = new Blob([buffer], { type: 'video/mp4' });
+                const videoFile = new File([videoBlob], `Yoddha_2026_Recap.mp4`, { type: 'video/mp4' });
+                setGeneratedVideoFile(videoFile);
+
+                // Download Video
+                const url = URL.createObjectURL(videoBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Yoddha_2026_Recap.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                setShowShareModal(true);
+            } else {
+                // Fallback if video failed or unsupported
+                setGeneratedVideoFile(null);
+                await downloadZip(imagesForZip);
+                setShowShareModal(true);
+            }
+
+        } catch (e: any) {
+            console.error(e);
+            alert("Video Generation failed: " + e.message + "\n\nDownloading captured images instead.");
+            if (imagesForZip.length > 0) {
+                await downloadZip(imagesForZip);
+            }
+        } finally {
+            setIsRendering(false);
+            setIsPaused(false);
+        }
+    };
+
+    const downloadZip = async (files: File[]) => {
+        const zip = new JSZip();
+        files.forEach(f => {
+            zip.file(f.name, f);
+        });
+
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Yoddha_Recap_2026.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     const handleStartVideoGeneration = async () => {
+        // Feature detection for Mobile vs Desktop
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+            // Mobile Fallback: Manual Recording Helper
+            alert("Auto-recording is not supported on this device. Starting 'Presentation Mode' so you can use your phone's Screen Recorder to capture it manually.");
+            setIsCleanMode(true);
+            setCurrentSlide(0);
+            setIsPaused(false);
+            return;
+        }
+
         try {
             const stream = await navigator.mediaDevices.getDisplayMedia({
                 video: { displaySurface: 'browser' },
@@ -1139,10 +1482,14 @@ export default function YoddhaVideoPage() {
     };
 
     const handleStopRecording = useCallback(() => {
+        if (isCleanMode) {
+            setIsCleanMode(false);
+            return;
+        }
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
             mediaRecorderRef.current.stop();
         }
-    }, []);
+    }, [isCleanMode]);
 
     useEffect(() => {
         const fetchCurrentPoints = async () => {
@@ -1208,13 +1555,49 @@ export default function YoddhaVideoPage() {
                             percent: globalTopPercent
                         });
 
-                        // Take top 5
-                        setHallOfFameData(allTopUsers.slice(0, 5).map((u: any, i: number) => ({
+
+                        // Global Hall of Fame: Show Top 3 + User's surrounding global peers
+                        let hofPeers: any[] = [];
+                        const top3 = allTopUsers.slice(0, 3).map((u, i) => ({
                             rank: i + 1,
                             name: u.name,
                             points: u.salesAmount >= 1000 ? (u.salesAmount / 1000).toFixed(1) + 'k' : u.salesAmount,
+                            rankTitle: u.rankTitle,
                             isUser: u.name === myName
-                        })));
+                        }));
+
+                        if (myIndex <= 2) {
+                            // User is already in top 3, just take top 5
+                            hofPeers = allTopUsers.slice(0, 5).map((u, i) => ({
+                                rank: i + 1,
+                                name: u.name,
+                                points: u.salesAmount >= 1000 ? (u.salesAmount / 1000).toFixed(1) + 'k' : u.salesAmount,
+                                rankTitle: u.rankTitle,
+                                isUser: u.name === myName
+                            }));
+                        } else {
+                            // User is further down, show Top 3 + User's immediate neighbor + User
+                            const userPeer = {
+                                rank: myIndex + 1,
+                                name: myName,
+                                points: (allTopUsers[myIndex].salesAmount >= 1000) ? (allTopUsers[myIndex].salesAmount / 1000).toFixed(1) + 'k' : allTopUsers[myIndex].salesAmount,
+                                rankTitle: allTopUsers[myIndex].rankTitle,
+                                isUser: true
+                            };
+                            const aboveUser = allTopUsers[myIndex - 1] ? {
+                                rank: myIndex,
+                                name: allTopUsers[myIndex - 1].name,
+                                points: (allTopUsers[myIndex - 1].salesAmount >= 1000) ? (allTopUsers[myIndex - 1].salesAmount / 1000).toFixed(1) + 'k' : allTopUsers[myIndex - 1].salesAmount,
+                                rankTitle: allTopUsers[myIndex - 1].rankTitle,
+                                isUser: false
+                            } : null;
+
+                            hofPeers = [...top3];
+                            if (aboveUser) hofPeers.push(aboveUser);
+                            hofPeers.push(userPeer);
+                        }
+
+                        setHallOfFameData(hofPeers);
                     }
                 }
 
@@ -1267,14 +1650,8 @@ export default function YoddhaVideoPage() {
     const nextSlide = useCallback(() => {
         if (currentSlide < slides.length - 1) {
             setCurrentSlide(currentSlide + 1);
-        } else {
-            // End of slideshow
-            // If we are recording, stop it now
-            if (isRecording) {
-                handleStopRecording();
-            }
         }
-    }, [currentSlide, isRecording, handleStopRecording]);
+    }, [currentSlide]);
 
     const prevSlide = useCallback(() => {
         if (currentSlide > 0) setCurrentSlide(currentSlide - 1);
@@ -1289,6 +1666,8 @@ export default function YoddhaVideoPage() {
     }, [currentSlide]);
 
     useEffect(() => {
+        if (!hasStarted) return; // Don't animate until started
+
         let frameId: number;
         const animate = (time: number) => {
             if (!lastTimeRef.current) lastTimeRef.current = time;
@@ -1309,16 +1688,201 @@ export default function YoddhaVideoPage() {
         };
         frameId = requestAnimationFrame(animate);
         return () => cancelAnimationFrame(frameId);
-    }, [isPaused, activeSlide.duration, nextSlide]);
+    }, [isPaused, activeSlide.duration, nextSlide, hasStarted]);
+
+    const handleShareFile = async (platform?: string) => {
+        // Try to share the FILE first (Best for Mobile "Direct Share")
+        if (generatedVideoFile && navigator.canShare && navigator.canShare({ files: [generatedVideoFile] })) {
+            try {
+                await navigator.share({
+                    files: [generatedVideoFile],
+                    title: 'Yoddha 2026 Recap',
+                    text: `Check out my Yoddha 2026 Achievement! 🏆 Points: ${currentPoints}`,
+                });
+                return; // Success
+            } catch (e) {
+                console.log("Native share cancelled or failed", e);
+                // Continue to fallback
+            }
+        }
+
+        // Fallback: Text Links
+        const text = `I just secured the rank of ${rankTitle || 'Soldier'} in the Yoddha 2026 Republic Day Challenge! 🏆 Points: ${currentPoints}. Check out my stats!`;
+        const url = window.location.href;
+
+        if (platform === 'whatsapp') {
+            window.location.href = `whatsapp://send?text=${encodeURIComponent(text)}`;
+        } else if (platform === 'linkedin') {
+            window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
+        } else if (platform === 'instagram') {
+            window.open('https://www.instagram.com/', '_blank');
+        } else {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Yoddha 2026',
+                    text: text,
+                    url: url
+                }).catch(console.error);
+            } else {
+                alert("Please check the downloaded file in your gallery to share it manually.");
+            }
+        }
+    };
 
     return (
         <div
             className={`fixed inset-0 overflow-hidden font-sans transition-colors duration-700 ease-in-out ${theme.bg}`}
+            onClick={() => {
+                // Feature: Click anywhere to start music if muted (autoplay workaround)
+                if (isMuted && audioRef.current) {
+                    audioRef.current.play().then(() => setIsMuted(false)).catch(() => { });
+                }
+            }}
             onMouseDown={() => setIsPaused(true)}
             onMouseUp={() => setIsPaused(false)}
             onTouchStart={() => setIsPaused(true)}
             onTouchEnd={() => setIsPaused(false)}
         >
+            {/* START SCREEN OVERLAY */}
+            {!hasStarted && (
+                <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center p-6">
+                    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="relative z-10 text-center space-y-8"
+                    >
+                        <div className="w-24 h-24 bg-[#FF9933] rounded-full flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(255,153,51,0.4)] animate-pulse">
+                            <Play className="w-10 h-10 text-black fill-current ml-1" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <h1 className="text-4xl font-black text-white uppercase tracking-tighter">
+                                Operation <span className="text-[#138808]">2026</span>
+                            </h1>
+                            <p className="text-gray-400 font-mono text-sm tracking-widest">CLASSIFIED BRIEFING READY</p>
+                        </div>
+
+                        <button
+                            onClick={handleStartExperience}
+                            className="bg-white text-black px-8 py-3 font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform rounded-sm border-l-4 border-[#FF9933]"
+                        >
+                            Access Briefing
+                        </button>
+                    </motion.div>
+                </div>
+            )}
+
+            <div id="yoddha-slide-container" className="absolute inset-0 w-full h-full z-0">
+                <AnimatePresence mode='wait'>
+                    {hasStarted && (
+                        <motion.div
+                            key={currentSlide}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.05 }}
+                            transition={{ duration: 0.4 }}
+                            className="w-full h-full relative z-50 pointer-events-none"
+                        >
+                            <SlideRenderer
+                                slide={activeSlide}
+                                theme={theme}
+                                currentPoints={currentPoints}
+                                unitsSold={unitsSold}
+                                longestStreak={longestStreak}
+                                regionData={regionData}
+                                leaderboardData={leaderboardData}
+                                rankTitle={rankTitle}
+                                userName={userName}
+                                hallOfFameData={hallOfFameData}
+                                globalRank={globalRank}
+                                globalStats={globalStats}
+                                onDownloadVideo={handleDownloadVideo}
+                                isRendering={isRendering}
+                                renderProgress={renderProgress}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Rendering Overlay */}
+            {isRendering && (
+                <div className="fixed inset-0 z-[100] bg-black/80 flex flex-col items-center justify-center backdrop-blur-sm">
+                    <div className="text-white text-2xl font-black mb-4 animate-pulse">
+                        GENERATING VIDEO REEL...
+                    </div>
+                    <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-[#138808] transition-all duration-300 ease-out"
+                            style={{ width: `${renderProgress}%` }}
+                        />
+                    </div>
+                    <div className="text-white/60 mt-2 font-mono">
+                        {Math.round(renderProgress)}%
+                    </div>
+                </div>
+            )}
+
+            {/* Share Success Modal */}
+            {showShareModal && (
+                <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center backdrop-blur-md p-6">
+                    <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 max-w-sm w-full text-center relative shadow-2xl">
+                        <button
+                            onClick={() => setShowShareModal(false)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-white"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="w-16 h-16 bg-[#138808]/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-[#138808]">
+                            <Download className="w-8 h-8 text-[#138808]" />
+                        </div>
+
+                        <h2 className="text-xl font-black text-white uppercase mb-2">Video Saved!</h2>
+                        <p className="text-gray-400 text-sm mb-6">
+                            Your Yoddha Recap video has been downloaded to your device gallery/downloads.
+                        </p>
+
+                        <div className="space-y-3">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Now Share it on</div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => handleShareFile('whatsapp')}
+                                    className="flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-lg font-bold text-sm hover:scale-105 transition-transform"
+                                >
+                                    WhatsApp
+                                </button>
+                                <button
+                                    onClick={() => handleShareFile('instagram')}
+                                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCAF45] text-white py-3 rounded-lg font-bold text-sm hover:scale-105 transition-transform"
+                                >
+                                    Instagram
+                                </button>
+                                <button
+                                    onClick={() => handleShareFile('linkedin')}
+                                    className="flex items-center justify-center gap-2 bg-[#0077b5] text-white py-3 rounded-lg font-bold text-sm hover:scale-105 transition-transform"
+                                >
+                                    LinkedIn
+                                </button>
+                                <button
+                                    onClick={() => handleShareFile()}
+                                    className="flex items-center justify-center gap-2 bg-white/10 text-white py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors"
+                                >
+                                    More...
+                                </button>
+                            </div>
+
+                            <p className="text-[10px] text-gray-500 mt-4">
+                                Note: Please upload the downloaded video manually from your gallery as browsers protect direct file sharing.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="absolute top-0 left-0 w-full z-50 p-2 pt-safe flex gap-1">
                 {slides.map((_, i) => (
                     <div key={i} className="h-1 flex-1 bg-black/20 rounded-full overflow-hidden">
@@ -1332,12 +1896,24 @@ export default function YoddhaVideoPage() {
                 ))}
             </div>
 
+            {/* Music Control */}
+            <button
+                onClick={(e) => { e.stopPropagation(); toggleAudio(); }}
+                className="absolute top-8 right-16 z-50 text-white/50 hover:text-white transition-colors"
+                title={isMuted ? "Play Music" : "Mute Music"}
+            >
+                {isMuted ? <Play className="w-6 h-6" /> : <Music className="w-6 h-6 animate-pulse" />}
+            </button>
+
             <button
                 onClick={() => router.back()}
                 className="absolute top-8 right-4 z-50 text-white/50 hover:text-white"
             >
                 <X />
             </button>
+
+            {/* Audio Element */}
+            <audio ref={audioRef} src="/audio track/iam attaching lyrics for the song, the t.mp3" loop />
 
             <AnimatePresence mode='wait'>
                 <motion.div
@@ -1346,7 +1922,7 @@ export default function YoddhaVideoPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 1.05 }}
                     transition={{ duration: 0.4 }}
-                    className="w-full h-full relative"
+                    className="w-full h-full relative z-50 pointer-events-none"
                 >
                     <SlideRenderer
                         slide={activeSlide}
@@ -1361,8 +1937,9 @@ export default function YoddhaVideoPage() {
                         hallOfFameData={hallOfFameData}
                         globalRank={globalRank}
                         globalStats={globalStats}
-                        onGenerateVideo={handleStartVideoGeneration}
-                        isRecording={isRecording}
+                        onDownloadVideo={handleDownloadVideo}
+                        isRendering={isRendering}
+                        renderProgress={renderProgress}
                     />
                 </motion.div>
             </AnimatePresence>
