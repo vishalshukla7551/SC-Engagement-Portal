@@ -12,15 +12,29 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
     try {
-        // Fetch all submissions
-        const submissions = await prisma.testSubmission.findMany({
-            select: {
-                score: true,
-                completionTime: true,
-            },
-        });
+        // Use Prisma aggregates for efficient calculation in database
+        const [stats, passedCount] = await prisma.$transaction([
+            prisma.testSubmission.aggregate({
+                _count: {
+                    id: true, // Total submissions
+                },
+                _avg: {
+                    score: true, // Average score
+                    completionTime: true, // Average completion time
+                },
+            }),
+            prisma.testSubmission.count({
+                where: {
+                    score: {
+                        gte: 80, // Pass threshold
+                    },
+                },
+            }),
+        ]);
 
-        if (submissions.length === 0) {
+        const totalSubmissions = stats._count.id;
+
+        if (totalSubmissions === 0) {
             return NextResponse.json({
                 success: true,
                 data: {
@@ -32,16 +46,9 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Calculate statistics
-        const totalSubmissions = submissions.length;
-        const totalScore = submissions.reduce((sum, sub) => sum + sub.score, 0);
-        const averageScore = Math.round(totalScore / totalSubmissions);
-
-        const passedCount = submissions.filter((sub) => sub.score >= 80).length;
+        const averageScore = Math.round(stats._avg.score || 0);
+        const averageTime = Math.round(stats._avg.completionTime || 0);
         const passRate = Math.round((passedCount / totalSubmissions) * 100);
-
-        const totalTime = submissions.reduce((sum, sub) => sum + sub.completionTime, 0);
-        const averageTime = Math.round(totalTime / totalSubmissions);
 
         return NextResponse.json({
             success: true,
