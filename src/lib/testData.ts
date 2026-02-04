@@ -636,12 +636,13 @@ export const sampleQuestions: Question[] = allSamsungQuestions.slice(0, 10);
  */
 import { config } from '@/lib/config';
 
-export async function getTestSubmissions(secId?: string, page: number = 1, limit: number = 50): Promise<{ data: TestSubmission[], meta: any }> {
+export async function getTestSubmissions(secId?: string, page: number = 1, limit: number = 50, includeResponses: boolean = false): Promise<{ data: TestSubmission[], meta: any }> {
   try {
     const queryParams = new URLSearchParams();
     if (secId) queryParams.set('secId', secId);
     queryParams.set('page', page.toString());
     queryParams.set('limit', limit.toString());
+    if (includeResponses) queryParams.set('include_responses', 'true');
     const offset = (page - 1) * limit;
     queryParams.set('offset', offset.toString());
 

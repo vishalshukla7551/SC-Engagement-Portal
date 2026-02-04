@@ -205,61 +205,106 @@ export default function TestResultsPage() {
     }
   };
 
-  const exportToExcel = () => {
-    if (filteredSubmissions.length === 0) {
+  const exportToExcel = async () => {
+    if (stats.totalSubmissions === 0) {
       alert('No data to export');
       return;
     }
 
-    const exportData = filteredSubmissions.map((submission) => {
-      const hasEnrichedData = submission.responses && submission.responses.length > 0;
+    // Show loading state
+    const originalText = document.querySelector('[data-export-btn]')?.textContent;
+    const exportBtn = document.querySelector('[data-export-btn]') as HTMLButtonElement;
+    if (exportBtn) {
+      exportBtn.disabled = true;
+      exportBtn.textContent = '⏳ Exporting...';
+    }
 
-      const correctCount = hasEnrichedData
-        ? submission.responses.filter((r) => r.isCorrect).length
-        : 'N/A';
-      const wrongCount = hasEnrichedData
-        ? submission.responses.filter((r) => !r.isCorrect).length
-        : 'N/A';
-      const answerDetails = hasEnrichedData
-        ? submission.responses
-          .map(
-            (r, idx) =>
-              `Q${idx + 1}: ${r.selectedAnswer} (${r.isCorrect ? 'CORRECT' : 'WRONG'})`,
-          )
-          .join(' | ')
-        : 'Answer details not available';
+    try {
+      // Fetch ALL submissions for export (not just current page)
+      console.log('🔄 Fetching all submissions for export...');
+      console.log('📊 Total submissions expected:', stats.totalSubmissions);
 
-      return {
-        'SEC ID': submission.secId,
-        'SEC Name': submission.secName || 'N/A',
-        Store: submission.storeName
-          ? `${submission.storeName}, ${submission.storeCity || ''}`
-          : 'N/A',
-        Score: `${submission.score}%`,
-        'Correct Answers': correctCount,
-        'Wrong Answers': wrongCount,
-        'Total Questions': submission.totalQuestions,
-        'Completion Time (min)': Math.round(submission.completionTime / 60),
-        'Submitted At': new Date(submission.submittedAt).toLocaleString(),
-        Status: submission.score >= 80 ? 'PASS' : 'FAIL',
-        'Proctoring Flagged': submission.isProctoringFlagged ? 'YES' : 'NO',
-        'Answer Details': answerDetails,
-      };
-    });
+      // Use a very large limit to get all records
+      const allSubmissionsResult = await getTestSubmissions(undefined, 1, Math.max(stats.totalSubmissions, 10000), true);
+      const allSubmissions = allSubmissionsResult.data;
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Test Results');
+      console.log(`📊 Actually fetched ${allSubmissions.length} submissions out of ${stats.totalSubmissions} total`);
 
-    const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
-      wch: Math.max(key.length, 15),
-    }));
-    (ws as any)['!cols'] = colWidths;
+      if (allSubmissions.length === 0) {
+        alert('No data to export');
+        return;
+      }
 
-    XLSX.writeFile(
-      wb,
-      `SEC_Test_Results_${new Date().toISOString().split('T')[0]}.xlsx`,
-    );
+      // Show warning if we didn't get all records
+      if (allSubmissions.length < stats.totalSubmissions) {
+        const proceed = confirm(`Warning: Only ${allSubmissions.length} out of ${stats.totalSubmissions} records were fetched. Do you want to continue with partial export?`);
+        if (!proceed) {
+          return;
+        }
+      }
+
+      const exportData = allSubmissions.map((submission) => {
+        const hasEnrichedData = submission.responses && submission.responses.length > 0;
+
+        const correctCount = hasEnrichedData
+          ? submission.responses.filter((r) => r.isCorrect).length
+          : 'N/A';
+        const wrongCount = hasEnrichedData
+          ? submission.responses.filter((r) => !r.isCorrect).length
+          : 'N/A';
+        const answerDetails = hasEnrichedData
+          ? submission.responses
+            .map(
+              (r, idx) =>
+                `Q${idx + 1}: ${r.selectedAnswer} (${r.isCorrect ? 'CORRECT' : 'WRONG'})`,
+            )
+            .join(' | ')
+          : 'Answer details not available';
+
+        return {
+          'SEC ID': submission.secId,
+          'SEC Name': submission.secName || 'N/A',
+          Store: submission.storeName
+            ? `${submission.storeName}, ${submission.storeCity || ''}`
+            : 'N/A',
+          Score: `${submission.score}%`,
+          'Correct Answers': correctCount,
+          'Wrong Answers': wrongCount,
+          'Total Questions': submission.totalQuestions,
+          'Completion Time (min)': Math.round(submission.completionTime / 60),
+          'Submitted At': new Date(submission.submittedAt).toLocaleString(),
+          Status: submission.score >= 80 ? 'PASS' : 'FAIL',
+          'Proctoring Flagged': submission.isProctoringFlagged ? 'YES' : 'NO',
+          'Answer Details': answerDetails,
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Test Results');
+
+      const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
+        wch: Math.max(key.length, 15),
+      }));
+      (ws as any)['!cols'] = colWidths;
+
+      XLSX.writeFile(
+        wb,
+        `SEC_Test_Results_${new Date().toISOString().split('T')[0]}.xlsx`,
+      );
+
+      alert(`Successfully exported ${allSubmissions.length} test results!`);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      alert('Failed to export data. Please try again.');
+    } finally {
+      // Reset button state
+      const exportBtn = document.querySelector('[data-export-btn]') as HTMLButtonElement;
+      if (exportBtn) {
+        exportBtn.disabled = false;
+        exportBtn.textContent = '📊 Export to Excel';
+      }
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -308,6 +353,7 @@ export default function TestResultsPage() {
           <div className="flex justify-end">
             <button
               onClick={exportToExcel}
+              data-export-btn
               disabled={filteredSubmissions.length === 0}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
