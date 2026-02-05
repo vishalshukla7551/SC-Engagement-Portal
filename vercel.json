@@ -2,11 +2,11 @@
   "functions": {
     "src/app/api/generate-yoddha-video/route.ts": {
       "maxDuration": 300,
-      "memory": 3008
+      "memory": 1024
     },
     "src/app/api/generate-yoddha-video/progress/route.ts": {
       "maxDuration": 30,
-      "memory": 1024
+      "memory": 512
     }
   },
   "build": {
