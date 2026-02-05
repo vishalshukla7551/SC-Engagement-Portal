@@ -1187,6 +1187,9 @@ export default function YoddhaVideoPage() {
             const slidesToCapture = slides.slice(0, slides.length - 1);
             let frameTimestamp = 0;
 
+            let vW = 0;
+            let vH = 0;
+
             for (let i = 0; i < slidesToCapture.length; i++) {
                 setCurrentSlide(i);
                 setRenderProgress((i / slidesToCapture.length) * 100);
@@ -1201,18 +1204,19 @@ export default function YoddhaVideoPage() {
                 const intWidth = Math.floor(rect.width);
                 const intHeight = Math.floor(rect.height);
 
-                // Force even numbers (VideoEncoder requirement)
-                const renderWidth = intWidth % 2 === 0 ? intWidth : intWidth - 1;
-                const renderHeight = intHeight % 2 === 0 ? intHeight : intHeight - 1;
+                // Force 16-pixel alignment (Critical for mobile hardware encoders)
+                const renderWidth = Math.floor(intWidth / 16) * 16;
+                const renderHeight = Math.floor(intHeight / 16) * 16;
 
                 const dataUrl = await toJpeg(slideContainer, {
                     width: renderWidth,
                     height: renderHeight,
-                    pixelRatio: 2, // 2x is safe for mobile while maintaining High-DPI quality
-                    backgroundColor: '#001233', // Reverted to original
+                    pixelRatio: 2,
+                    backgroundColor: '#001233',
                     quality: 1,
                     style: {
-                        // Removed filters
+                        // Ensure no transforms interfere
+                        transform: 'none',
                     }
                 });
 
@@ -1232,12 +1236,20 @@ export default function YoddhaVideoPage() {
 
                     // Lazy Init Encoder
                     if (!videoEncoder || !muxer) {
-                        const vW = bitmap.width;
-                        const vH = bitmap.height;
+                        // CAP RESOLUTION: Max 1920 height for mobile stability
+                        const MAX_H = 1920;
+                        vW = bitmap.width;
+                        vH = bitmap.height;
 
-                        if (vW % 2 !== 0 || vH % 2 !== 0) {
-                            console.warn("Bitmap dimensions are odd, encoder might fail", vW, vH);
+                        if (vH > MAX_H) {
+                            const ratio = MAX_H / vH;
+                            vW = Math.floor((vW * ratio) / 2) * 2;
+                            vH = MAX_H;
                         }
+
+                        // Ensure 16-pixel alignment for hardware encoders
+                        vW = Math.floor(vW / 16) * 16;
+                        vH = Math.floor(vH / 16) * 16;
 
                         // Initialize MP4 Muxer (avc = H.264, aac = Audio)
                         muxer = new Muxer({
@@ -1264,12 +1276,12 @@ export default function YoddhaVideoPage() {
                             }
                         });
 
-                        // Configure for H.264 (AVC) - Level 3.1 is widely supported on mobile
+                        // Configure for H.264 (AVC) - Baseline 4.1 for Universal Mobile Support
                         videoEncoder.configure({
-                            codec: 'avc1.4d401f', // H.264 Main Profile Level 3.1
+                            codec: 'avc1.424029', // H.264 Baseline Level 4.1
                             width: vW,
                             height: vH,
-                            bitrate: 6_000_000,
+                            bitrate: 4_000_000,
                             framerate: fps,
                             latencyMode: 'quality'
                         });
@@ -1293,26 +1305,24 @@ export default function YoddhaVideoPage() {
                     const durationMs = slides[i].duration || 5000;
                     const framesNeeded = Math.ceil((durationMs / 1000) * fps);
 
-                    // Offscreen canvas for Ken Burns effect
-                    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                    // Offscreen canvas for Ken Burns effect + Rescaling
+                    const canvas = new OffscreenCanvas(vW, vH);
                     const ctx = canvas.getContext('2d')!;
 
                     for (let f = 0; f < framesNeeded; f++) {
                         const progress = f / framesNeeded;
 
-                        // Clean Canvas
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.clearRect(0, 0, vW, vH);
 
-                        // KEN BURNS EFFECT: Zoom from 1.0 to 1.1 + Subtle Pan
                         const scale = 1.0 + (progress * 0.1);
-                        const xShift = (progress - 0.5) * (canvas.width * 0.04); // Slide 4% width
-                        const yShift = (progress - 0.5) * (canvas.height * 0.02); // Slide 2% height
+                        const xShift = (progress - 0.5) * (vW * 0.04);
+                        const yShift = (progress - 0.5) * (vH * 0.02);
 
                         ctx.save();
-                        ctx.translate(canvas.width / 2, canvas.height / 2);
+                        ctx.translate(vW / 2, vH / 2);
                         ctx.scale(scale, scale);
-                        ctx.translate(-canvas.width / 2 + xShift, -canvas.height / 2 + yShift);
-                        ctx.drawImage(bitmap, 0, 0);
+                        // Draw the bitmap scaled to fit our target vW/vH
+                        ctx.drawImage(bitmap, -vW / 2 + xShift, -vH / 2 + yShift, vW, vH);
                         ctx.restore();
 
                         const frame = new VideoFrame(canvas, { timestamp: frameTimestamp * 1000 });
