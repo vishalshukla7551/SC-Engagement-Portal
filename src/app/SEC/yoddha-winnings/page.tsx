@@ -1153,6 +1153,129 @@ export default function YoddhaVideoPage() {
         const imagesForZip: File[] = [];
 
         try {
+            // Mobile Detection and Server-side Fallback
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                            window.innerWidth <= 768 ||
+                            !('VideoEncoder' in window);
+            
+            // If mobile or no VideoEncoder support, use server-side generation
+            if (isMobile) {
+                console.log('Mobile device detected, using server-side video generation...');
+                
+                try {
+                    setRenderProgress(5);
+                    
+                    // Prepare data for server-side generation
+                    const videoData = {
+                        userName: userName || 'User',
+                        currentPoints,
+                        unitsSold,
+                        longestStreak,
+                        regionData,
+                        leaderboardData,
+                        rankTitle,
+                        hallOfFameData,
+                        globalRank,
+                        globalStats,
+                        async: true // Use async mode for progress tracking
+                    };
+
+                    setRenderProgress(10);
+
+                    // Start server-side video generation
+                    const response = await fetch('/api/generate-yoddha-video', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(videoData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Server-side generation failed');
+                    }
+
+                    const jobId = result.jobId;
+                    setRenderProgress(15);
+
+                    // Poll for progress
+                    let completed = false;
+                    let attempts = 0;
+                    const maxAttempts = 300; // 5 minutes timeout (increased from 2 minutes)
+
+                    while (!completed && attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+                        attempts++;
+
+                        try {
+                            const progressResponse = await fetch(`/api/generate-yoddha-video?jobId=${jobId}`);
+                            
+                            if (progressResponse.ok) {
+                                const contentType = progressResponse.headers.get('content-type');
+                                
+                                if (contentType && contentType.includes('video/mp4')) {
+                                    // Video is ready, download it
+                                    const videoBlob = await progressResponse.blob();
+                                    const videoFile = new File([videoBlob], `Yoddha_2026_Recap.mp4`, { type: 'video/mp4' });
+                                    setGeneratedVideoFile(videoFile);
+
+                                    // Download Video
+                                    const url = URL.createObjectURL(videoBlob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `Yoddha_2026_Recap.mp4`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    URL.revokeObjectURL(url);
+                                    
+                                    setShowShareModal(true);
+                                    completed = true;
+                                    setRenderProgress(100);
+                                    return; // Exit successfully
+                                } else {
+                                    // Still processing, get progress
+                                    const progressData = await progressResponse.json();
+                                    
+                                    if (progressData.success && progressData.data) {
+                                        const { status, progress, message, error } = progressData.data;
+                                        
+                                        setRenderProgress(Math.min(progress || 0, 95));
+                                        
+                                        if (status === 'error') {
+                                            throw new Error(error || 'Server-side generation failed');
+                                        }
+                                        
+                                        if (status === 'completed') {
+                                            completed = true;
+                                        }
+                                    }
+                                }
+                            } else {
+                                console.warn('Progress check failed:', progressResponse.status);
+                            }
+                        } catch (progressError) {
+                            console.warn('Progress check error:', progressError);
+                        }
+                    }
+
+                    if (!completed) {
+                        throw new Error('Video generation timed out. Please try again.');
+                    }
+
+                } catch (serverError) {
+                    console.error('Server-side video generation failed:', serverError);
+                    alert(`Server-side video generation failed: ${serverError instanceof Error ? serverError.message : 'Unknown error'}\n\nFalling back to image download.`);
+                    // Continue with client-side fallback below
+                }
+            }
+
             const slideContainer = document.getElementById('yoddha-slide-container');
             if (!slideContainer) throw new Error("No container found");
 
@@ -1271,43 +1394,67 @@ export default function YoddhaVideoPage() {
                                 try {
                                     if (meta && meta.decoderConfig) {
                                         const d = meta.decoderConfig;
-                                        // SAFARI FIX: Manually reconstruct a clean config object.
-                                        // This prevents the muxer from crashing on null/proxy properties.
+                                        
+                                        // Enhanced SAFARI & MOBILE FIX: Better colorSpace handling
+                                        let safeColorSpace;
+                                        try {
+                                            // Try to access colorSpace properties safely
+                                            if (d.colorSpace && typeof d.colorSpace === 'object') {
+                                                safeColorSpace = {
+                                                    primaries: d.colorSpace.primaries || 'bt709',
+                                                    transfer: d.colorSpace.transfer || 'bt709',
+                                                    matrix: d.colorSpace.matrix || 'bt709',
+                                                    fullRange: Boolean(d.colorSpace.fullRange)
+                                                };
+                                            } else {
+                                                // Fallback colorSpace for mobile browsers
+                                                safeColorSpace = {
+                                                    primaries: 'bt709',
+                                                    transfer: 'bt709',
+                                                    matrix: 'bt709',
+                                                    fullRange: false
+                                                };
+                                            }
+                                        } catch (colorSpaceError) {
+                                            console.warn("ColorSpace access failed, using fallback:", colorSpaceError);
+                                            safeColorSpace = {
+                                                primaries: 'bt709',
+                                                transfer: 'bt709',
+                                                matrix: 'bt709',
+                                                fullRange: false
+                                            };
+                                        }
+
                                         const safeConfig: any = {
                                             codec: d.codec,
-                                            width: (d as any).width,
-                                            height: (d as any).height,
-                                            description: d.description
-                                        };
-
-                                        // Ensure colorSpace is never null/undefined for the muxer
-                                        safeConfig.colorSpace = (d.colorSpace && d.colorSpace.primaries) ? {
-                                            primaries: d.colorSpace.primaries,
-                                            transfer: d.colorSpace.transfer,
-                                            matrix: d.colorSpace.matrix,
-                                            fullRange: d.colorSpace.fullRange
-                                        } : {
-                                            primaries: 'bt709',
-                                            transfer: 'bt709',
-                                            matrix: 'bt709',
-                                            fullRange: false
+                                            width: d.displayWidth || (d as any).width || vW,
+                                            height: d.displayHeight || (d as any).height || vH,
+                                            description: d.description,
+                                            colorSpace: safeColorSpace
                                         };
 
                                         muxer.addVideoChunk(chunk, {
-                                            ...meta,
                                             decoderConfig: safeConfig
                                         } as any);
                                     } else {
                                         muxer.addVideoChunk(chunk);
                                     }
                                 } catch (err) {
-                                    console.warn("Metadata processing failed, falling back to chunk-only", err);
-                                    muxer.addVideoChunk(chunk);
+                                    console.warn("Muxing failed for chunk, trying fallback:", err);
+                                    // Enhanced fallback - try chunk-only approach
+                                    try { 
+                                        muxer.addVideoChunk(chunk); 
+                                    } catch (fallbackError) {
+                                        console.error("Complete muxing failure:", fallbackError);
+                                        // This is where the original error occurs - trigger server-side fallback
+                                        throw new Error(`ColorSpace muxing failed: ${fallbackError.message}`);
+                                    }
                                 }
                             },
                             error: (e) => {
-                                console.error("Encoder Error", e);
-                                alert("Encoder Error: " + e.message);
+                                console.error("VideoEncoder Error:", e);
+                                // Don't show alert immediately, let the main catch handle it
+                                throw new Error(`VideoEncoder failed: ${e.message}`);
                             }
                         });
 
@@ -1318,8 +1465,9 @@ export default function YoddhaVideoPage() {
                             height: vH,
                             bitrate: 4_000_000,
                             framerate: fps,
-                            latencyMode: 'quality'
-                        });
+                            latencyMode: 'quality',
+                            hardwareAcceleration: 'prefer-hardware'
+                        } as any);
 
                         // Configure Audio Encoder if buffer exists
                         if (audioBuffer && 'AudioEncoder' in window) {
@@ -1425,8 +1573,96 @@ export default function YoddhaVideoPage() {
             }
 
         } catch (e: any) {
-            console.error(e);
-            alert("Video Generation failed: " + e.message + "\n\nDownloading captured images instead.");
+            console.error("Client-side video generation failed:", e);
+            
+            // Check if it's a colorSpace-related error that we can fix with server-side generation
+            const errorMessage = e.message || '';
+            const isColorSpaceError = errorMessage.includes('colorSpace') || 
+                                    errorMessage.includes('decoderConfig') || 
+                                    errorMessage.includes('null is not an object') ||
+                                    errorMessage.includes('VideoEncoder failed') ||
+                                    errorMessage.includes('ColorSpace muxing failed');
+            
+            if (isColorSpaceError && !isMobile) {
+                console.log("ColorSpace/VideoEncoder error detected, falling back to server-side generation...");
+                
+                try {
+                    // Try server-side generation as fallback
+                    setRenderProgress(5);
+                    
+                    const videoData = {
+                        userName: userName || 'User',
+                        currentPoints,
+                        unitsSold,
+                        longestStreak,
+                        regionData,
+                        leaderboardData,
+                        rankTitle,
+                        hallOfFameData,
+                        globalRank,
+                        globalStats,
+                        async: true
+                    };
+
+                    const response = await fetch('/api/generate-yoddha-video', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(videoData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            // Handle server-side generation like in mobile section
+                            const jobId = result.jobId;
+                            let completed = false;
+                            let attempts = 0;
+                            const maxAttempts = 180; // 3 minutes timeout for fallback
+
+                            while (!completed && attempts < maxAttempts) {
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                attempts++;
+
+                                const progressResponse = await fetch(`/api/generate-yoddha-video?jobId=${jobId}`);
+                                if (progressResponse.ok) {
+                                    const contentType = progressResponse.headers.get('content-type');
+                                    
+                                    if (contentType && contentType.includes('video/mp4')) {
+                                        const videoBlob = await progressResponse.blob();
+                                        const videoFile = new File([videoBlob], `Yoddha_2026_Recap.mp4`, { type: 'video/mp4' });
+                                        setGeneratedVideoFile(videoFile);
+
+                                        const url = URL.createObjectURL(videoBlob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `Yoddha_2026_Recap.mp4`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(url);
+                                        
+                                        setShowShareModal(true);
+                                        completed = true;
+                                        setRenderProgress(100);
+                                        return; // Success!
+                                    } else {
+                                        const progressData = await progressResponse.json();
+                                        if (progressData.success && progressData.data) {
+                                            const { progress } = progressData.data;
+                                            setRenderProgress(Math.min(progress || 0, 95));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (serverFallbackError) {
+                    console.error("Server-side fallback also failed:", serverFallbackError);
+                }
+            }
+            
+            // If we get here, both client-side and server-side failed, or it's not a colorSpace error
+            alert("Video Generation failed: " + errorMessage + "\n\nDownloading captured images instead.");
             if (imagesForZip.length > 0) {
                 await downloadZip(imagesForZip);
                 setShowShareModal(true);
