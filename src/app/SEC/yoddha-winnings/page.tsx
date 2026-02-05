@@ -1236,8 +1236,9 @@ export default function YoddhaVideoPage() {
 
                     // Lazy Init Encoder
                     if (!videoEncoder || !muxer) {
-                        // CAP RESOLUTION: Max 1920 height for mobile stability
-                        const MAX_H = 1920;
+                        // CAP RESOLUTION: Max 1280 height (720p) for absolute mobile stability
+                        // High-res (1080p+) often fails on mobile due to memory/hardware limits
+                        const MAX_H = 1280;
                         vW = bitmap.width;
                         vH = bitmap.height;
 
@@ -1265,8 +1266,13 @@ export default function YoddhaVideoPage() {
 
                         videoEncoder = new VideoEncoder({
                             output: (chunk, meta) => {
-                                // Defensive check for mobile browsers that might pass null meta
-                                if (muxer && chunk) {
+                                // Critical: Some mobile browsers pass null or incomplete meta
+                                // mp4-muxer crashes if it tries to access colorSpace on null decoders
+                                if (muxer && chunk && meta && meta.decoderConfig) {
+                                    muxer.addVideoChunk(chunk, meta);
+                                } else if (muxer && chunk && !meta) {
+                                    // Some chunks don't have meta, only the first/key frames usually do
+                                    // If it's NOT the first chunk, it might be okay to pass null
                                     muxer.addVideoChunk(chunk, meta as any);
                                 }
                             },
@@ -1276,12 +1282,12 @@ export default function YoddhaVideoPage() {
                             }
                         });
 
-                        // Configure for H.264 (AVC) - Baseline 4.1 for Universal Mobile Support
+                        // Configure for H.264 (AVC) - Level 5.1 supports High-Res and is safe with MAX_H cap
                         videoEncoder.configure({
-                            codec: 'avc1.424029', // H.264 Baseline Level 4.1
+                            codec: 'avc1.4d0033', // H.264 Main Profile Level 5.1
                             width: vW,
                             height: vH,
-                            bitrate: 4_000_000,
+                            bitrate: 5_000_000,
                             framerate: fps,
                             latencyMode: 'quality'
                         });
