@@ -1268,12 +1268,40 @@ export default function YoddhaVideoPage() {
                             output: (chunk, meta) => {
                                 if (!muxer || !chunk) return;
 
-                                // Robust check: Only pass meta if it contains a valid decoderConfig.
-                                // If meta is missing or incomplete (common on mobile), pass ONLY the chunk.
-                                // This prevents mp4-muxer from crashing on null colorSpace evaluations.
-                                if (meta && meta.decoderConfig) {
-                                    muxer.addVideoChunk(chunk, meta);
-                                } else {
+                                try {
+                                    if (meta && meta.decoderConfig) {
+                                        const d = meta.decoderConfig;
+                                        // SAFARI FIX: Manually reconstruct a clean config object.
+                                        // This prevents the muxer from crashing on null/proxy properties.
+                                        const safeConfig: any = {
+                                            codec: d.codec,
+                                            width: (d as any).width,
+                                            height: (d as any).height,
+                                            description: d.description
+                                        };
+
+                                        // Ensure colorSpace is never null/undefined for the muxer
+                                        safeConfig.colorSpace = (d.colorSpace && d.colorSpace.primaries) ? {
+                                            primaries: d.colorSpace.primaries,
+                                            transfer: d.colorSpace.transfer,
+                                            matrix: d.colorSpace.matrix,
+                                            fullRange: d.colorSpace.fullRange
+                                        } : {
+                                            primaries: 'bt709',
+                                            transfer: 'bt709',
+                                            matrix: 'bt709',
+                                            fullRange: false
+                                        };
+
+                                        muxer.addVideoChunk(chunk, {
+                                            ...meta,
+                                            decoderConfig: safeConfig
+                                        } as any);
+                                    } else {
+                                        muxer.addVideoChunk(chunk);
+                                    }
+                                } catch (err) {
+                                    console.warn("Metadata processing failed, falling back to chunk-only", err);
                                     muxer.addVideoChunk(chunk);
                                 }
                             },
@@ -1283,12 +1311,12 @@ export default function YoddhaVideoPage() {
                             }
                         });
 
-                        // Configure for H.264 (AVC) - Level 5.1 supports High-Res and is safe with MAX_H cap
+                        // Configure for H.264 (AVC) - Level 4.0 is perfectly balanced for 1280px caps
                         videoEncoder.configure({
-                            codec: 'avc1.4d0033', // H.264 Main Profile Level 5.1
+                            codec: 'avc1.4d0028', // H.264 Main Profile Level 4.0
                             width: vW,
                             height: vH,
-                            bitrate: 5_000_000,
+                            bitrate: 4_000_000,
                             framerate: fps,
                             latencyMode: 'quality'
                         });
