@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import fs from 'fs/promises';
 import { tmpdir } from 'os';
 import { randomUUID } from 'crypto';
+import { createBrowser } from './puppeteer-config';
 
 // Types for the video generation request
 interface VideoGenerationRequest {
@@ -120,7 +120,9 @@ export async function POST(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to generate video',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        environment: process.env.NODE_ENV,
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     );
@@ -240,25 +242,8 @@ async function generateVideo(
     
     progressCallback?.(15, 'Launching browser...');
     
-    // Launch Puppeteer with optimized settings for vertical format
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
-      ],
-      timeout: 60000 // 60 second timeout for browser launch
-    });
+    // Launch Puppeteer with serverless-optimized configuration
+    browser = await createBrowser();
     
     const page = await browser.newPage();
     
@@ -426,20 +411,48 @@ async function generateVideo(
     return videoBuffer;
     
   } catch (error) {
-    console.error('Video generation error:', error);
+    console.error('❌ Video generation error:', error);
+    
+    // Enhanced error logging for debugging
+    const errorDetails = {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      environment: process.env.NODE_ENV,
+      isVercel: process.env.VERCEL === '1',
+      platform: process.platform,
+      arch: process.arch
+    };
+    
+    console.error('🔍 Detailed error information:', errorDetails);
     
     // Clear the overall timeout
     clearTimeout(overallTimeout);
     
     // Clean up on error
     if (browser) {
-      await browser.close();
+      await browser.close().catch((closeError: Error) => {
+        console.error('Error closing browser:', closeError);
+      });
     }
     if (tempDir) {
-      await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      await fs.rm(tempDir, { recursive: true, force: true }).catch((cleanupError: Error) => {
+        console.error('Error cleaning up temp directory:', cleanupError);
+      });
     }
     
-    throw error;
+    // Provide user-friendly error message based on error type
+    let userMessage = 'Video generation failed';
+    if (error instanceof Error) {
+      if (error.message.includes('Chrome') || error.message.includes('browser')) {
+        userMessage = 'Video generation service temporarily unavailable';
+      } else if (error.message.includes('timeout')) {
+        userMessage = 'Video generation timed out - please try again';
+      } else if (error.message.includes('memory')) {
+        userMessage = 'Video generation failed due to resource constraints';
+      }
+    }
+    
+    throw new Error(`${userMessage}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
