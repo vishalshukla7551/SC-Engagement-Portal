@@ -1266,14 +1266,15 @@ export default function YoddhaVideoPage() {
 
                         videoEncoder = new VideoEncoder({
                             output: (chunk, meta) => {
-                                // Critical: Some mobile browsers pass null or incomplete meta
-                                // mp4-muxer crashes if it tries to access colorSpace on null decoders
-                                if (muxer && chunk && meta && meta.decoderConfig) {
+                                if (!muxer || !chunk) return;
+
+                                // Robust check: Only pass meta if it contains a valid decoderConfig.
+                                // If meta is missing or incomplete (common on mobile), pass ONLY the chunk.
+                                // This prevents mp4-muxer from crashing on null colorSpace evaluations.
+                                if (meta && meta.decoderConfig) {
                                     muxer.addVideoChunk(chunk, meta);
-                                } else if (muxer && chunk && !meta) {
-                                    // Some chunks don't have meta, only the first/key frames usually do
-                                    // If it's NOT the first chunk, it might be okay to pass null
-                                    muxer.addVideoChunk(chunk, meta as any);
+                                } else {
+                                    muxer.addVideoChunk(chunk);
                                 }
                             },
                             error: (e) => {
