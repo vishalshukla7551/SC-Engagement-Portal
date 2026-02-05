@@ -1208,7 +1208,7 @@ export default function YoddhaVideoPage() {
                 const dataUrl = await toJpeg(slideContainer, {
                     width: renderWidth,
                     height: renderHeight,
-                    pixelRatio: 3, // Keep sharpness
+                    pixelRatio: 2, // 2x is safe for mobile while maintaining High-DPI quality
                     backgroundColor: '#001233', // Reverted to original
                     quality: 1,
                     style: {
@@ -1378,6 +1378,7 @@ export default function YoddhaVideoPage() {
             alert("Video Generation failed: " + e.message + "\n\nDownloading captured images instead.");
             if (imagesForZip.length > 0) {
                 await downloadZip(imagesForZip);
+                setShowShareModal(true);
             }
         } finally {
             setIsRendering(false);
@@ -1827,7 +1828,7 @@ export default function YoddhaVideoPage() {
 
             {/* Share Success Modal */}
             {showShareModal && (
-                <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center backdrop-blur-md p-6">
+                <div className="fixed inset-0 z-[110] bg-black/95 flex flex-col items-center justify-center backdrop-blur-md p-6">
                     <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 max-w-sm w-full text-center relative shadow-2xl">
                         <button
                             onClick={() => setShowShareModal(false)}
