@@ -1427,8 +1427,8 @@ export default function YoddhaVideoPage() {
 
                                         const safeConfig: any = {
                                             codec: d.codec,
-                                            width: d.displayWidth || (d as any).width || vW,
-                                            height: d.displayHeight || (d as any).height || vH,
+                                            width: (d as any).displayWidth || (d as any).width || vW,
+                                            height: (d as any).displayHeight || (d as any).height || vH,
                                             description: d.description,
                                             colorSpace: safeColorSpace
                                         };
@@ -1447,7 +1447,7 @@ export default function YoddhaVideoPage() {
                                     } catch (fallbackError) {
                                         console.error("Complete muxing failure:", fallbackError);
                                         // This is where the original error occurs - trigger server-side fallback
-                                        throw new Error(`ColorSpace muxing failed: ${fallbackError.message}`);
+                                        throw new Error(`ColorSpace muxing failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}`);
                                     }
                                 }
                             },
@@ -1583,7 +1583,12 @@ export default function YoddhaVideoPage() {
                                     errorMessage.includes('VideoEncoder failed') ||
                                     errorMessage.includes('ColorSpace muxing failed');
             
-            if (isColorSpaceError && !isMobile) {
+            // Re-check mobile status for fallback
+            const isMobileForFallback = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                                       window.innerWidth <= 768 ||
+                                       !('VideoEncoder' in window);
+            
+            if (isColorSpaceError && !isMobileForFallback) {
                 console.log("ColorSpace/VideoEncoder error detected, falling back to server-side generation...");
                 
                 try {

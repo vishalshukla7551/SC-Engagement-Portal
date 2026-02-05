@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     console.log('🔄 Starting synchronous video generation...');
     const videoBuffer = await generateVideo(data);
     
-    return new NextResponse(videoBuffer, {
+    return new NextResponse(videoBuffer as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'video/mp4',
@@ -329,7 +329,7 @@ async function generateVideo(
         const scale = 1.0 + (progress * 0.01); // Minimal effect
         const translateX = (progress - 0.5) * 2; // Minimal movement
         
-        await page.evaluate((scale, translateX) => {
+        await page.evaluate((scale: number, translateX: number) => {
           document.body.style.transform = `scale(${scale}) translateX(${translateX}px)`;
         }, scale, translateX);
         
@@ -1914,7 +1914,7 @@ function generateSlideHTML(slide: any, data: VideoGenerationRequest): string {
     case 'badges': {
       // Implement badges slide with ID card style
       const currentRank = data.rankTitle || 'Salesveer';
-      const rankConfig = {
+      const rankConfig: Record<string, { gradient: string; icon: string; label: string }> = {
         'Salesveer': { gradient: 'from-slate-600 to-slate-800', icon: '🎯', label: 'Starter' },
         'Sales Lieutenant': { gradient: 'from-orange-600 to-orange-800', icon: '🏅', label: 'Bronze' },
         'Sales Captain': { gradient: 'from-gray-400 to-gray-600', icon: '🛡️', label: 'Silver' },
