@@ -1252,20 +1252,26 @@ export default function YoddhaVideoPage() {
                         });
 
                         videoEncoder = new VideoEncoder({
-                            output: (chunk, meta) => muxer!.addVideoChunk(chunk, meta),
+                            output: (chunk, meta) => {
+                                // Defensive check for mobile browsers that might pass null meta
+                                if (muxer && chunk) {
+                                    muxer.addVideoChunk(chunk, meta as any);
+                                }
+                            },
                             error: (e) => {
                                 console.error("Encoder Error", e);
                                 alert("Encoder Error: " + e.message);
                             }
                         });
 
-                        // Configure for H.264 (AVC) Level 5.1
+                        // Configure for H.264 (AVC) - Level 3.1 is widely supported on mobile
                         videoEncoder.configure({
-                            codec: 'avc1.4d0033', // H.264 Main Profile Level 5.1 (Supports 4K)
+                            codec: 'avc1.4d401f', // H.264 Main Profile Level 3.1
                             width: vW,
                             height: vH,
-                            bitrate: 8_000_000, // Slightly higher for 4K-ish density
-                            framerate: fps
+                            bitrate: 6_000_000,
+                            framerate: fps,
+                            latencyMode: 'quality'
                         });
 
                         // Configure Audio Encoder if buffer exists
