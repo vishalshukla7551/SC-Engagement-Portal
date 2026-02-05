@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 
 // Dynamic import for chromium to handle potential issues
 let chromium: any = null;
@@ -29,10 +29,11 @@ export async function createBrowser() {
   console.log(`🚀 Vercel: ${isVercel ? 'yes' : 'no'}`);
   
   if (!isProduction) {
-    // Development: Use standard Puppeteer
-    console.log('🔧 Using standard Puppeteer for development');
+    // Development: Use standard Puppeteer with system Chrome
+    console.log('🔧 Using system Chrome for development');
     return puppeteer.launch({
       headless: true,
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', // macOS path
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -43,119 +44,182 @@ export async function createBrowser() {
     });
   }
   
-  // Production: Try serverless Chrome with fallbacks
-  console.log('🔧 Configuring for production environment...');
+  // Production: Try @sparticuz/chromium with enhanced configuration
+  console.log('🔧 Configuring for production serverless environment...');
   
-  // First attempt: Use @sparticuz/chromium
   try {
     const chromiumModule = await getChromium();
     
-    if (chromiumModule) {
-      console.log('🚀 Attempting to use @sparticuz/chromium...');
-      
-      // Configure fonts if available
-      try {
-        if (chromiumModule.font) {
-          await chromiumModule.font('https://raw.githack.com/googlei18n/noto-emoji/master/fonts/NotoColorEmoji.ttf');
-        }
-      } catch (fontError) {
-        console.warn('⚠️ Font configuration failed, continuing without fonts:', fontError);
-      }
-      
-      const executablePath = await chromiumModule.executablePath();
-      console.log(`✅ Chromium executable found: ${executablePath}`);
-      
-      const browser = await puppeteer.launch({
-        headless: true,
-        executablePath,
-        args: [
-          ...(chromiumModule.args || []),
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--single-process',
-          '--disable-gpu',
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding',
-          '--disable-default-apps',
-          '--disable-extensions',
-          '--virtual-time-budget=5000',
-          '--run-all-compositor-stages-before-draw'
-        ],
-        timeout: 60000,
-        defaultViewport: { width: 720, height: 1280 }
-      });
-      
-      const version = await browser.version();
-      console.log(`✅ Chromium browser launched successfully: ${version}`);
-      return browser;
+    if (!chromiumModule) {
+      throw new Error('@sparticuz/chromium module not available');
     }
-  } catch (chromiumError) {
-    console.error('❌ @sparticuz/chromium failed:', chromiumError);
-  }
-  
-  // Second attempt: Try system Chrome
-  console.log('🔄 Attempting fallback to system Chrome...');
-  try {
+    
+    console.log('🚀 Using @sparticuz/chromium for serverless environment');
+    
+    // Configure fonts if available (but don't fail if it doesn't work)
+    try {
+      if (chromiumModule.font) {
+        await chromiumModule.font('https://raw.githack.com/googlei18n/noto-emoji/master/fonts/NotoColorEmoji.ttf');
+        console.log('✅ Font configured successfully');
+      }
+    } catch (fontError) {
+      console.warn('⚠️ Font configuration failed, continuing without fonts:', fontError instanceof Error ? fontError.message : fontError);
+    }
+    
+    // Get executable path with better error handling
+    let executablePath: string;
+    try {
+      executablePath = await chromiumModule.executablePath();
+      console.log(`✅ Chromium executable found: ${executablePath}`);
+    } catch (pathError) {
+      console.error('❌ Failed to get chromium executable path:', pathError);
+      throw new Error(`Chromium executable path error: ${pathError instanceof Error ? pathError.message : pathError}`);
+    }
+    
+    // Launch browser with comprehensive configuration
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: '/usr/bin/google-chrome-stable',
+      executablePath,
       args: [
+        // Base chromium args
+        ...(chromiumModule.args || []),
+        // Essential serverless args
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--single-process',
         '--disable-gpu',
         '--disable-web-security',
+        // Performance optimizations
         '--disable-features=VizDisplayCompositor',
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
         '--disable-renderer-backgrounding',
         '--disable-default-apps',
-        '--disable-extensions'
+        '--disable-extensions',
+        '--disable-sync',
+        '--disable-translate',
+        '--hide-scrollbars',
+        '--mute-audio',
+        '--no-default-browser-check',
+        '--disable-plugins',
+        '--disable-images',
+        '--disable-javascript',
+        // Timeout and resource management
+        '--virtual-time-budget=5000',
+        '--run-all-compositor-stages-before-draw',
+        '--disable-background-networking',
+        '--disable-client-side-phishing-detection',
+        '--disable-component-extensions-with-background-pages',
+        '--disable-hang-monitor',
+        '--disable-ipc-flooding-protection',
+        '--disable-popup-blocking',
+        '--disable-prompt-on-repost',
+        '--force-color-profile=srgb',
+        '--metrics-recording-only',
+        '--safebrowsing-disable-auto-update',
+        '--enable-automation',
+        '--password-store=basic',
+        '--use-mock-keychain',
+        // Memory optimizations
+        '--memory-pressure-off',
+        '--max_old_space_size=4096'
       ],
       timeout: 60000,
-      defaultViewport: { width: 720, height: 1280 }
+      defaultViewport: { width: 720, height: 1280 },
+      // Additional options for stability
+      ignoreDefaultArgs: ['--disable-extensions']
     });
     
     const version = await browser.version();
-    console.log(`✅ System Chrome launched successfully: ${version}`);
+    console.log(`✅ Chromium browser launched successfully: ${version}`);
     return browser;
-  } catch (systemChromeError) {
-    console.error('❌ System Chrome failed:', systemChromeError);
-  }
-  
-  // Third attempt: Try Puppeteer's bundled Chrome
-  console.log('🔄 Attempting fallback to Puppeteer bundled Chrome...');
-  try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--single-process',
-        '--disable-gpu',
-        '--disable-web-security'
-      ],
-      timeout: 60000,
-      defaultViewport: { width: 720, height: 1280 }
+    
+  } catch (chromiumError) {
+    console.error('❌ @sparticuz/chromium failed:', chromiumError);
+    
+    // Enhanced error logging
+    console.error('🔍 Chromium error details:', {
+      message: chromiumError instanceof Error ? chromiumError.message : chromiumError,
+      stack: chromiumError instanceof Error ? chromiumError.stack : undefined,
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        vercel: process.env.VERCEL,
+        platform: process.platform,
+        arch: process.arch,
+        nodeVersion: process.version,
+        memory: process.memoryUsage(),
+        cwd: process.cwd()
+      }
     });
     
-    const version = await browser.version();
-    console.log(`✅ Puppeteer bundled Chrome launched successfully: ${version}`);
-    return browser;
-  } catch (bundledChromeError) {
-    console.error('❌ Puppeteer bundled Chrome failed:', bundledChromeError);
+    // Try fallback approaches for production
+    console.log('🔄 Attempting fallback approaches...');
+    
+    // Fallback 1: Try puppeteer-core without executable path (let it find Chrome)
+    try {
+      console.log('🔄 Fallback 1: Trying puppeteer-core auto-detection');
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--single-process',
+          '--disable-gpu',
+          '--disable-web-security'
+        ],
+        timeout: 60000,
+        defaultViewport: { width: 720, height: 1280 }
+      });
+      
+      const version = await browser.version();
+      console.log(`✅ Fallback 1 successful: ${version}`);
+      return browser;
+    } catch (fallback1Error) {
+      console.error('❌ Fallback 1 failed:', fallback1Error instanceof Error ? fallback1Error.message : fallback1Error);
+    }
+    
+    // Fallback 2: Try with different Chrome paths
+    const chromePaths = [
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/google-chrome',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+      '/opt/google/chrome/chrome'
+    ];
+    
+    for (const chromePath of chromePaths) {
+      try {
+        console.log(`🔄 Fallback 2: Trying Chrome at ${chromePath}`);
+        const browser = await puppeteer.launch({
+          headless: true,
+          executablePath: chromePath,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-web-security'
+          ],
+          timeout: 30000, // Shorter timeout for fallbacks
+          defaultViewport: { width: 720, height: 1280 }
+        });
+        
+        const version = await browser.version();
+        console.log(`✅ Fallback 2 successful with ${chromePath}: ${version}`);
+        return browser;
+      } catch (fallback2Error) {
+        console.error(`❌ Chrome at ${chromePath} failed:`, fallback2Error instanceof Error ? fallback2Error.message : fallback2Error);
+      }
+    }
+    
+    // All attempts failed
+    const errorMessage = `All Chrome launch attempts failed. Original error: ${chromiumError instanceof Error ? chromiumError.message : chromiumError}`;
+    console.error('❌ Complete failure:', errorMessage);
+    throw new Error(errorMessage);
   }
-  
-  // All attempts failed
-  const errorMessage = 'All Chrome launch attempts failed. Video generation is not available in this environment.';
-  console.error('❌', errorMessage);
-  throw new Error(errorMessage);
 }
 
 /**
