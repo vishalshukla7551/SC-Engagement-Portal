@@ -21,7 +21,8 @@ import {
     Music,
     Repeat,
     Shield,
-    Download
+    Download,
+    Home
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toJpeg } from 'html-to-image';
@@ -577,7 +578,8 @@ const AnimatedNumber = ({ value, isRendering = false }: { value: number, isRende
 
 // --- SLIDE RENDERERS ---
 
-const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, regionData, leaderboardData, rankTitle, userName, hallOfFameData, globalRank, globalStats, onDownloadVideo, isRendering, renderProgress }: { slide: any, theme: any, currentPoints: number, unitsSold: number, longestStreak: number, regionData?: { region: string, rank: number | string, topPercent: number }, leaderboardData?: any[], rankTitle?: string, userName?: string, hallOfFameData?: any[], globalRank?: number | string, globalStats?: { rank: string | number, total: number, percent: number }, onDownloadVideo?: () => void, isRendering?: boolean, renderProgress?: number }) => {
+
+const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, regionData, leaderboardData, rankTitle, userName, hallOfFameData, globalRank, globalStats, onDownloadVideo, isRendering, renderProgress, router }: { slide: any, theme: any, currentPoints: number, unitsSold: number, longestStreak: number, regionData?: { region: string, rank: number | string, topPercent: number }, leaderboardData?: any[], rankTitle?: string, userName?: string, hallOfFameData?: any[], globalRank?: number | string, globalStats?: { rank: string | number, total: number, percent: number }, onDownloadVideo?: () => void, isRendering?: boolean, renderProgress?: number, router?: any }) => {
     // Force consistent theme usage
     const pTheme = THEMES[0];
 
@@ -1047,6 +1049,12 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                         >
                             Replay Briefing
                         </button>
+                        <button
+                            onClick={() => router.push('/SEC/home')}
+                            className="w-full py-4 bg-gradient-to-r from-[#FF9933] via-white to-[#138808] text-black font-black uppercase rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-lg"
+                        >
+                            <Home className="w-5 h-5" /> Go to Home
+                        </button>
                     </div>
                 </div>
             );
@@ -1078,27 +1086,59 @@ const WrapSummaryImage = ({
                 height: '1920px',
                 position: 'relative',
                 overflow: 'hidden',
-                background: 'linear-gradient(135deg, #001233 0%, #002855 50%, #001233 100%)',
-                fontFamily: 'system-ui, -apple-system, sans-serif'
+                background: '#0a1929',
+                fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
             }}
         >
-            {/* Patriotic Background Elements */}
-            <div style={{ position: 'absolute', inset: 0, opacity: 0.15 }}>
-                <AshokaChakra className="absolute top-20 right-20 w-96 h-96 text-[#FF9933] opacity-20" />
-                <AshokaChakra className="absolute bottom-20 left-20 w-96 h-96 text-[#138808] opacity-20" />
-            </div>
+            {/* Ashoka Chakra Background Decorations */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.15 }}>
+                {/* Top left - saffron */}
+                <svg style={{ position: 'absolute', top: '-100px', left: '-100px', width: '400px', height: '400px', opacity: 0.3 }} viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#FF9933" strokeWidth="1" />
+                    {[...Array(24)].map((_, i) => (
+                        <line key={i} x1="50" y1="50" x2={50 + 40 * Math.cos(i * Math.PI / 12)} y2={50 + 40 * Math.sin(i * Math.PI / 12)} stroke="#FF9933" strokeWidth="0.5" />
+                    ))}
+                </svg>
 
-            {/* Gradient Overlays */}
-            <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'radial-gradient(circle at 50% 20%, rgba(255, 153, 51, 0.1) 0%, transparent 50%)',
-            }} />
-            <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'radial-gradient(circle at 50% 80%, rgba(19, 136, 8, 0.1) 0%, transparent 50%)',
-            }} />
+                {/* Top right - green */}
+                <svg style={{ position: 'absolute', top: '100px', right: '-50px', width: '500px', height: '500px', opacity: 0.2 }} viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#138808" strokeWidth="1" />
+                    {[...Array(24)].map((_, i) => (
+                        <line key={`tr-${i}`} x1="50" y1="50" x2={50 + 40 * Math.cos(i * Math.PI / 12)} y2={50 + 40 * Math.sin(i * Math.PI / 12)} stroke="#138808" strokeWidth="0.5" />
+                    ))}
+                </svg>
+
+                {/* Bottom left - green */}
+                <svg style={{ position: 'absolute', bottom: '200px', left: '-80px', width: '450px', height: '450px', opacity: 0.25 }} viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#138808" strokeWidth="1" />
+                    {[...Array(24)].map((_, i) => (
+                        <line key={`bl-${i}`} x1="50" y1="50" x2={50 + 40 * Math.cos(i * Math.PI / 12)} y2={50 + 40 * Math.sin(i * Math.PI / 12)} stroke="#138808" strokeWidth="0.5" />
+                    ))}
+                </svg>
+
+                {/* Bottom right - saffron */}
+                <svg style={{ position: 'absolute', bottom: '-100px', right: '-100px', width: '600px', height: '600px', opacity: 0.2 }} viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#FF9933" strokeWidth="1" />
+                    {[...Array(24)].map((_, i) => (
+                        <line key={`br-${i}`} x1="50" y1="50" x2={50 + 40 * Math.cos(i * Math.PI / 12)} y2={50 + 40 * Math.sin(i * Math.PI / 12)} stroke="#FF9933" strokeWidth="0.5" />
+                    ))}
+                </svg>
+
+                {/* Small chakras scattered */}
+                <svg style={{ position: 'absolute', top: '300px', left: '100px', width: '150px', height: '150px', opacity: 0.2 }} viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#138808" strokeWidth="1" />
+                    {[...Array(24)].map((_, i) => (
+                        <line key={`s1-${i}`} x1="50" y1="50" x2={50 + 40 * Math.cos(i * Math.PI / 12)} y2={50 + 40 * Math.sin(i * Math.PI / 12)} stroke="#138808" strokeWidth="0.5" />
+                    ))}
+                </svg>
+
+                <svg style={{ position: 'absolute', top: '400px', right: '120px', width: '120px', height: '120px', opacity: 0.15 }} viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#FF9933" strokeWidth="1" />
+                    {[...Array(24)].map((_, i) => (
+                        <line key={`s2-${i}`} x1="50" y1="50" x2={50 + 40 * Math.cos(i * Math.PI / 12)} y2={50 + 40 * Math.sin(i * Math.PI / 12)} stroke="#FF9933" strokeWidth="0.5" />
+                    ))}
+                </svg>
+            </div>
 
             {/* Content Container */}
             <div style={{
@@ -1111,32 +1151,30 @@ const WrapSummaryImage = ({
                 color: 'white'
             }}>
                 {/* Header */}
-                <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                     <div style={{
-                        fontSize: '72px',
+                        fontSize: '80px',
                         fontWeight: 900,
-                        background: 'linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                        marginBottom: '20px',
-                        letterSpacing: '2px'
+                        marginBottom: '10px',
+                        letterSpacing: '2px',
+                        lineHeight: 1
                     }}>
-                        YODDHA WRAPPED
+                        <span style={{ color: '#FF9933' }}>YODDHA</span>
+                        <span style={{ color: '#FFFFFF' }}> WRAPPED</span>
                     </div>
                     <div style={{
-                        fontSize: '48px',
-                        fontWeight: 700,
-                        color: '#FFD700',
-                        marginBottom: '10px'
+                        fontSize: '90px',
+                        fontWeight: 900,
+                        color: '#D4AF37',
+                        marginBottom: '20px',
+                        lineHeight: 1
                     }}>
                         2026
                     </div>
                     <div style={{
-                        fontSize: '36px',
-                        fontWeight: 600,
-                        color: '#FFFFFF',
-                        opacity: 0.9
+                        fontSize: '42px',
+                        fontWeight: 700,
+                        color: '#FFFFFF'
                     }}>
                         {userName}
                     </div>
@@ -1146,30 +1184,61 @@ const WrapSummaryImage = ({
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
-                    marginBottom: '60px'
+                    marginBottom: '50px'
                 }}>
                     <div style={{
-                        background: `linear-gradient(135deg, ${rankConfig.gradient.split(' ')[0].replace('from-[', '').replace(']', '')} 0%, ${rankConfig.gradient.split(' ')[1].replace('to-[', '').replace(']', '')} 100%)`,
-                        padding: '30px 60px',
-                        borderRadius: '20px',
-                        border: `4px solid ${rankConfig.border.replace('border-[', '').replace(']', '')}`,
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-                        textAlign: 'center'
+                        position: 'relative',
+                        width: '420px',
+                        height: '420px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                     }}>
+                        {/* Outer gold ring */}
                         <div style={{
-                            fontSize: '28px',
-                            fontWeight: 600,
-                            color: '#FFD700',
-                            marginBottom: '10px'
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #D4AF37 0%, #F4E5A0 50%, #D4AF37 100%)',
+                            padding: '8px'
                         }}>
-                            BATTALION RANK
-                        </div>
-                        <div style={{
-                            fontSize: '48px',
-                            fontWeight: 900,
-                            color: '#FFFFFF'
-                        }}>
-                            {rankTitle}
+                            {/* Inner circle */}
+                            <div style={{
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #1a2942 0%, #0a1929 100%)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '40px',
+                                textAlign: 'center'
+                            }}>
+                                <div style={{
+                                    fontSize: '52px',
+                                    fontWeight: 900,
+                                    color: '#FFFFFF',
+                                    lineHeight: 1.1,
+                                    marginBottom: '15px'
+                                }}>
+                                    {rankTitle.split(' ').map((word: string, i: number) => (
+                                        <div key={i}>{word}</div>
+                                    ))}
+                                </div>
+                                <div style={{
+                                    background: 'linear-gradient(90deg, #FF9933 0%, #FFD700 50%, #138808 100%)',
+                                    padding: '12px 30px',
+                                    borderRadius: '8px',
+                                    fontSize: '20px',
+                                    fontWeight: 700,
+                                    color: '#000000',
+                                    marginTop: '10px'
+                                }}>
+                                    BATTALION RANK
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1178,106 +1247,186 @@ const WrapSummaryImage = ({
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
-                    gap: '30px',
-                    marginBottom: '60px'
+                    gap: '25px',
+                    marginBottom: '40px'
                 }}>
                     {/* Total Points */}
                     <div style={{
-                        background: 'rgba(255, 153, 51, 0.1)',
-                        border: '2px solid rgba(255, 153, 51, 0.3)',
-                        borderRadius: '16px',
-                        padding: '40px 30px',
-                        textAlign: 'center'
+                        background: 'rgba(10, 25, 41, 0.6)',
+                        border: '3px solid #FF9933',
+                        borderRadius: '20px',
+                        padding: '35px 25px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '20px'
                     }}>
                         <div style={{
-                            fontSize: '24px',
-                            color: '#FF9933',
-                            marginBottom: '15px',
-                            fontWeight: 600
+                            width: '70px',
+                            height: '70px',
+                            background: 'rgba(255, 153, 51, 0.2)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '40px',
+                            flexShrink: 0
                         }}>
-                            TOTAL POINTS
+                            🏆
                         </div>
-                        <div style={{
-                            fontSize: '56px',
-                            fontWeight: 900,
-                            color: '#FFFFFF'
-                        }}>
-                            {currentPoints.toLocaleString()}
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                fontSize: '18px',
+                                color: '#FFFFFF',
+                                marginBottom: '5px',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>
+                                TOTAL POINTS:
+                            </div>
+                            <div style={{
+                                fontSize: '48px',
+                                fontWeight: 900,
+                                color: '#FFD700',
+                                lineHeight: 1
+                            }}>
+                                {currentPoints.toLocaleString()}
+                            </div>
                         </div>
                     </div>
 
                     {/* Units Sold */}
                     <div style={{
-                        background: 'rgba(19, 136, 8, 0.1)',
-                        border: '2px solid rgba(19, 136, 8, 0.3)',
-                        borderRadius: '16px',
-                        padding: '40px 30px',
-                        textAlign: 'center'
+                        background: 'rgba(10, 25, 41, 0.6)',
+                        border: '3px solid #138808',
+                        borderRadius: '20px',
+                        padding: '35px 25px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '20px'
                     }}>
                         <div style={{
-                            fontSize: '24px',
-                            color: '#138808',
-                            marginBottom: '15px',
-                            fontWeight: 600
+                            width: '70px',
+                            height: '70px',
+                            background: 'rgba(19, 136, 8, 0.2)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '40px',
+                            flexShrink: 0
                         }}>
-                            UNITS SOLD
+                            📊
                         </div>
-                        <div style={{
-                            fontSize: '56px',
-                            fontWeight: 900,
-                            color: '#FFFFFF'
-                        }}>
-                            {unitsSold.toLocaleString()}
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                fontSize: '18px',
+                                color: '#FFFFFF',
+                                marginBottom: '5px',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>
+                                UNITS SOLD:
+                            </div>
+                            <div style={{
+                                fontSize: '48px',
+                                fontWeight: 900,
+                                color: '#4ADE80',
+                                lineHeight: 1
+                            }}>
+                                {unitsSold}
+                            </div>
                         </div>
                     </div>
 
                     {/* Longest Streak */}
                     <div style={{
-                        background: 'rgba(255, 215, 0, 0.1)',
-                        border: '2px solid rgba(255, 215, 0, 0.3)',
-                        borderRadius: '16px',
-                        padding: '40px 30px',
-                        textAlign: 'center'
+                        background: 'rgba(10, 25, 41, 0.6)',
+                        border: '3px solid #D4AF37',
+                        borderRadius: '20px',
+                        padding: '35px 25px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '20px'
                     }}>
                         <div style={{
-                            fontSize: '24px',
-                            color: '#FFD700',
-                            marginBottom: '15px',
-                            fontWeight: 600
+                            width: '70px',
+                            height: '70px',
+                            background: 'rgba(212, 175, 55, 0.2)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '40px',
+                            flexShrink: 0
                         }}>
-                            LONGEST STREAK
+                            🔥
                         </div>
-                        <div style={{
-                            fontSize: '56px',
-                            fontWeight: 900,
-                            color: '#FFFFFF'
-                        }}>
-                            {longestStreak} Days
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                fontSize: '18px',
+                                color: '#FFFFFF',
+                                marginBottom: '5px',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>
+                                LONGEST STREAK:
+                            </div>
+                            <div style={{
+                                fontSize: '48px',
+                                fontWeight: 900,
+                                color: '#FFD700',
+                                lineHeight: 1
+                            }}>
+                                {longestStreak} Days
+                            </div>
                         </div>
                     </div>
 
                     {/* Global Rank */}
                     <div style={{
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '16px',
-                        padding: '40px 30px',
-                        textAlign: 'center'
+                        background: 'rgba(10, 25, 41, 0.6)',
+                        border: '3px solid #D4AF37',
+                        borderRadius: '20px',
+                        padding: '35px 25px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '20px'
                     }}>
                         <div style={{
-                            fontSize: '24px',
-                            color: '#FFFFFF',
-                            marginBottom: '15px',
-                            fontWeight: 600
+                            width: '70px',
+                            height: '70px',
+                            background: 'rgba(212, 175, 55, 0.2)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '40px',
+                            flexShrink: 0
                         }}>
-                            GLOBAL RANK
+                            🌍
                         </div>
-                        <div style={{
-                            fontSize: '56px',
-                            fontWeight: 900,
-                            color: '#FFD700'
-                        }}>
-                            #{globalRank}
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                fontSize: '18px',
+                                color: '#FFFFFF',
+                                marginBottom: '5px',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>
+                                GLOBAL RANK:
+                            </div>
+                            <div style={{
+                                fontSize: '48px',
+                                fontWeight: 900,
+                                color: '#FFD700',
+                                lineHeight: 1
+                            }}>
+                                #{globalRank}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1285,34 +1434,19 @@ const WrapSummaryImage = ({
                 {/* Regional Achievement */}
                 {regionData && (
                     <div style={{
-                        background: 'linear-gradient(135deg, rgba(255, 153, 51, 0.2) 0%, rgba(19, 136, 8, 0.2) 100%)',
-                        border: '2px solid rgba(255, 215, 0, 0.4)',
+                        background: 'linear-gradient(90deg, #FF9933 0%, #FFD700 50%, #138808 100%)',
                         borderRadius: '20px',
-                        padding: '40px',
+                        padding: '30px',
                         textAlign: 'center',
-                        marginBottom: '60px'
+                        marginBottom: '50px'
                     }}>
                         <div style={{
-                            fontSize: '28px',
-                            color: '#FFD700',
-                            marginBottom: '15px',
-                            fontWeight: 600
-                        }}>
-                            {regionData.region} CHAMPION
-                        </div>
-                        <div style={{
-                            fontSize: '48px',
+                            fontSize: '32px',
                             fontWeight: 900,
-                            color: '#FFFFFF'
+                            color: '#000000',
+                            textTransform: 'uppercase'
                         }}>
-                            Rank #{regionData.rank}
-                        </div>
-                        <div style={{
-                            fontSize: '24px',
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            marginTop: '10px'
-                        }}>
-                            Top {regionData.topPercent}% in Region
+                            {regionData.region} CHAMPION - Rank #{regionData.rank} - Top {regionData.topPercent}% in Region
                         </div>
                     </div>
                 )}
@@ -1321,19 +1455,12 @@ const WrapSummaryImage = ({
                 <div style={{
                     marginTop: 'auto',
                     textAlign: 'center',
-                    paddingTop: '40px',
-                    borderTop: '2px solid rgba(255, 255, 255, 0.2)'
+                    fontSize: '36px',
+                    fontWeight: 700
                 }}>
-                    <div style={{
-                        fontSize: '32px',
-                        fontWeight: 700,
-                        background: 'linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text'
-                    }}>
-                        SALESDOST • REPUBLIC DAY 2026
-                    </div>
+                    <span style={{ color: '#FF9933' }}>SALESDOST</span>
+                    <span style={{ color: '#FFFFFF' }}> • REPUBLIC DAY </span>
+                    <span style={{ color: '#138808' }}>2026</span>
                 </div>
             </div>
         </div>
@@ -2275,6 +2402,7 @@ export default function YoddhaVideoPage() {
                                 onDownloadVideo={handleDownloadVideo}
                                 isRendering={isRendering}
                                 renderProgress={renderProgress}
+                                router={router}
                             />
                         </motion.div>
                     )}
@@ -2285,7 +2413,7 @@ export default function YoddhaVideoPage() {
             {isRendering && (
                 <div className="fixed inset-0 z-[100] bg-black/80 flex flex-col items-center justify-center backdrop-blur-sm">
                     <div className="text-white text-2xl font-black mb-4 animate-pulse">
-                        GENERATING VIDEO REEL...
+                        GENERATING CONTENT...
                     </div>
                     <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
                         <div
@@ -2414,6 +2542,7 @@ export default function YoddhaVideoPage() {
                         onDownloadVideo={handleDownloadVideo}
                         isRendering={isRendering}
                         renderProgress={renderProgress}
+                        router={router}
                     />
                 </motion.div>
             </AnimatePresence>
