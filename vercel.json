@@ -1,17 +1,8 @@
 {
   "functions": {
-    "src/app/api/generate-yoddha-video/route.ts": {
-      "maxDuration": 300,
-      "memory": 1024
-    },
-    "src/app/api/generate-yoddha-video/progress/route.ts": {
+    "src/app/api/generate-achievement-image/route.ts": {
       "maxDuration": 30,
       "memory": 512
-    }
-  },
-  "build": {
-    "env": {
-      "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
     }
   }
 }
