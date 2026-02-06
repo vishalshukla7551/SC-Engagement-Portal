@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env.local
+.DS_Store
+.gitignore
+README.md
+.vercel
+.vscode
+backups
+Excel
+docs
+scripts
+public/images/training
