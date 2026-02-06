@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactDOM from 'react-dom/client';
 import { motion, AnimatePresence, useSpring, useTransform, useMotionValue } from 'framer-motion';
 import {
     Trophy,
@@ -1056,6 +1057,291 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
     }
 };
 
+// Summary Image Component for Fallback (WhatsApp Status Format: 1080x1920)
+const WrapSummaryImage = ({
+    userName,
+    currentPoints,
+    unitsSold,
+    longestStreak,
+    rankTitle,
+    regionData,
+    globalRank,
+    globalStats
+}: any) => {
+    const rankConfig = RANK_CONFIG[rankTitle] || RANK_CONFIG['Salesveer'];
+
+    return (
+        <div
+            id="yoddha-summary-image"
+            style={{
+                width: '1080px',
+                height: '1920px',
+                position: 'relative',
+                overflow: 'hidden',
+                background: 'linear-gradient(135deg, #001233 0%, #002855 50%, #001233 100%)',
+                fontFamily: 'system-ui, -apple-system, sans-serif'
+            }}
+        >
+            {/* Patriotic Background Elements */}
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.15 }}>
+                <AshokaChakra className="absolute top-20 right-20 w-96 h-96 text-[#FF9933] opacity-20" />
+                <AshokaChakra className="absolute bottom-20 left-20 w-96 h-96 text-[#138808] opacity-20" />
+            </div>
+
+            {/* Gradient Overlays */}
+            <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'radial-gradient(circle at 50% 20%, rgba(255, 153, 51, 0.1) 0%, transparent 50%)',
+            }} />
+            <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'radial-gradient(circle at 50% 80%, rgba(19, 136, 8, 0.1) 0%, transparent 50%)',
+            }} />
+
+            {/* Content Container */}
+            <div style={{
+                position: 'relative',
+                zIndex: 10,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '80px 60px',
+                color: 'white'
+            }}>
+                {/* Header */}
+                <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                    <div style={{
+                        fontSize: '72px',
+                        fontWeight: 900,
+                        background: 'linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        marginBottom: '20px',
+                        letterSpacing: '2px'
+                    }}>
+                        YODDHA WRAPPED
+                    </div>
+                    <div style={{
+                        fontSize: '48px',
+                        fontWeight: 700,
+                        color: '#FFD700',
+                        marginBottom: '10px'
+                    }}>
+                        2026
+                    </div>
+                    <div style={{
+                        fontSize: '36px',
+                        fontWeight: 600,
+                        color: '#FFFFFF',
+                        opacity: 0.9
+                    }}>
+                        {userName}
+                    </div>
+                </div>
+
+                {/* Rank Badge */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    marginBottom: '60px'
+                }}>
+                    <div style={{
+                        background: `linear-gradient(135deg, ${rankConfig.gradient.split(' ')[0].replace('from-[', '').replace(']', '')} 0%, ${rankConfig.gradient.split(' ')[1].replace('to-[', '').replace(']', '')} 100%)`,
+                        padding: '30px 60px',
+                        borderRadius: '20px',
+                        border: `4px solid ${rankConfig.border.replace('border-[', '').replace(']', '')}`,
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{
+                            fontSize: '28px',
+                            fontWeight: 600,
+                            color: '#FFD700',
+                            marginBottom: '10px'
+                        }}>
+                            BATTALION RANK
+                        </div>
+                        <div style={{
+                            fontSize: '48px',
+                            fontWeight: 900,
+                            color: '#FFFFFF'
+                        }}>
+                            {rankTitle}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '30px',
+                    marginBottom: '60px'
+                }}>
+                    {/* Total Points */}
+                    <div style={{
+                        background: 'rgba(255, 153, 51, 0.1)',
+                        border: '2px solid rgba(255, 153, 51, 0.3)',
+                        borderRadius: '16px',
+                        padding: '40px 30px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{
+                            fontSize: '24px',
+                            color: '#FF9933',
+                            marginBottom: '15px',
+                            fontWeight: 600
+                        }}>
+                            TOTAL POINTS
+                        </div>
+                        <div style={{
+                            fontSize: '56px',
+                            fontWeight: 900,
+                            color: '#FFFFFF'
+                        }}>
+                            {currentPoints.toLocaleString()}
+                        </div>
+                    </div>
+
+                    {/* Units Sold */}
+                    <div style={{
+                        background: 'rgba(19, 136, 8, 0.1)',
+                        border: '2px solid rgba(19, 136, 8, 0.3)',
+                        borderRadius: '16px',
+                        padding: '40px 30px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{
+                            fontSize: '24px',
+                            color: '#138808',
+                            marginBottom: '15px',
+                            fontWeight: 600
+                        }}>
+                            UNITS SOLD
+                        </div>
+                        <div style={{
+                            fontSize: '56px',
+                            fontWeight: 900,
+                            color: '#FFFFFF'
+                        }}>
+                            {unitsSold.toLocaleString()}
+                        </div>
+                    </div>
+
+                    {/* Longest Streak */}
+                    <div style={{
+                        background: 'rgba(255, 215, 0, 0.1)',
+                        border: '2px solid rgba(255, 215, 0, 0.3)',
+                        borderRadius: '16px',
+                        padding: '40px 30px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{
+                            fontSize: '24px',
+                            color: '#FFD700',
+                            marginBottom: '15px',
+                            fontWeight: 600
+                        }}>
+                            LONGEST STREAK
+                        </div>
+                        <div style={{
+                            fontSize: '56px',
+                            fontWeight: 900,
+                            color: '#FFFFFF'
+                        }}>
+                            {longestStreak} Days
+                        </div>
+                    </div>
+
+                    {/* Global Rank */}
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '2px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '16px',
+                        padding: '40px 30px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{
+                            fontSize: '24px',
+                            color: '#FFFFFF',
+                            marginBottom: '15px',
+                            fontWeight: 600
+                        }}>
+                            GLOBAL RANK
+                        </div>
+                        <div style={{
+                            fontSize: '56px',
+                            fontWeight: 900,
+                            color: '#FFD700'
+                        }}>
+                            #{globalRank}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Regional Achievement */}
+                {regionData && (
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(255, 153, 51, 0.2) 0%, rgba(19, 136, 8, 0.2) 100%)',
+                        border: '2px solid rgba(255, 215, 0, 0.4)',
+                        borderRadius: '20px',
+                        padding: '40px',
+                        textAlign: 'center',
+                        marginBottom: '60px'
+                    }}>
+                        <div style={{
+                            fontSize: '28px',
+                            color: '#FFD700',
+                            marginBottom: '15px',
+                            fontWeight: 600
+                        }}>
+                            {regionData.region} CHAMPION
+                        </div>
+                        <div style={{
+                            fontSize: '48px',
+                            fontWeight: 900,
+                            color: '#FFFFFF'
+                        }}>
+                            Rank #{regionData.rank}
+                        </div>
+                        <div style={{
+                            fontSize: '24px',
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            marginTop: '10px'
+                        }}>
+                            Top {regionData.topPercent}% in Region
+                        </div>
+                    </div>
+                )}
+
+                {/* Footer */}
+                <div style={{
+                    marginTop: 'auto',
+                    textAlign: 'center',
+                    paddingTop: '40px',
+                    borderTop: '2px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <div style={{
+                        fontSize: '32px',
+                        fontWeight: 700,
+                        background: 'linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text'
+                    }}>
+                        SALESDOST • REPUBLIC DAY 2026
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+
 const slides = [
     { type: 'intro', themeId: 'toxic', duration: 4000 },
     { type: 'stats', themeId: 'heat', duration: 6000 },
@@ -1432,7 +1718,7 @@ export default function YoddhaVideoPage() {
             } else {
                 // Fallback if video failed or unsupported
                 setGeneratedVideoFile(null);
-                await downloadImages(imagesForZip);
+                await downloadSummaryImage();
                 setShowShareModal(true);
             }
 
@@ -1442,7 +1728,7 @@ export default function YoddhaVideoPage() {
 
             alert("Video Generation failed: " + errorMessage + "\n\nDownloading captured images instead.");
             if (imagesForZip.length > 0) {
-                await downloadImages(imagesForZip);
+                await downloadSummaryImage();
                 setShowShareModal(true);
             }
         } finally {
@@ -1451,23 +1737,61 @@ export default function YoddhaVideoPage() {
         }
     };
 
-    const downloadImages = async (files: File[]) => {
-        // Download each image individually
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const url = URL.createObjectURL(file);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = file.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+    const downloadSummaryImage = async () => {
+        try {
+            // Create a temporary container for the summary image
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'fixed';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '0';
+            document.body.appendChild(tempContainer);
 
-            // Small delay between downloads to avoid browser blocking
-            if (i < files.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 300));
+            // Render the summary image component
+            const root = ReactDOM.createRoot(tempContainer);
+            await new Promise<void>((resolve) => {
+                root.render(
+                    <WrapSummaryImage
+                        userName={userName}
+                        currentPoints={currentPoints}
+                        unitsSold={unitsSold}
+                        longestStreak={longestStreak}
+                        rankTitle={rankTitle}
+                        regionData={regionData}
+                        globalRank={globalRank}
+                        globalStats={globalStats}
+                    />
+                );
+                // Wait for render
+                setTimeout(resolve, 1000);
+            });
+
+            const summaryElement = document.getElementById('yoddha-summary-image');
+            if (!summaryElement) {
+                throw new Error('Summary image element not found');
             }
+
+            // Capture the summary image
+            const dataUrl = await toJpeg(summaryElement, {
+                width: 1080,
+                height: 1920,
+                pixelRatio: 1,
+                backgroundColor: '#001233',
+                quality: 0.95,
+            });
+
+            // Download the image
+            const link = document.createElement('a');
+            link.download = 'Yoddha_2026_Wrapped.jpg';
+            link.href = dataUrl;
+            link.click();
+
+            // Cleanup
+            root.unmount();
+            document.body.removeChild(tempContainer);
+
+        } catch (error) {
+            console.error('Failed to generate summary image:', error);
+            alert('Failed to generate summary image. Please try again.');
         }
     };
 
@@ -1760,7 +2084,90 @@ export default function YoddhaVideoPage() {
     }, [isPaused, activeSlide.duration, nextSlide, hasStarted]);
 
     const handleShareFile = async (platform?: string) => {
-        // Try to share the FILE first (Best for Mobile "Direct Share")
+        // Special handling for WhatsApp - generate and share summary image
+        if (platform === 'whatsapp') {
+            try {
+                // Generate the summary image
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'fixed';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.top = '0';
+                document.body.appendChild(tempContainer);
+
+                const root = ReactDOM.createRoot(tempContainer);
+                await new Promise<void>((resolve) => {
+                    root.render(
+                        <WrapSummaryImage
+                            userName={userName}
+                            currentPoints={currentPoints}
+                            unitsSold={unitsSold}
+                            longestStreak={longestStreak}
+                            rankTitle={rankTitle}
+                            regionData={regionData}
+                            globalRank={globalRank}
+                            globalStats={globalStats}
+                        />
+                    );
+                    setTimeout(resolve, 1000);
+                });
+
+                const summaryElement = document.getElementById('yoddha-summary-image');
+                if (!summaryElement) {
+                    throw new Error('Summary image element not found');
+                }
+
+                // Capture the summary image
+                const dataUrl = await toJpeg(summaryElement, {
+                    width: 1080,
+                    height: 1920,
+                    pixelRatio: 1,
+                    backgroundColor: '#001233',
+                    quality: 0.95,
+                });
+
+                // Convert to blob
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                const file = new File([blob], 'Yoddha_2026_Wrapped.jpg', { type: 'image/jpeg' });
+
+                // Cleanup
+                root.unmount();
+                document.body.removeChild(tempContainer);
+
+                // Create share text
+                const shareText = `🎉 My Yoddha Wrapped 2026! 🇮🇳\n\n🏆 Battalion Rank: ${rankTitle}\n⚡ Total Points: ${currentPoints.toLocaleString()}\n📦 Units Sold: ${unitsSold}\n🔥 Longest Streak: ${longestStreak} Days\n🌟 Global Rank: #${globalRank}\n\n#YoddhaWrapped #SalesDost #RepublicDay2026`;
+
+                // Try Web Share API with file
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Yoddha 2026 Wrapped',
+                        text: shareText,
+                    });
+                    return;
+                } else {
+                    // Fallback: Download image and open WhatsApp with text
+                    const link = document.createElement('a');
+                    link.download = 'Yoddha_2026_Wrapped.jpg';
+                    link.href = dataUrl;
+                    link.click();
+
+                    // Open WhatsApp with text
+                    setTimeout(() => {
+                        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+                    }, 500);
+                }
+
+            } catch (error) {
+                console.error('Failed to share to WhatsApp:', error);
+                // Fallback to text-only share
+                const text = `🎉 My Yoddha Wrapped 2026! 🇮🇳\n\n🏆 Rank: ${rankTitle}\n⚡ Points: ${currentPoints.toLocaleString()}\n\n#YoddhaWrapped #SalesDost`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            }
+            return;
+        }
+
+        // Try to share the VIDEO file first (for other platforms)
         if (generatedVideoFile && navigator.canShare && navigator.canShare({ files: [generatedVideoFile] })) {
             try {
                 await navigator.share({
@@ -1779,9 +2186,7 @@ export default function YoddhaVideoPage() {
         const text = `I just secured the rank of ${rankTitle || 'Soldier'} in the Yoddha 2026 Republic Day Challenge! 🏆 Points: ${currentPoints}. Check out my stats!`;
         const url = window.location.href;
 
-        if (platform === 'whatsapp') {
-            window.location.href = `whatsapp://send?text=${encodeURIComponent(text)}`;
-        } else if (platform === 'linkedin') {
+        if (platform === 'linkedin') {
             window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
         } else if (platform === 'instagram') {
             window.open('https://www.instagram.com/', '_blank');
