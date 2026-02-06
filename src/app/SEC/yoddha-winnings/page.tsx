@@ -2017,8 +2017,12 @@ export default function YoddhaVideoPage() {
             let myRegion = USER_DATA.topRegion;
 
             try {
-                // 1. Fetch Personal Data
-                const heroResponse = await fetch('/api/sec/republic-hero');
+                // 1. Fetch Personal Data from both endpoints
+                const [heroResponse, submissionsResponse] = await Promise.all([
+                    fetch('/api/sec/republic-hero'),
+                    fetch('/api/user/sales-submissions')
+                ]);
+
                 if (heroResponse.ok) {
                     const result = await heroResponse.json();
                     if (result.success && result.data) {
@@ -2026,7 +2030,17 @@ export default function YoddhaVideoPage() {
                         myRegion = result.data.region || myRegion;
 
                         setUserName(result.data.name);
-                        setCurrentPoints(result.data.totalSales);
+
+                        // Use totalPoints from sales-submissions if available, fallback to hero data
+                        let pointsToUse = result.data.totalSales;
+                        if (submissionsResponse.ok) {
+                            const submissionsData = await submissionsResponse.json();
+                            if (submissionsData.totalPoints !== undefined) {
+                                pointsToUse = submissionsData.totalPoints;
+                            }
+                        }
+
+                        setCurrentPoints(pointsToUse);
                         setUnitsSold(result.data.salesCount);
                         setLongestStreak(result.data.longestStreak);
                         setRankTitle(result.data.rankTitle || USER_DATA.rank);
