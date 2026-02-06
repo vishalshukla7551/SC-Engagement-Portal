@@ -614,6 +614,36 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                         <div className="bg-[#138808] text-white inline-block px-8 py-2 font-bold tracking-widest uppercase transform rotate-2 border-2 border-white/50 shadow-lg">
                             Operation 2026 Successful
                         </div>
+
+                        {/* Samsung ProtectMax Branding - Logo Version */}
+                        <motion.div
+                            initial={isRendering ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={isRendering ? { duration: 0 } : { delay: 0.8, duration: 0.6 }}
+                            className="mt-10 flex flex-col items-center gap-3"
+                        >
+                            {/* Samsung Logo with ProtectMax */}
+                            <div className="flex items-center gap-2">
+                                <img
+                                    src="/images/samsung-logo-png-samsung-logo-png-white-11563008220rvkhjqpiaq Background Removed.png"
+                                    alt="Samsung"
+                                    className="h-24 w-auto"
+                                />
+                                <div className="text-white font-bold text-2xl tracking-wide">
+                                    ProtectMax
+                                </div>
+                            </div>
+
+                            {/* Powered by Zopper */}
+                            <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
+                                <span>Powered by</span>
+                                <img
+                                    src="/zopper-logo.png"
+                                    alt="Zopper"
+                                    className="h-5 w-auto"
+                                />
+                            </div>
+                        </motion.div>
                     </motion.div>
                 </div>
             );
@@ -644,7 +674,7 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                             }} />
 
                             <div className="relative z-20">
-                                <h2 className="text-[#FF9933] text-sm font-black uppercase tracking-[0.3em] mb-8 border-b border-white/10 pb-4 flex items-center justify-between">
+                                <h2 className="text-[#FF9933] text-sm font-black uppercase tracking-[0.3em] mb-2 border-b border-white/10 pb-4 flex items-center justify-between">
                                     <span>Your story in numbers</span>
                                     <div className="flex gap-1">
                                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -652,6 +682,9 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                                         <div className="w-2 h-2 rounded-full bg-green-500" />
                                     </div>
                                 </h2>
+                                <div className="text-white text-lg font-bold mb-6 -mt-2">
+                                    {userName || 'SEC User'}
+                                </div>
 
                                 <div className="space-y-6">
                                     <motion.div
@@ -836,7 +869,24 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
             );
 
         case 'badges':
-            const realRank = rankTitle || USER_DATA.rank;
+            let realRank = rankTitle || USER_DATA.rank;
+
+            // Hardcode Sales General for specific phone number
+            if (typeof window !== 'undefined') {
+                try {
+                    const authUser = localStorage.getItem('authUser');
+                    if (authUser) {
+                        const authData = JSON.parse(authUser);
+                        const phoneNumber = authData.phone || authData.id || authData.username;
+                        if (phoneNumber === '9811813419') {
+                            realRank = 'Sales General';
+                        }
+                    }
+                } catch (e) {
+                    // Ignore parse errors
+                }
+            }
+
             const currentRank = RANK_CONFIG[realRank] ? realRank : 'Salesveer';
             const rankKeys = Object.keys(RANK_CONFIG);
 
@@ -2043,7 +2093,23 @@ export default function YoddhaVideoPage() {
                         setCurrentPoints(pointsToUse);
                         setUnitsSold(result.data.salesCount);
                         setLongestStreak(result.data.longestStreak);
-                        setRankTitle(result.data.rankTitle || USER_DATA.rank);
+
+                        // Special handling for specific phone number: replace Sales Chief Marshal with Sales General
+                        let displayRankTitle = result.data.rankTitle || USER_DATA.rank;
+                        const userPhone = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
+                        if (userPhone) {
+                            try {
+                                const authData = JSON.parse(userPhone);
+                                const phoneNumber = authData.phone || authData.id || authData.username;
+                                const normalizedRank = displayRankTitle.toUpperCase();
+                                if (phoneNumber === '9811813419' && normalizedRank === 'SALES CHIEF MARSHAL') {
+                                    displayRankTitle = 'Sales General';
+                                }
+                            } catch (e) {
+                                // Ignore parse errors
+                            }
+                        }
+                        setRankTitle(displayRankTitle);
 
                         // Initial fallback region data
                         setRegionData({
@@ -2092,11 +2158,34 @@ export default function YoddhaVideoPage() {
 
                         // Global Hall of Fame: Show Top 3 + User's surrounding global peers
                         let hofPeers: any[] = [];
+
+                        // Helper function to get display rank title
+                        const getDisplayRankTitle = (user: any) => {
+                            let rankTitle = user.rankTitle;
+                            // Check if this is the special user (by phone number from localStorage)
+                            if (typeof window !== 'undefined') {
+                                try {
+                                    const authUser = localStorage.getItem('authUser');
+                                    if (authUser) {
+                                        const authData = JSON.parse(authUser);
+                                        const phoneNumber = authData.phone || authData.id || authData.username;
+                                        // If current user is viewing and this entry is them, or if the name matches
+                                        if (phoneNumber === '9811813419' && user.name === myName) {
+                                            rankTitle = 'Sales General';
+                                        }
+                                    }
+                                } catch (e) {
+                                    // Ignore parse errors
+                                }
+                            }
+                            return rankTitle;
+                        };
+
                         const top3 = allTopUsers.slice(0, 3).map((u, i) => ({
                             rank: i + 1,
                             name: u.name,
                             points: u.salesAmount >= 1000 ? (u.salesAmount / 1000).toFixed(1) + 'k' : u.salesAmount,
-                            rankTitle: u.rankTitle,
+                            rankTitle: getDisplayRankTitle(u),
                             isUser: u.name === myName
                         }));
 
@@ -2106,7 +2195,7 @@ export default function YoddhaVideoPage() {
                                 rank: i + 1,
                                 name: u.name,
                                 points: u.salesAmount >= 1000 ? (u.salesAmount / 1000).toFixed(1) + 'k' : u.salesAmount,
-                                rankTitle: u.rankTitle,
+                                rankTitle: getDisplayRankTitle(u),
                                 isUser: u.name === myName
                             }));
                         } else {
@@ -2115,14 +2204,14 @@ export default function YoddhaVideoPage() {
                                 rank: myIndex + 1,
                                 name: myName,
                                 points: (allTopUsers[myIndex].salesAmount >= 1000) ? (allTopUsers[myIndex].salesAmount / 1000).toFixed(1) + 'k' : allTopUsers[myIndex].salesAmount,
-                                rankTitle: allTopUsers[myIndex].rankTitle,
+                                rankTitle: getDisplayRankTitle(allTopUsers[myIndex]),
                                 isUser: true
                             };
                             const aboveUser = allTopUsers[myIndex - 1] ? {
                                 rank: myIndex,
                                 name: allTopUsers[myIndex - 1].name,
                                 points: (allTopUsers[myIndex - 1].salesAmount >= 1000) ? (allTopUsers[myIndex - 1].salesAmount / 1000).toFixed(1) + 'k' : allTopUsers[myIndex - 1].salesAmount,
-                                rankTitle: allTopUsers[myIndex - 1].rankTitle,
+                                rankTitle: getDisplayRankTitle(allTopUsers[myIndex - 1]),
                                 isUser: false
                             } : null;
 

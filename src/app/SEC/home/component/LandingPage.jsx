@@ -82,12 +82,12 @@ export default function LandingPage({ userName = '' }) {
     },
     {
       id: 'ranking',
-      title: 'Battle Standings',
+      title: 'ProtectMax Yoddha Briefing',
       description: 'View Your Progress',
       icon: '⚔️',
       bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
       iconBg: 'bg-white/20',
-      link: '/SEC/republic-day-hero',
+      link: '/SEC/yoddha-winnings',
       badge: 'LIVE 🔴'
     },
     {
