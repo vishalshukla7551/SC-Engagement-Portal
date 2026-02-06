@@ -1853,7 +1853,7 @@ export default function YoddhaVideoPage() {
             console.error("Video generation failed:", e);
             const errorMessage = e.message || '';
 
-            alert("Video Generation failed: " + errorMessage + "\n\nDownloading captured images instead.");
+            alert("Downloading the content.");
             if (imagesForZip.length > 0) {
                 await downloadSummaryImage();
                 setShowShareModal(true);
