@@ -8,9 +8,20 @@ interface ValentineHeaderProps {
 
 export default function ValentineHeader({ userName = 'Dreamer' }: ValentineHeaderProps) {
     return (
-        <div className="bg-[#ec255a] rounded-b-[30px] shadow-2xl pb-6 mb-2 px-6 pt-12 relative overflow-hidden shrink-0 z-30 w-full">
+
+        <div className="bg-gradient-to-br from-[#ff7a9a] via-[#ec255a] to-[#c21e4e] rounded-b-[30px] shadow-[0_10px_30px_-10px_rgba(236,37,90,0.6),inset_0_-5px_10px_rgba(0,0,0,0.1),inset_0_2px_5px_rgba(255,255,255,0.2)] pb-4 mb-2 px-6 pt-8 relative overflow-hidden shrink-0 z-30 w-full">
             {/* Background Pattern/Texture */}
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
+            {/* Hearts PNG Decoration */}
+            <div className="absolute -top-14 -right-16 w-60 h-32 opacity-50 pointer-events-none z-0 overflow-hidden">
+                <motion.img
+                    src="/hearts.png"
+                    alt="Hearts Decoration"
+                    className="absolute top-0 left-0 w-full h-60 max-w-none object-contain object-top origin-bottom"
+                    animate={{ rotate: [0, -2, 0] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                />
+            </div>
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute top-20 -left-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -43,52 +54,38 @@ export default function ValentineHeader({ userName = 'Dreamer' }: ValentineHeade
                 ))}
             </div>
 
-            {/* Top Row: Brand/Context */}
-            <div className="flex justify-between items-start mb-5 relative z-10">
-                <div className="flex flex-col text-white">
-                    <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2 drop-shadow-md">
-                        Valentine's
-                        <span className="bg-yellow-400 text-[#ec255a] text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider transform -rotate-2 shadow-sm">Special</span>
-                    </h1>
-                    <div className="flex items-center gap-1 mt-0.5 font-medium opacity-95">
-                        <span className="text-sm font-bold tracking-wide">Celebrating Love w/ {userName}</span>
-                        <motion.span
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                        >❤️</motion.span>
+            {/* Combined Top Row: Name Left, Profile Right */}
+            <div className="flex justify-between items-end relative z-10">
+                {/* Personalized Name Section */}
+                <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex flex-col"
+                >
+                    <p className="text-rose-200 text-[10px] font-bold uppercase tracking-widest mb-0.5 ml-0.5">Welcome</p>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-4xl font-black text-white drop-shadow-xl tracking-tighter">
+                            {userName}
+                        </h2>
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 10, -10, 0]
+                            }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="text-2xl filter drop-shadow-lg"
+                        >
+                            ❤️
+                        </motion.div>
                     </div>
+                </motion.div>
+
+                {/* Profile Icon */}
+                <div className="w-10 h-10 mb-1 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
+                    <span className="text-lg">👤</span>
+                    <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-[#ec255a]"></div>
                 </div>
-                <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
-                    <span className="text-xl">👤</span>
-                    <div className="absolute top-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-[#ec255a]"></div>
-                </div>
-            </div>
-
-
-
-            {/* Quick Catergories/Tags (Decorative) */}
-            <div className="flex justify-between items-center px-1 relative z-10">
-                {[
-                    { icon: '🌹', label: 'Roses', delay: 0 },
-                    { icon: '🍫', label: 'Treats', delay: 0.1 },
-                    { icon: '🧸', label: 'Teddy', delay: 0.2 },
-                    { icon: '💑', label: 'Date', delay: 0.3 },
-                    { icon: '💍', label: 'Propose', delay: 0.4 },
-                ].map((item, i) => (
-                    <motion.div
-                        key={i}
-                        className="flex flex-col items-center gap-2 cursor-pointer group"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: item.delay }}
-                        whileHover={{ y: -5 }}
-                    >
-                        <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl shadow-sm backdrop-blur-sm group-hover:bg-white/90 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all duration-300">
-                            {item.icon}
-                        </div>
-                        <span className="text-[9px] font-bold text-white/90 uppercase tracking-wide group-hover:text-yellow-300 transition-colors">{item.label}</span>
-                    </motion.div>
-                ))}
             </div>
         </div>
     );

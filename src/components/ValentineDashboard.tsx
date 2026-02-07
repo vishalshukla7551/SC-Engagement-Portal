@@ -77,7 +77,7 @@ const RANKS = [
         emoji: '👑',
         desc: 'The Ultimate Winner',
         color: 'from-red-600 to-rose-900',
-        position: { left: '58%', top: '-3%' },
+        position: { left: '58%', top: '2%' },
         effect: true,
         customScale: 1.1
     },
@@ -263,9 +263,9 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
         >
             {/* Heartbeat Vignette Overlay - Intensified */}
             <motion.div
-                className="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_15%,rgba(230,0,40,0.35)_100%)]"
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_10%,rgba(230,0,40,0.45)_100%)]"
+                animate={{ opacity: [0.6, 1.05, 0.6] }}
+                transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
             />
 
             {/* Full Screen Background - Light Pinkish Theme */}
@@ -303,7 +303,7 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
 
                 {/* Sparkles (Twinkling Stars) */}
                 <div className="absolute inset-0 pointer-events-none">
-                    {[...Array(30)].map((_, i) => (
+                    {[...Array(60)].map((_, i) => (
                         <motion.div
                             key={`sparkle-${i}`}
                             className="absolute w-1 h-1 bg-white rounded-full shadow-[0_0_4px_white]"
@@ -406,7 +406,7 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
             </div>
 
             {/* Content Container */}
-            <div className="relative z-10 h-full flex flex-col pt-6 pb-4 max-w-md mx-auto">
+            <div className="relative z-10 h-full flex flex-col pt-2 pb-4 max-w-md mx-auto">
                 <img
                     src="/images/path.PNG"
                     alt="Love Path"
@@ -423,12 +423,12 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                         <div className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-gradient-to-b from-rose-300 via-red-500 to-rose-900 rounded-full shadow-[0_0_8px_rgba(225,29,72,0.6)]"></div>
 
                         <div className="flex flex-col">
-                            <h1 className="text-lg leading-none font-serif italic font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-100 via-red-200 to-rose-100 drop-shadow-[0_2px_4px_rgba(190,18,60,0.5)]">
+                            <h1 className="text-xl leading-none font-serif italic font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-200 to-red-100 drop-shadow-[0_2px_2px_rgba(225,29,72,0.8)] filter contrast-125">
                                 Customer Honour
                             </h1>
-                            <div className="flex items-center gap-1 mt-0.5">
-                                <span className="h-[1px] w-3 bg-rose-400/50"></span>
-                                <p className="text-[8px] text-rose-900 font-bold tracking-[0.25em] uppercase shadow-white drop-shadow-md opacity-95">
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="h-[2px] w-6 bg-rose-400 rounded-full shadow-[0_0_4px_#fb7185]"></span>
+                                <p className="text-[8px] text-white font-bold tracking-[0.3em] uppercase drop-shadow-md opacity-90">
                                     Journey of True Love
                                 </p>
                             </div>
@@ -492,29 +492,29 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                                 </div>
 
                                 {/* Info Container (Name + Pts) */}
-                                <div className={`flex flex-col absolute left-full top-1/2 -translate-y-1/2 ml-4 items-start w-max`}>
+                                <div className={`flex flex-col absolute left-full top-1/2 -translate-y-1/2 ${rank.name === 'ProtectMax Titan' ? 'ml-1' : 'ml-4'} items-start w-max`}>
                                     {/* Rank Name Badge */}
-                                    <div className={`px-4 py-1.5 rounded-full border-2 shadow-xl backdrop-blur-md transform transition-all duration-300 ${isUnlocked ? 'bg-white text-rose-600 border-rose-500 rotate-0 scale-100' : 'bg-black/60 text-white/80 border-transparent rotate-0 scale-90'}`}>
+                                    <div className={`px-2 py-1 sm:px-4 sm:py-1.5 rounded-full border-2 shadow-xl backdrop-blur-md transform transition-all duration-300 ${isUnlocked ? 'bg-white text-rose-600 border-rose-500 rotate-0 scale-100' : 'bg-black/60 text-white/80 border-transparent rotate-0 scale-90'}`}>
                                         <div className="flex flex-col items-start leading-tight">
-                                            <span className={`${rank.name === 'ProtectMax Titan' ? 'text-[10px] leading-3 whitespace-normal' : (rank.name.length >= 10 ? 'text-[10px] whitespace-nowrap' : 'text-sm whitespace-nowrap')} font-black uppercase tracking-wider block drop-shadow-sm`}>
+                                            <span className={`${rank.name === 'ProtectMax Titan' ? 'text-[9px] sm:text-[10px] leading-3 whitespace-normal' : (rank.name.length >= 10 ? 'text-[10px] sm:text-xs whitespace-nowrap' : 'text-xs sm:text-base whitespace-nowrap')} font-serif font-black uppercase tracking-wide block text-transparent bg-clip-text bg-gradient-to-br from-rose-600 to-red-900 drop-shadow-sm`}>
                                                 {rank.name === 'ProtectMax Titan' ? (
-                                                    <>ProtectMax<br /><span className="text-xs">Titan</span></>
+                                                    <>ProtectMax<br /><span className="text-[9px] sm:text-[10px]">Titan</span></>
                                                 ) : rank.name}
                                             </span>
                                             {/* Tagline */}
-                                            <span className="text-[8px] font-medium opacity-70 italic mt-0.5 whitespace-nowrap">
+                                            <span className="text-[8px] sm:text-[9px] font-medium text-gray-500 italic mt-0.5 whitespace-nowrap">
                                                 {rank.desc}
                                             </span>
                                         </div>
                                     </div>
-
-                                    {/* Points Label */}
-                                    {!isUnlocked && (
-                                        <div className={`mt-1 text-[10px] font-bold text-white bg-black/40 px-2 rounded-full inline-block backdrop-blur-sm border border-white/10 ${isCenterLayout ? '' : 'ml-2'}`}>
-                                            {rank.threshold.toLocaleString()} pts
-                                        </div>
-                                    )}
                                 </div>
+
+                                {/* Points Label */}
+                                {!isUnlocked && (
+                                    <div className={`mt-1 text-[10px] font-bold text-white bg-black/40 px-2 rounded-full inline-block backdrop-blur-sm border border-white/10 ${isCenterLayout ? '' : 'ml-2'}`}>
+                                        {rank.threshold.toLocaleString()} pts
+                                    </div>
+                                )}
                             </motion.div>
                         );
                     })}
@@ -667,6 +667,9 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
 
             {/* 7. Background Music */}
             <audio ref={audioRef} loop src="/audio track/Surili_Akhiyon_Wale_Instrumental_-_Official_128k.mp3" />
+
+
+
         </div >
     );
 }

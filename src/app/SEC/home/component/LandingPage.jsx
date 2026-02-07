@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ValentineHeader from '@/components/ValentineHeader';
-import RepublicFooter from '@/components/RepublicFooter';
+import ValentineFooter from '@/components/ValentineFooter';
 
 
 export default function LandingPage({ userName = '' }) {
@@ -300,7 +300,7 @@ export default function LandingPage({ userName = '' }) {
         </div>
       </main>
 
-      <RepublicFooter />
+      <ValentineFooter />
     </div>
   );
 }
