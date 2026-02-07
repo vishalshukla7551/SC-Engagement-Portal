@@ -29,7 +29,7 @@ export function clearAuthCookies(cookieStore: any, shouldMutate: boolean = true)
     const cookieOptions = {
       httpOnly: true,
       sameSite: 'lax' as const,
-      secure: process.env.NODE_ENV === 'production' && !process.env.ALLOW_HTTP_COOKIES,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
       maxAge: 0,
     };
@@ -182,7 +182,7 @@ export async function getAuthenticatedUserFromCookies(
       // Rotate ONLY the access token. Refresh token keeps its original
       // lifetime from login (fixed maximum session window).
       const newAccessToken = signAccessToken(newPayload);
-      const isSecure = process.env.NODE_ENV === 'production' && !process.env.ALLOW_HTTP_COOKIES;
+      const isSecure = process.env.NODE_ENV === 'production';
 
       cookieStore.set(ACCESS_TOKEN_COOKIE, newAccessToken, {
         httpOnly: true,
@@ -280,7 +280,7 @@ export async function getAuthenticatedUserFromCookies(
     // Rotate ONLY the access token. Refresh token keeps its original
     // lifetime from login (fixed maximum session window).
     const newAccessToken = signAccessToken(newPayload);
-    const isSecure = process.env.NODE_ENV === 'production' && !process.env.ALLOW_HTTP_COOKIES;
+    const isSecure = process.env.NODE_ENV === 'production';
 
     cookieStore.set(ACCESS_TOKEN_COOKIE, newAccessToken, {
       httpOnly: true,

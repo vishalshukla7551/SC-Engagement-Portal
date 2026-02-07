@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const isSecure = process.env.NODE_ENV === 'production' && !process.env.ALLOW_HTTP_COOKIES;
+    const isSecure = process.env.NODE_ENV === 'production';
 
     res.cookies.set(ACCESS_TOKEN_COOKIE, accessToken, {
       httpOnly: true,
