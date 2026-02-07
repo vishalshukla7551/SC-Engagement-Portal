@@ -29,7 +29,7 @@ export function clearAuthCookies(cookieStore: any, shouldMutate: boolean = true)
     const cookieOptions = {
       httpOnly: true,
       sameSite: 'lax' as const,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && !process.env.ALLOW_HTTP_COOKIES,
       path: '/',
       maxAge: 0,
     };
@@ -98,8 +98,6 @@ export async function getAuthenticatedUserFromCookies(
   cookiesParam?: CookieReader,
   options?: { mutateCookies?: boolean },
 ): Promise<AuthenticatedUser | null> {
-     const isSecure = process.env.NODE_ENV === 'production';
-      console.log("isSecure",isSecure)
   const allowCookieMutation = options?.mutateCookies ?? true;
   // Prefer the explicit reader passed from route handlers; otherwise fall back to next/headers.
   // In Next.js 16, `cookies()` is async and returns a Promise, so we must await it
@@ -184,7 +182,7 @@ export async function getAuthenticatedUserFromCookies(
       // Rotate ONLY the access token. Refresh token keeps its original
       // lifetime from login (fixed maximum session window).
       const newAccessToken = signAccessToken(newPayload);
-      const isSecure = process.env.NODE_ENV === 'production';
+      const isSecure = process.env.NODE_ENV === 'production' && !process.env.ALLOW_HTTP_COOKIES;
 
       cookieStore.set(ACCESS_TOKEN_COOKIE, newAccessToken, {
         httpOnly: true,
@@ -282,7 +280,7 @@ export async function getAuthenticatedUserFromCookies(
     // Rotate ONLY the access token. Refresh token keeps its original
     // lifetime from login (fixed maximum session window).
     const newAccessToken = signAccessToken(newPayload);
-    const isSecure = process.env.NODE_ENV === 'production';
+    const isSecure = process.env.NODE_ENV === 'production' && !process.env.ALLOW_HTTP_COOKIES;
 
     cookieStore.set(ACCESS_TOKEN_COOKIE, newAccessToken, {
       httpOnly: true,
