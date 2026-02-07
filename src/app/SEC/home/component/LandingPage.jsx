@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import RepublicHeader from '@/components/RepublicHeader';
+import ValentineHeader from '@/components/ValentineHeader';
 import RepublicFooter from '@/components/RepublicFooter';
 
 
@@ -20,7 +20,7 @@ export default function LandingPage({ userName = '' }) {
       imageSrc: '/images/banner3.jpeg',
       imageAlt: 'Special Promotion Banner',
       link: '/SEC/republic-leaderboard',
-      showLiveBadge: true,
+      showLiveBadge: false,
     },
     {
       id: 1,
@@ -37,7 +37,7 @@ export default function LandingPage({ userName = '' }) {
       imageAlt: 'Republic Day Banner 1',
       showTextOverlay: false,
       link: '/SEC/training',
-      showLiveBadge: true,
+      showLiveBadge: false,
     },
     {
       id: 4,
@@ -81,14 +81,14 @@ export default function LandingPage({ userName = '' }) {
       badge: 'SUBMIT ⚡'
     },
     {
-      id: 'ranking',
-      title: 'Battle Standings',
-      description: 'View Your Progress',
-      icon: '⚔️',
+      id: 'past-campaigns',
+      title: 'Past Campaigns',
+      description: 'View Past Contests',
+      icon: '🏆',
       bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
       iconBg: 'bg-white/20',
-      link: '/SEC/republic-day-hero',
-      badge: 'LIVE 🔴'
+      link: '/SEC/past-campaigns',
+      badge: 'NEW 🆕'
     },
     {
       id: 'claim-raise',
@@ -118,7 +118,7 @@ export default function LandingPage({ userName = '' }) {
 
   return (
     <div className="min-h-screen md:h-auto h-screen bg-gray-50 flex flex-col md:overflow-visible overflow-hidden">
-      <RepublicHeader userName={userName || 'Guest'} />
+      <ValentineHeader userName={userName || 'Guest'} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">

@@ -1,4 +1,5 @@
-import RepublicLanding from '@/components/RepublicLanding';
+// import RepublicLanding from '@/components/RepublicLanding';
+import ValentineLanding from '@/components/ValentineLanding';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 import { getHomePathForRole } from '@/lib/roleHomePath';
 import { redirect } from 'next/navigation';
@@ -15,7 +16,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-white font-[family-name:var(--font-plus-jakarta-sans)]">
-      <RepublicLanding />
+      {/* <RepublicLanding /> */}
+      <ValentineLanding />
     </main>
   );
 }

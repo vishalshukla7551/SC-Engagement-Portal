@@ -4,26 +4,105 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion'; // Added framer-motion
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti'; // Added confetti
 import { getHomePathForRole } from '@/lib/roleHomePath';
 import ButtonLoader from '@/components/ButtonLoader';
 import { useAuth } from '@/context/AuthContext';
 
 // Pre-calculate Ashok Chakra spokes to avoid hydration mismatch
 // Round to fixed precision to ensure exact SSR/client match
-const ASHOK_CHAKRA_SPOKES = Array.from({ length: 24 }).map((_, i) => {
-  const angle = (i * 15 * Math.PI) / 180;
-  const x1 = Number((12 + 2 * Math.cos(angle)).toFixed(6));
-  const y1 = Number((12 + 2 * Math.sin(angle)).toFixed(6));
-  const x2 = Number((12 + 10 * Math.cos(angle)).toFixed(6));
-  const y2 = Number((12 + 10 * Math.sin(angle)).toFixed(6));
-  return `M${x1} ${y1}L${x2} ${y2}`;
-});
+// Product: Ashok Chakra Spokes (Commented out for Valentine Theme)
+// const ASHOK_CHAKRA_SPOKES = Array.from({ length: 24 }).map((_, i) => {
+//   const angle = (i * 15 * Math.PI) / 180;
+//   const x1 = Number((12 + 2 * Math.cos(angle)).toFixed(6));
+//   const y1 = Number((12 + 2 * Math.sin(angle)).toFixed(6));
+//   const x2 = Number((12 + 10 * Math.cos(angle)).toFixed(6));
+//   const y2 = Number((12 + 10 * Math.sin(angle)).toFixed(6));
+//   return `M${x1} ${y1}L${x2} ${y2}`;
+// });
+
+const FloatingHeart = ({ delay, duration, initialX, scale }: { delay: number; duration: number; initialX: number; scale: number }) => (
+  <motion.div
+    initial={{ y: "110vh", x: `${initialX}vw`, opacity: 0, scale: 0 }}
+    animate={{
+      y: "-10vh",
+      opacity: [0, 1, 1, 0],
+      scale: scale,
+      x: `${initialX + (Math.random() * 10 - 5)}vw`
+    }}
+    transition={{
+      duration: duration,
+      delay: delay,
+      repeat: Infinity,
+      ease: "linear"
+    }}
+    className="absolute text-pink-300/40 pointer-events-none"
+  >
+    <svg fill="currentColor" viewBox="0 0 24 24" className="w-8 h-8 md:w-16 md:h-16">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+  </motion.div>
+);
 
 export default function SECLogin() {
   const router = useRouter();
   const { user } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [hearts, setHearts] = useState<{ id: number; delay: number; duration: number; initialX: number; scale: number }[]>([]);
+
+  useEffect(() => {
+    setHearts(Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      delay: Math.random() * 5,
+      duration: 10 + Math.random() * 10,
+      initialX: Math.random() * 100,
+      scale: 0.5 + Math.random() * 1
+    })));
+
+    const interval = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % LOVE_QUOTES.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  const LOVE_QUOTES = [
+    "Selling with Heart ❤️",
+    "Spread the Love, Close the Deal 🌹",
+    "You are the Heart of Zopper 💖",
+    "Happy Valentine's SalesDost! 💘"
+  ];
+
+  const fireHeartConfetti = () => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#ff0000', '#ff69b4', '#ff1493'],
+        shapes: ['heart' as any]
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#ff0000', '#ff69b4', '#ff1493'],
+        shapes: ['heart' as any]
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+  };
 
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
@@ -135,6 +214,7 @@ export default function SECLogin() {
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    fireHeartConfetti();
     setError(null);
 
     if (!otp) {
@@ -194,8 +274,8 @@ export default function SECLogin() {
     <div
       className="h-screen flex flex-col md:flex-row items-center justify-center p-4 relative overflow-x-hidden overflow-y-auto bg-white"
     >
-      {/* --- REPUBLIC DAY BACKGROUND START --- */}
-      {/* Tricolor Ambient Background */}
+      {/* --- REPUBLIC DAY BACKGROUND START (COMMENTED OUT) --- */}
+      {/* 
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{
@@ -207,7 +287,7 @@ export default function SECLogin() {
           className="absolute -top-1/4 -left-1/4 w-[80vw] h-[80vw] bg-orange-400/20 rounded-full blur-[100px] mix-blend-multiply"
         />
         <motion.div
-          animate={{
+           animate={{
             x: [100, -100, 100],
             y: [50, -50, 50],
             scale: [1.2, 1, 1.2]
@@ -224,7 +304,6 @@ export default function SECLogin() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] bg-blue-300/20 rounded-full blur-[100px] mix-blend-multiply"
         />
 
-        {/* Ashoka Chakra Rotating softly in background */}
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
@@ -232,7 +311,7 @@ export default function SECLogin() {
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-blue-900">
             <circle cx="12" cy="12" r="10" strokeWidth="0.5" />
-            {/* 24 spokes for authentic Ashok Chakra */}
+            
             {ASHOK_CHAKRA_SPOKES.map((d, i) => (
               <path key={i} d={d} strokeWidth="0.5" />
             ))}
@@ -240,7 +319,6 @@ export default function SECLogin() {
           </svg>
         </motion.div>
 
-        {/* Floating Kites */}
         <motion.div
           animate={{ y: [-10, 10, -10], rotate: [5, 10, 5] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -273,7 +351,47 @@ export default function SECLogin() {
           </svg>
         </motion.div>
       </div>
+      */}
       {/* --- REPUBLIC DAY BACKGROUND END --- */}
+
+      {/* --- VALENTINE THEME BACKGROUND START --- */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-rose-50 via-white to-pink-50">
+        {/* Ambient Background Blobs */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <motion.div
+            animate={{
+              x: [-50, 50, -50],
+              y: [-25, 25, -25],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 left-0 w-[70vw] h-[70vw] bg-pink-300/20 rounded-full blur-[100px]"
+          />
+          <motion.div
+            animate={{
+              x: [50, -50, 50],
+              y: [25, -25, 25],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="absolute bottom-0 right-0 w-[80vw] h-[80vw] bg-rose-300/20 rounded-full blur-[120px]"
+          />
+        </div>
+
+        {/* Floating Hearts */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {hearts.map((heart) => (
+            <FloatingHeart
+              key={heart.id}
+              delay={heart.delay}
+              duration={heart.duration}
+              initialX={heart.initialX}
+              scale={heart.scale}
+            />
+          ))}
+        </div>
+      </div>
+      {/* --- VALENTINE THEME BACKGROUND END --- */}
 
       {/* Card Wrapper - Anchors Santa hat and Gift box to the card */}
 
@@ -285,10 +403,22 @@ export default function SECLogin() {
       >
         <div className="text-center mb-8">
 
-          <h1 className="text-3xl font-black mb-2 bg-gradient-to-r from-[#FF9933] via-[#000080] to-[#138808] bg-clip-text text-transparent">
+          <h1 className="text-3xl font-black mb-2 bg-gradient-to-r from-rose-500 via-pink-600 to-rose-500 bg-clip-text text-transparent">
             SEC Login
           </h1>
-          <p className="text-gray-500">Login with your phone number</p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={quoteIndex}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.5 }}
+              className="text-pink-500 font-medium text-sm"
+            >
+              {LOVE_QUOTES[quoteIndex]}
+            </motion.p>
+          </AnimatePresence>
+          {/* <p className="text-gray-500">Login with your phone number</p> */}
         </div>
 
         <form
@@ -353,7 +483,7 @@ export default function SECLogin() {
             className="w-full text-white font-semibold py-2.5 transition-all text-base disabled:cursor-not-allowed flex items-center justify-center gap-2 transform active:scale-[0.98]"
             style={{
               backgroundImage:
-                loading || otpSent ? 'none' : 'linear-gradient(90deg, #FF9933 0%, #2563EB 50%, #138808 100%)',
+                loading || otpSent ? 'none' : 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)', // Rose-Pink gradient
               backgroundColor: loading || otpSent ? '#d1d5db' : 'transparent',
               borderRadius: '12px',
               boxShadow: loading || otpSent ? 'none' : 'rgba(37, 99, 235, 0.2) 0px 8px 16px -4px',

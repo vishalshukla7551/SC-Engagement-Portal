@@ -301,7 +301,7 @@ export default function RepublicLeaderboardPage() {
             <BackgroundEffects />
 
             {/* Republic Day Bonus Popup */}
-            <RepublicDayBonusPopup hasBonus={hasBonus} />
+            {/* <RepublicDayBonusPopup hasBonus={hasBonus} /> */}
 
             {/* Header */}
             <div className="relative z-10 px-4 pt-6 pb-2">
