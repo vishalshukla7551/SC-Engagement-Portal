@@ -15,8 +15,9 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams;
         const secId = searchParams.get('secId');
         const status = searchParams.get('status');
-        const limit = Math.min(parseInt(searchParams.get('limit') || '200'), 200); // Increase to show more submissions
+        const limit = Math.min(parseInt(searchParams.get('limit') || '200'), 200);
         const offset = parseInt(searchParams.get('offset') || '0');
+        const includeResponses = searchParams.get('include_responses') === 'true';
 
         // Build query filters
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,37 +36,40 @@ export async function GET(request: NextRequest) {
             where.score = { lt: 60 };
         }
 
-        // Fetch submissions with responses included
-        const submissions = await prisma.testSubmission.findMany({
-            where,
-            select: {
-                id: true,
-                secId: true,
-                phone: true,
-                sessionToken: true,
-                testName: true,
-                responses: true, // Include responses
-                score: true,
-                totalQuestions: true,
-                completionTime: true,
-                isProctoringFlagged: true,
-                storeId: true,
-                storeName: true,
-                certificateUrl: true,
-                createdAt: true,
-                screenshots: true,
-            },
-            orderBy: { createdAt: 'desc' },
-            take: limit,
-            skip: offset,
-        });
+        // Fetch submissions with responses included only if requested
+        const [total, submissions] = await prisma.$transaction([
+            prisma.testSubmission.count({ where }),
+            prisma.testSubmission.findMany({
+                where,
+                select: {
+                    id: true,
+                    secId: true,
+                    phone: true,
+                    sessionToken: true,
+                    testName: true,
+                    responses: includeResponses ? true : false, // Only include if requested
+                    score: true,
+                    totalQuestions: true,
+                    completionTime: true,
+                    isProctoringFlagged: true,
+                    storeId: true,
+                    storeName: true,
+                    certificateUrl: true,
+                    createdAt: true,
+                    screenshots: true,
+                },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                skip: offset,
+            })
+        ]);
 
         if (submissions.length === 0) {
             return NextResponse.json({
                 success: true,
                 data: [],
                 meta: {
-                    total: 0,
+                    total,
                     limit,
                     offset,
                 },
@@ -187,10 +191,10 @@ export async function GET(request: NextRequest) {
             success: true,
             data: processedSubmissions,
             meta: {
-                total: processedSubmissions.length,
+                total,
                 limit,
                 offset,
-                hasMore: processedSubmissions.length === limit
+                hasMore: offset + submissions.length < total
             },
         });
     } catch (error) {

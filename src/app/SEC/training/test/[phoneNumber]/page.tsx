@@ -63,6 +63,7 @@ export default function ProctoredTestPage() {
   const [submittedAt, setSubmittedAt] = useState<string>('');
   const [secUserName, setSecUserName] = useState<string>('SEC User');
   const [bonusAwarded, setBonusAwarded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -251,7 +252,8 @@ export default function ProctoredTestPage() {
   const handleNextQuestion = () => { if (testData && currentQuestion < testData.questions.length - 1) { setCurrentQuestion(prev => prev + 1); } };
 
   const handleSubmit = useCallback(async () => {
-    if (!testData) return;
+    if (!testData || isSubmitting) return;
+    setIsSubmitting(true);
     let correct = 0; testData.questions.forEach(q => { if (answers[q.id] === q.correctAnswer) correct++; });
     const percentage = Math.round((correct / testData.questions.length) * 100);
 
@@ -280,11 +282,16 @@ export default function ProctoredTestPage() {
       if (result.bonusAwarded) {
         setBonusAwarded(true);
       }
-    } catch { }
+    } catch (error) {
+      console.error('Submission failed', error);
+      setIsSubmitting(false); // Enable retry on failure
+      return; // Don't proceed to certificate if failed
+    }
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
     if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
     setPhase('certificate');
-  }, [testData, answers, cameraStream, sessionToken, phoneNumber, timeLeft, screenshots]);
+    setIsSubmitting(false);
+  }, [testData, answers, cameraStream, sessionToken, phoneNumber, timeLeft, screenshots, isSubmitting]);
 
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
@@ -348,7 +355,16 @@ export default function ProctoredTestPage() {
               <h2 className="text-lg font-bold text-gray-900 mb-6">{question.questionText}</h2>
               <div className="space-y-3">{question.options.map(opt => (<button key={opt.option} onClick={() => handleAnswerSelect(question.id, opt.option)} className={`w-full p-4 rounded-xl border-2 text-left transition-all ${answers[question.id] === opt.option ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}><div className="flex items-center gap-3"><span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${answers[question.id] === opt.option ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{opt.option}</span><span className="font-medium text-gray-900">{opt.text}</span></div></button>))}</div>
             </div>
-            {isLast ? <button onClick={handleSubmit} disabled={!answers[question.id]} className="w-full py-4 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 disabled:opacity-50">Submit Test ✓</button> : <button onClick={handleNextQuestion} disabled={!answers[question.id]} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50">Next Question →</button>}
+            {isLast ? <button onClick={handleSubmit} disabled={!answers[question.id] || isSubmitting} className="w-full py-4 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <span>Submit Test ✓</span>
+              )}
+            </button> : <button onClick={handleNextQuestion} disabled={!answers[question.id]} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50">Next Question →</button>}
           </div>
         </div>
         <div className="fixed bottom-4 right-4 w-32 h-24 rounded-xl overflow-hidden shadow-lg border-2 border-white"><video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" /><div className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div></div>

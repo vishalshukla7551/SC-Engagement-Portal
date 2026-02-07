@@ -23,6 +23,7 @@ export const RANKS = [
     { id: 'major', title: 'SALES MAJOR', minSales: 80000, color: 'bg-indigo-600', icon: Award },
     { id: 'colonel', title: 'SALES COMMANDER', minSales: 120000, color: 'bg-purple-600', icon: Award },
     { id: 'brigadier', title: 'SALES CHIEF MARSHAL', minSales: 150000, color: 'bg-orange-500', icon: Star },
+    { id: 'general', title: 'SALES GENERAL', minSales: 200000, color: 'bg-red-600', icon: Crown },
 ];
 
 interface TermsModalProps {
@@ -148,7 +149,8 @@ export const RewardsModal = memo(({ isOpen, onClose, currentRankIndex }: Rewards
                             { title: 'SALES CAPTAIN', message: 'Don\'t stop here—after all, you are the Sales Captain of Sales!', reward: 'Prestige', minSales: 51000 },
                             { title: 'SALES MAJOR', message: 'Outstanding achievement! Your dedication is paying off.', reward: '₹500', minSales: 80000 },
                             { title: 'SALES COMMANDER', message: 'Exceptional performance! Lead by example and inspire others.', reward: '₹1,500', minSales: 120000 },
-                            { title: 'SALES CHIEF MARSHAL', message: 'Elite status achieved! You\'re among the top performers. The ultimate rank awaits!', reward: '₹2,500', minSales: 150000 }
+                            { title: 'SALES CHIEF MARSHAL', message: 'Elite status achieved! You\'re among the top performers. The ultimate rank awaits!', reward: '₹2,500', minSales: 150000 },
+                            { title: 'SALES GENERAL', message: 'THE LEGEND! You have conquered the summit of sales excellence.', reward: '₹5,000 + TROPHY', minSales: 200000 }
                         ];
                         return rewardData.map((item, i) => {
                             const rank = RANKS[i];

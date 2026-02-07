@@ -16,7 +16,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import RepublicDayBonusPopup from '@/components/RepublicDayBonusPopup';
-import { RANKS, TermsModal, RewardsModal, AnnouncementPopup } from './RepublicDayModals';
+import { RANKS, TermsModal, RewardsModal } from './RepublicDayModals';
 
 
 
@@ -143,15 +143,6 @@ export default function RepublicDayHeroPage() {
     const [showRewards, setShowRewards] = useState(false);
 
     const [hasBonus, setHasBonus] = useState(false);
-    const [showAnnouncement, setShowAnnouncement] = useState(false);
-
-    useEffect(() => {
-        // Show announcement shortly after mount to grab attention
-        const timer = setTimeout(() => {
-            setShowAnnouncement(true);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
 
     const [animatedRankIndex, setAnimatedRankIndex] = useState(0); // For progressive avatar jump animation
 
@@ -161,17 +152,45 @@ export default function RepublicDayHeroPage() {
 
         const fetchSales = async () => {
             try {
-                const res = await fetch('/api/sec/republic-hero');
-                const data = await res.json();
+                // Fetch both APIs in parallel
+                const [heroRes, submissionsRes] = await Promise.all([
+                    fetch('/api/sec/republic-hero'),
+                    fetch('/api/user/sales-submissions')
+                ]);
 
-                if (data.success && isMounted) {
-                    const userRealSales = data.data.totalSales;
+                const heroData = await heroRes.json();
+                const submissionsData = await submissionsRes.json();
+
+                if (heroData.success && isMounted) {
+                    // Use totalPoints from sales-submissions as requested
+                    // Fallback to heroData if submissions fetch fails
+                    let userRealSales = (submissionsRes.ok && submissionsData.totalPoints !== undefined)
+                        ? submissionsData.totalPoints
+                        : heroData.data.totalSales;
+
+                    // Special handling for Sales General phone number
+                    // Check if user is the special Sales General user
+                    const authUser = localStorage.getItem('authUser');
+                    let isSalesGeneral = false;
+                    if (authUser) {
+                        try {
+                            const userData = JSON.parse(authUser);
+                            const phoneNumber = userData.phone || userData.id || userData.username;
+                            if (phoneNumber === '9811813419') {
+                                isSalesGeneral = true;
+                                // Force them to Sales General rank (200000 minimum)
+                                userRealSales = Math.max(userRealSales, 200000);
+                            }
+                        } catch (e) {
+                            console.error('Error parsing auth user', e);
+                        }
+                    }
 
                     // Set rank sales immediately to avoid avatar jumping during count animation
                     setRankSales(userRealSales);
 
-                    // Set bonus flag from API response
-                    setHasBonus(data.data.hasBonus || false);
+                    // Set bonus flag from API response (checked both sources for robustness)
+                    setHasBonus(heroData.data.hasBonus || submissionsData.hasBonus || false);
 
                     // Animate count up
                     let start = 0;
@@ -195,7 +214,7 @@ export default function RepublicDayHeroPage() {
                     }, stepTime);
                 }
             } catch (error) {
-                console.error("Failed to fetch protectmax yodha sales", error);
+                console.error("Failed to fetch data", error);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -313,15 +332,7 @@ export default function RepublicDayHeroPage() {
             {/* Republic Day Bonus Popup */}
             <RepublicDayBonusPopup hasBonus={hasBonus} />
 
-            {/* Announcement / Urgent Update Popup */}
-            <AnimatePresence>
-                {showAnnouncement && (
-                    <AnnouncementPopup
-                        isOpen={showAnnouncement}
-                        onClose={() => setShowAnnouncement(false)}
-                    />
-                )}
-            </AnimatePresence>
+
 
             {/* SEPARATE ANIMATION LAYER */}
             {/* This container handles all background animations and jets to isolate repaints */}
@@ -823,12 +834,13 @@ export default function RepublicDayHeroPage() {
                 </div>
 
                 {/* Side Action Buttons - Right Side Top - Always Visible */}
-                <div className="fixed right-0 top-20 flex flex-col items-end z-40">
+                <div className="fixed right-0 top-10 flex flex-col items-end z-40">
                     <div className="flex flex-col gap-3">
                         <motion.button
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            whileHover={{ x: -8 }}
+                            initial={{ x: 100, opacity: 0 }}
+                            animate={{ x: 50, opacity: 1 }}
+                            whileHover={{ x: 0 }}
+                            whileTap={{ x: 0 }}
                             onClick={() => setShowRewards(true)}
                             className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all w-[130px]"
                         >
@@ -839,9 +851,10 @@ export default function RepublicDayHeroPage() {
                         </motion.button>
 
                         <motion.button
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            whileHover={{ x: -8 }}
+                            initial={{ x: 100, opacity: 0 }}
+                            animate={{ x: 50, opacity: 1 }}
+                            whileHover={{ x: 0 }}
+                            whileTap={{ x: 0 }}
                             onClick={() => setShowTerms(true)}
                             className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-3 rounded-l-2xl flex items-center gap-2.5 group transition-all w-[130px]"
                         >

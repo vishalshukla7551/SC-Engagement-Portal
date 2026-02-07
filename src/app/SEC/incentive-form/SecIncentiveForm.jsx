@@ -528,7 +528,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               </div>
             </div>
 
-            {/* Date of Sale */}
+            {/* Date of Sale - DISABLED */}
             <div>
               <label htmlFor="dateOfSale" className="block text-xs font-bold text-[#000080] uppercase tracking-wider mb-1.5">
                 Date of Sale
@@ -539,15 +539,13 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   id="dateOfSale"
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
-                  min="2026-01-23"
-                  max="2026-02-02"
-                  onClick={(e) => e.target.showPicker?.()}
-                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                  placeholder="dd/mm/yyyy"
+                  disabled={true}
+                  className="w-full pl-4 pr-12 py-3.5 bg-slate-200/50 border border-slate-200 rounded-xl text-slate-500 text-sm font-semibold cursor-not-allowed shadow-sm transition-all"
+                  placeholder="Submissions Closed"
                 />
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                   <svg
-                    className="w-5 h-5 text-orange-500"
+                    className="w-5 h-5 text-slate-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -561,6 +559,9 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   </svg>
                 </div>
               </div>
+              <p className="mt-2 text-xs text-red-600 font-bold">
+                ⚠️ Sales submissions are now closed
+              </p>
             </div>
 
             {/* Store Name - Always disabled, loaded from authUser */}
@@ -715,31 +716,26 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               )}
             </div>
 
-            {/* Submit Button - Republic Day Theme */}
+            {/* Submit Button - DISABLED (Submissions Closed) */}
             <div className="pt-6 pb-6">
               <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full text-white font-bold py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all text-base shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
+                type="button"
+                disabled={true}
+                className="w-full text-white font-bold py-4 rounded-xl opacity-50 cursor-not-allowed transition-all text-base shadow-lg relative overflow-hidden"
                 style={{
-                  background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)',
+                  background: 'linear-gradient(90deg, #999 0%, #666 50%, #999 100%)',
                 }}
               >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                 <div className="relative flex items-center justify-center gap-2">
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>SUBMITTING...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>SUBMIT</span>
-                      <IndianFlag size={16} />
-                    </>
-                  )}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>SUBMISSIONS CLOSED</span>
                 </div>
               </button>
+              <p className="mt-3 text-center text-xs text-slate-600 font-medium">
+                Sales submission period has ended. Thank you for your participation!
+              </p>
             </div>
           </form>
         </div>

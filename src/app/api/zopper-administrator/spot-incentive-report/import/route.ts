@@ -5,13 +5,18 @@ import * as XLSX from 'xlsx';
 
 /**
  * POST /api/zopper-administrator/spot-incentive-report/import
- * Import Excel file to approve sales based on "Approved" column
+ * Import Excel file to approve or delete sales based on "Approved" column
  * 
  * Request Body: FormData with 'file' field containing the Excel file
  * 
+ * Approved Column Values:
+ * - "YES" → Approve the sale (mark as paid)
+ * - "NO" → Delete the sale from database
+ * - Blank or anything else → Skip (no action)
+ * 
  * Response:
  * - success: boolean
- * - summary: { total, approved, notFound, errors }
+ * - summary: { total, approved, deleted, notFound, errors, skipped }
  * - details: Array of processing results
  */
 export async function POST(req: NextRequest) {
@@ -54,11 +59,12 @@ export async function POST(req: NextRequest) {
         const results = {
             total: 0,
             approved: 0,
+            deleted: 0,
             notFound: 0,
             errors: 0,
             details: [] as Array<{
                 reportId: string;
-                status: 'approved' | 'not_found' | 'error' | 'skipped';
+                status: 'approved' | 'deleted' | 'not_found' | 'error' | 'skipped';
                 message: string;
             }>
         };
@@ -83,12 +89,12 @@ export async function POST(req: NextRequest) {
                 continue;
             }
 
-            // Skip if not marked as YES
-            if (approvedValue !== 'YES') {
+            // Skip if not marked as YES or NO
+            if (approvedValue !== 'YES' && approvedValue !== 'NO') {
                 results.details.push({
                     reportId,
                     status: 'skipped',
-                    message: 'Not marked for approval'
+                    message: 'Not marked for approval or deletion'
                 });
                 continue;
             }
@@ -118,30 +124,48 @@ export async function POST(req: NextRequest) {
                     continue;
                 }
 
-                // Check if already paid
-                if (report.spotincentivepaidAt) {
+                // Handle "NO" - Delete the sale
+                if (approvedValue === 'NO') {
+                    await prisma.spotIncentiveReport.delete({
+                        where: { id: reportId }
+                    });
+
+                    results.deleted++;
                     results.details.push({
                         reportId,
-                        status: 'skipped',
-                        message: 'Already approved/paid'
+                        status: 'deleted',
+                        message: `Successfully deleted sale for ${report.secUser.fullName || 'SEC'}`
                     });
                     continue;
                 }
 
-                // Update the report to mark as paid
-                await prisma.spotIncentiveReport.update({
-                    where: { id: reportId },
-                    data: {
-                        spotincentivepaidAt: approvalTimestamp
+                // Handle "YES" - Approve the sale
+                if (approvedValue === 'YES') {
+                    // Check if already paid
+                    if (report.spotincentivepaidAt) {
+                        results.details.push({
+                            reportId,
+                            status: 'skipped',
+                            message: 'Already approved/paid'
+                        });
+                        continue;
                     }
-                });
 
-                results.approved++;
-                results.details.push({
-                    reportId,
-                    status: 'approved',
-                    message: `Successfully approved for ${report.secUser.fullName || 'SEC'}`
-                });
+                    // Update the report to mark as paid
+                    await prisma.spotIncentiveReport.update({
+                        where: { id: reportId },
+                        data: {
+                            spotincentivepaidAt: approvalTimestamp
+                        }
+                    });
+
+                    results.approved++;
+                    results.details.push({
+                        reportId,
+                        status: 'approved',
+                        message: `Successfully approved for ${report.secUser.fullName || 'SEC'}`
+                    });
+                }
 
             } catch (error) {
                 results.errors++;
@@ -158,9 +182,10 @@ export async function POST(req: NextRequest) {
             summary: {
                 total: results.total,
                 approved: results.approved,
+                deleted: results.deleted,
                 notFound: results.notFound,
                 errors: results.errors,
-                skipped: results.total - results.approved - results.notFound - results.errors
+                skipped: results.total - results.approved - results.deleted - results.notFound - results.errors
             },
             details: results.details
         });
