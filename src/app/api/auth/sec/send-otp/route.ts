@@ -45,11 +45,13 @@ export async function POST(req: NextRequest) {
     console.log(`[SEC OTP] Phone ${normalized} -> ${code}`);
 
     // Skip WhatsApp sending on localhost
-    const isLocalhost = process.env.NODE_ENV === 'development' || 
-                       process.env.VERCEL_ENV === undefined;
+    const skipComify = process.env.SKIP_COMIFY === 'true';
+    const isLocalhost = process.env.NODE_ENV === 'development';
+    console.log("Node_Env",process.env.NODE_ENV)
+    console.log("isLocalhost",isLocalhost)
     
-    if (isLocalhost) {
-      console.log(`[SEC OTP] Localhost detected - skipping WhatsApp send. Use OTP: ${code}`);
+    if (skipComify || isLocalhost) {
+      console.log(`[SEC OTP] Skipping WhatsApp send. Use OTP: ${code}`);
     } else {
       // Send OTP via Comify WhatsApp API (production only)
       if (comifyService.isConfigured()) {
