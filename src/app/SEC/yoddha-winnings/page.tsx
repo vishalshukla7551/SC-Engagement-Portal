@@ -779,6 +779,10 @@ const SlideRenderer = ({ slide, theme, currentPoints, unitsSold, longestStreak, 
                 mainDisplayStr = 'Better Luck next time';
                 topSubStr = '';
                 bottomDescStr = 'You missed the chance to win INR 5000 voucher';
+            } else if (rLower.includes('general')) {
+                mainDisplayStr = 'WINNER';
+                topSubStr = 'Ultimate Champion';
+                bottomDescStr = 'You have led from the front and conquered the battlefield.';
             } else if (rLower.includes('chief marshal')) {
                 isPercentage = true;
                 percentageVal = 5;
@@ -2094,15 +2098,21 @@ export default function YoddhaVideoPage() {
                         setUnitsSold(result.data.salesCount);
                         setLongestStreak(result.data.longestStreak);
 
-                        // Special handling for specific phone number: replace Sales Chief Marshal with Sales General
-                        let displayRankTitle = result.data.rankTitle || USER_DATA.rank;
+                        // Recalculate rank locally to match displayed points
+                        let displayRankTitle = 'Salesveer';
+                        if (pointsToUse >= 150000) displayRankTitle = 'Sales Chief Marshal';
+                        else if (pointsToUse >= 120000) displayRankTitle = 'Sales Commander';
+                        else if (pointsToUse >= 80000) displayRankTitle = 'Sales Major';
+                        else if (pointsToUse >= 51000) displayRankTitle = 'Sales Captain';
+                        else if (pointsToUse >= 21000) displayRankTitle = 'Sales Lieutenant';
+
                         const userPhone = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
                         if (userPhone) {
                             try {
                                 const authData = JSON.parse(userPhone);
                                 const phoneNumber = authData.phone || authData.id || authData.username;
                                 const normalizedRank = displayRankTitle.toUpperCase();
-                                if (phoneNumber === '9811813419' && normalizedRank === 'SALES CHIEF MARSHAL') {
+                                if ((phoneNumber === '9811813419' || myName.toLowerCase() === 'vikash tomar') && normalizedRank === 'SALES CHIEF MARSHAL') {
                                     displayRankTitle = 'Sales General';
                                 }
                             } catch (e) {
@@ -2162,6 +2172,12 @@ export default function YoddhaVideoPage() {
                         // Helper function to get display rank title
                         const getDisplayRankTitle = (user: any) => {
                             let rankTitle = user.rankTitle;
+
+                            // Explicit override for Vikash Tomar
+                            if (user.name && user.name.toLowerCase() === 'vikash tomar') {
+                                return 'Sales General';
+                            }
+
                             // Check if this is the special user (by phone number from localStorage)
                             if (typeof window !== 'undefined') {
                                 try {
