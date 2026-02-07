@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, UserCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import ValentineFooter from '@/components/ValentineFooter';
 
 // Reuse the Ranks configuration
 const RANKS = [
@@ -376,6 +377,7 @@ export default function RomanceMeritBoard() {
                     );
                 })}
             </div>
+            <ValentineFooter />
         </div>
     );
 }

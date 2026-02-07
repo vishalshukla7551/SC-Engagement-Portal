@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import ValentineFooter from './ValentineFooter';
+import { useRouter } from 'next/navigation';
 
 interface ValentineDashboardProps {
     userName?: string;
@@ -17,8 +19,9 @@ const RANKS = [
         emoji: '🌹',
         desc: 'The Beginning',
         color: 'from-slate-500 to-slate-700',
-        position: { left: '54%', top: '96%' },
-        rotation: 0
+        position: { left: '67%', top: '96%' },
+        rotation: 0,
+        textSide: 'left'
     },
     {
         id: 2,
@@ -27,8 +30,9 @@ const RANKS = [
         emoji: '🎸',
         desc: 'Lost in Love',
         color: 'from-blue-500 to-indigo-600',
-        position: { left: '64%', top: '78%' },
-        rotation: 15
+        position: { left: '42%', top: '82%' },
+        rotation: 15,
+        textSide: 'right'
     },
     {
         id: 3,
@@ -37,8 +41,9 @@ const RANKS = [
         emoji: '💌',
         desc: 'Crazy in Love',
         color: 'from-purple-500 to-violet-600',
-        position: { left: '28%', top: '64%' },
-        rotation: -5
+        position: { left: '30%', top: '62%' },
+        rotation: -5,
+        textSide: 'right'
     },
     {
         id: 4,
@@ -47,8 +52,9 @@ const RANKS = [
         emoji: '🏹',
         desc: 'The Beloved',
         color: 'from-pink-500 to-rose-600',
-        position: { left: '55%', top: '48%' },
-        rotation: 5
+        position: { left: '64%', top: '48%' },
+        rotation: 5,
+        textSide: 'left'
     },
     {
         id: 5,
@@ -58,7 +64,8 @@ const RANKS = [
         desc: 'Heart Stealer',
         color: 'from-rose-500 to-red-600',
         position: { left: '55%', top: '32%' },
-        rotation: -5
+        rotation: -5,
+        textSide: 'right'
     },
     {
         id: 6,
@@ -68,7 +75,8 @@ const RANKS = [
         desc: 'Devoted Soul',
         color: 'from-orange-500 to-amber-600',
         position: { left: '30%', top: '18%' },
-        rotation: 10
+        rotation: 10,
+        textSide: 'right'
     },
     {
         id: 7,
@@ -77,13 +85,15 @@ const RANKS = [
         emoji: '👑',
         desc: 'The Ultimate Winner',
         color: 'from-red-600 to-rose-900',
-        position: { left: '58%', top: '2%' },
+        position: { left: '60%', top: '2%' },
         effect: true,
-        customScale: 1.1
+        customScale: 1.1,
+        textSide: 'right'
     },
 ];
 
 export default function ValentineDashboard({ userName = '' }: ValentineDashboardProps) {
+    const router = useRouter();
     const [score, setScore] = useState(0);
     const [showLevelUp, setShowLevelUp] = useState(false);
     const [prevRankId, setPrevRankId] = useState(1);
@@ -406,7 +416,7 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
             </div>
 
             {/* Content Container */}
-            <div className="relative z-10 h-full flex flex-col pt-2 pb-4 max-w-md mx-auto">
+            <div className="relative z-10 h-full flex flex-col pt-2 pb-20 max-w-md mx-auto">
                 <img
                     src="/images/path.PNG"
                     alt="Love Path"
@@ -416,19 +426,27 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                 {/* Header Stats - Compact */}
                 {/* Blinkit-Inspired Valentine Header */}
                 {/* Header Stats - Compact */}
-                <div className="flex justify-between items-center px-4 mb-2">
+                <div className="flex items-center px-2 mb-2 relative">
+                    {/* Back Arrow */}
+                    <button
+                        onClick={() => router.back()}
+                        className="mr-1 p-1 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+
                     {/* Valentine Honors Header - Romantic Style */}
-                    <div className="relative pl-2.5 py-1">
+                    <div className="relative pl-2.5 py-1 flex-1">
                         {/* Decorative side border */}
                         <div className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-gradient-to-b from-rose-300 via-red-500 to-rose-900 rounded-full shadow-[0_0_8px_rgba(225,29,72,0.6)]"></div>
 
                         <div className="flex flex-col">
-                            <h1 className="text-xl leading-none font-serif italic font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-200 to-red-100 drop-shadow-[0_2px_2px_rgba(225,29,72,0.8)] filter contrast-125">
+                            <h1 className="text-base leading-none font-serif italic font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-200 to-red-100 drop-shadow-[0_2px_2px_rgba(225,29,72,0.8)] filter contrast-125 whitespace-nowrap pr-1">
                                 Customer Honour
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="h-[2px] w-6 bg-rose-400 rounded-full shadow-[0_0_4px_#fb7185]"></span>
-                                <p className="text-[8px] text-white font-bold tracking-[0.3em] uppercase drop-shadow-md opacity-90">
+                                <span className="h-[1.5px] w-5 bg-rose-400 rounded-full shadow-[0_0_4px_#fb7185]"></span>
+                                <p className="text-[6px] text-white font-bold tracking-[0.3em] uppercase drop-shadow-md opacity-90 whitespace-nowrap">
                                     Journey of True Love
                                 </p>
                             </div>
@@ -448,11 +466,10 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                         // @ts-ignore
                         const rotation = rank.rotation || 0;
 
-                        // Center Newlove and ProtectMax Romeo, otherwise side layout
-                        const isRomeo = rank.name === 'ProtectMax Romeo';
-                        // For Romeo, we want the Icon to be the anchor center, with text floating to the right.
-                        // For others, we use flex-row (side) or potentially center layout if needed in future.
-                        const isCenterLayout = false;
+
+                        // @ts-ignore
+                        const textSide = rank.textSide || 'right';
+                        const isLeft = textSide === 'left';
 
                         return (
                             <motion.div
@@ -492,10 +509,13 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                                 </div>
 
                                 {/* Info Container (Name + Pts) */}
-                                <div className={`flex flex-col absolute left-full top-1/2 -translate-y-1/2 ${rank.name === 'ProtectMax Titan' ? 'ml-1' : 'ml-4'} items-start w-max`}>
+                                <div className={`flex flex-col absolute top-1/2 -translate-y-1/2 w-max 
+                                    ${isLeft ? 'right-full mr-4 items-end text-right' : 'left-full ml-4 items-start text-left'}
+                                    ${rank.name === 'ProtectMax Titan' ? (isLeft ? 'mr-1' : 'ml-1') : ''} 
+                                `}>
                                     {/* Rank Name Badge */}
                                     <div className={`px-2 py-1 sm:px-4 sm:py-1.5 rounded-full border-2 shadow-xl backdrop-blur-md transform transition-all duration-300 ${isUnlocked ? 'bg-white text-rose-600 border-rose-500 rotate-0 scale-100' : 'bg-black/60 text-white/80 border-transparent rotate-0 scale-90'}`}>
-                                        <div className="flex flex-col items-start leading-tight">
+                                        <div className={`flex flex-col ${isLeft ? 'items-end' : 'items-start'} leading-tight`}>
                                             <span className={`${rank.name === 'ProtectMax Titan' ? 'text-[9px] sm:text-[10px] leading-3 whitespace-normal' : (rank.name.length >= 10 ? 'text-[10px] sm:text-xs whitespace-nowrap' : 'text-xs sm:text-base whitespace-nowrap')} font-serif font-black uppercase tracking-wide block text-transparent bg-clip-text bg-gradient-to-br from-rose-600 to-red-900 drop-shadow-sm`}>
                                                 {rank.name === 'ProtectMax Titan' ? (
                                                     <>ProtectMax<br /><span className="text-[9px] sm:text-[10px]">Titan</span></>
@@ -511,7 +531,7 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
 
                                 {/* Points Label */}
                                 {!isUnlocked && (
-                                    <div className={`mt-1 text-[10px] font-bold text-white bg-black/40 px-2 rounded-full inline-block backdrop-blur-sm border border-white/10 ${isCenterLayout ? '' : 'ml-2'}`}>
+                                    <div className="mt-1 text-[10px] font-bold text-white bg-black/40 px-2 rounded-full inline-block backdrop-blur-sm border border-white/10 ml-2">
                                         {rank.threshold.toLocaleString()} pts
                                     </div>
                                 )}
@@ -551,7 +571,7 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                 </div>
 
                 {/* Sell Button - Fixed at Bottom */}
-                <div className="px-4 pb-4">
+                <div className="px-4 pb-4 mt-auto mb-9 transform scale-90 origin-bottom">
 
                     {/* Stats HUD - Premium Glassmorphism */}
                     <div className="mt-4 mx-2 relative overflow-hidden rounded-2xl bg-black/40 backdrop-blur-lg border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
@@ -664,6 +684,7 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                 )}
             </AnimatePresence>
 
+            <ValentineFooter />
 
             {/* 7. Background Music */}
             <audio ref={audioRef} loop src="/audio track/Surili_Akhiyon_Wale_Instrumental_-_Official_128k.mp3" />

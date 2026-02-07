@@ -10,7 +10,26 @@ export default function LandingPage({ userName = '' }) {
   const [activeSlide, setActiveSlide] = useState(0);
 
   // Republican Day Banner data
+  // Valentine Day Banner data
   const banners = [
+    {
+      id: 101,
+      title: 'VALENTINE SPECIAL',
+      isImageBanner: true,
+      imageSrc: '/images/val1.jpeg',
+      imageAlt: 'Valentine Banner 1',
+      link: '/SEC/valentine-day',
+      showLiveBadge: true,
+    },
+    {
+      id: 102,
+      title: 'VALENTINE CONTEST',
+      isImageBanner: true,
+      imageSrc: '/images/val2.jpeg',
+      imageAlt: 'Valentine Banner 2',
+      link: '/SEC/romance-merit-board',
+      showLiveBadge: false,
+    },
     {
       id: 3,
       title: 'SPECIAL OFFER 🎯',
@@ -21,31 +40,6 @@ export default function LandingPage({ userName = '' }) {
       imageAlt: 'Special Promotion Banner',
       link: '/SEC/republic-leaderboard',
       showLiveBadge: false,
-    },
-    {
-      id: 1,
-      title: 'REPUBLIC DAY SPECIAL 🇮🇳',
-      subtitle: 'SALES DOST SALUTES',
-      description: 'CELEBRATE WITH SUPER INCENTIVES',
-      highlights: [
-        '🪁 Special 26th Jan Rewards',
-        '🇮🇳 Earn Extra on every Sale',
-      ],
-      validity: 'Valid till 31st Jan',
-      isImageBanner: true,
-      imageSrc: '/images/banner1.jpeg',
-      imageAlt: 'Republic Day Banner 1',
-      showTextOverlay: false,
-      link: '/SEC/training',
-      showLiveBadge: false,
-    },
-    {
-      id: 4,
-      title: 'SPECIAL BANNER',
-      isImageBanner: true,
-      imageSrc: '/images/banner2.jpeg',
-      imageAlt: 'Special Banner',
-      link: '#',
     },
     {
       id: 2,
@@ -91,14 +85,14 @@ export default function LandingPage({ userName = '' }) {
       badge: 'NEW 🆕'
     },
     {
-      id: 'ranking',
-      title: 'ProtectMax Yoddha Briefing',
-      description: 'View Your Progress',
-      icon: '⚔️',
-      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
+      id: 'assessment',
+      title: 'Assessment',
+      description: 'Test Your Knowledge',
+      icon: '🧠',
+      bgGradient: 'from-[#f59e0b] via-[#d97706] to-[#b45309]',
       iconBg: 'bg-white/20',
-      link: '/SEC/yoddha-winnings',
-      badge: 'LIVE 🔴'
+      link: '/SEC/training',
+      badge: 'TRAINING 📚'
     },
     {
       id: 'claim-raise',
@@ -111,14 +105,24 @@ export default function LandingPage({ userName = '' }) {
       badge: 'GUIDE 📘'
     },
     {
-      id: 'regiments',
-      title: 'Regiments',
-      description: 'View Your Regiment',
-      icon: '🎖️',
-      bgGradient: 'from-[#166534] via-[#15803d] to-[#4ade80]',
+      id: 'customer-love-index',
+      title: 'Customer Love Index',
+      description: 'View Your Love Score',
+      icon: '❤️',
+      bgGradient: 'from-[#e11d48] via-[#db2777] to-[#be123c]',
       iconBg: 'bg-white/20',
-      link: '/SEC/republic-regiments',
-      badge: 'YOUR SQUAD 🪖'
+      link: '/SEC/romance-merit-board',
+      badge: 'HOT 🔥'
+    },
+    {
+      id: 'customer-honour',
+      title: 'Customer Honour',
+      description: 'View Your Rewards',
+      icon: '🎖️',
+      bgGradient: 'from-[#059669] via-[#10b981] to-[#34d399]',
+      iconBg: 'bg-white/20',
+      link: '/SEC/valentine-day',
+      badge: 'REWARDS 🎁'
     },
   ];
 

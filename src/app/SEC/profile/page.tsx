@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
-import RepublicHeader from '@/components/RepublicHeader';
-import RepublicFooter from '@/components/RepublicFooter';
+import ValentineHeader from '@/components/ValentineHeader';
+import ValentineFooter from '@/components/ValentineFooter';
 import AchievementsView from './AchievementsView';
 
 interface StoreInfo {
@@ -391,7 +391,7 @@ export default function ProfilePage() {
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
-      <RepublicHeader hideGreeting />
+      <ValentineHeader hideGreeting />
 
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-4 pt-4 pb-6 max-w-5xl mx-auto">
@@ -456,8 +456,8 @@ export default function ProfilePage() {
                       <div className="relative">
                         {showStoreArrow && (
                           <div className="absolute top-1/2 -translate-y-1/2 -left-38 flex items-center gap-1 animate-bounce z-10">
-                            <span className="text-xs font-semibold text-blue-600 bg-white px-2 py-1 rounded shadow-sm whitespace-nowrap">Change store here</span>
-                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span className="text-xs font-semibold text-rose-600 bg-white px-2 py-1 rounded shadow-sm whitespace-nowrap">Change store here</span>
+                            <svg className="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                             </svg>
                           </div>
@@ -467,8 +467,8 @@ export default function ProfilePage() {
                           onClick={handleEditStore}
                           disabled={pendingRequest?.status === 'PENDING'}
                           className={`p-1.5 rounded-lg transition-all ${showStoreArrow
-                            ? 'bg-blue-50 ring-2 ring-blue-500 text-blue-600 animate-pulse'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                            ? 'bg-rose-50 ring-2 ring-rose-500 text-rose-600 animate-pulse'
+                            : 'text-gray-600 hover:text-rose-600 hover:bg-rose-50'
                             } ${pendingRequest?.status === 'PENDING' ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
@@ -605,7 +605,8 @@ export default function ProfilePage() {
                     disabled={submittingPersonalInfo}
                     className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                      background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                      boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                     }}
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -724,7 +725,8 @@ export default function ProfilePage() {
                       disabled={verifyingPan}
                       className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{
-                        background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                        background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                        boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                       }}
                     >
                       <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -873,7 +875,8 @@ export default function ProfilePage() {
                     type="submit"
                     className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
                     style={{
-                      background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                      background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                      boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                     }}
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -891,7 +894,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <RepublicFooter />
+      <ValentineFooter />
 
       {/* Store Change Request Modal */}
       {showStoreChangeModal && (
@@ -1037,7 +1040,8 @@ export default function ProfilePage() {
                 disabled={submittingRequest || !selectedStoreId || selectedStoreId === currentStore?.id}
                 className="px-4 py-2 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
                 style={{
-                  background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                  background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                  boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                 }}
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>

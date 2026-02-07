@@ -1,17 +1,73 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 
 interface ValentineHeaderProps {
     userName?: string;
+    hideGreeting?: boolean;
 }
 
-export default function ValentineHeader({ userName = 'Dreamer' }: ValentineHeaderProps) {
-    return (
 
-        <div className="bg-gradient-to-br from-[#ff7a9a] via-[#ec255a] to-[#c21e4e] rounded-b-[30px] shadow-[0_10px_30px_-10px_rgba(236,37,90,0.6),inset_0_-5px_10px_rgba(0,0,0,0.1),inset_0_2px_5px_rgba(255,255,255,0.2)] pb-4 mb-2 px-6 pt-8 relative overflow-hidden shrink-0 z-30 w-full">
+import { useRouter } from 'next/navigation';
+
+export default function ValentineHeader({ userName = 'Dreamer', hideGreeting = false }: ValentineHeaderProps) {
+    const router = useRouter(); // Initialize hook
+    const [hearts, setHearts] = useState<{ id: number; x: number; y: number }[]>([]);
+
+    const addHeart = (x: number, y: number) => {
+        const id = Date.now();
+        setHearts((prev) => [...prev, { id, x, y }]);
+        setTimeout(() => {
+            setHearts((prev) => prev.filter((h) => h.id !== id));
+        }, 1000);
+    };
+
+    return (
+        <div className="bg-gradient-to-br from-[#ff7a9a] via-[#ec255a] to-[#c21e4e] rounded-b-[30px] shadow-[0_10px_30px_-10px_rgba(236,37,90,0.6),inset_0_-5px_10px_rgba(0,0,0,0.1),inset_0_2px_5px_rgba(255,255,255,0.2)] pb-4 mb-2 px-6 pt-8 relative overflow-hidden shrink-0 z-30 w-full group">
             {/* Background Pattern/Texture */}
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
+
+            {/* Interactive Burst Hearts */}
+            <AnimatePresence>
+                {hearts.map((heart) => (
+                    <motion.div
+                        key={heart.id}
+                        initial={{ opacity: 1, scale: 0, x: heart.x, y: heart.y }}
+                        animate={{ opacity: 0, scale: 2, y: heart.y - 100 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute text-2xl pointer-events-none z-50"
+                    >
+                        ❤️
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+
+            {/* Twinkling Sparkles Overlay */}
+            <div className="absolute inset-0 pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                    <motion.div
+                        key={`sparkle-${i}`}
+                        className="absolute text-yellow-200 text-xs"
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                        }}
+                        animate={{
+                            opacity: [0, 1, 0],
+                            scale: [0, 1.5, 0],
+                        }}
+                        transition={{
+                            duration: 2 + Math.random() * 2,
+                            repeat: Infinity,
+                            delay: Math.random() * 2,
+                        }}
+                    >
+                        ✨
+                    </motion.div>
+                ))}
+            </div>
+
             {/* Hearts PNG Decoration */}
             <div className="absolute -top-14 -right-16 w-60 h-32 opacity-50 pointer-events-none z-0 overflow-hidden">
                 <motion.img
@@ -57,34 +113,84 @@ export default function ValentineHeader({ userName = 'Dreamer' }: ValentineHeade
             {/* Combined Top Row: Name Left, Profile Right */}
             <div className="flex justify-between items-end relative z-10">
                 {/* Personalized Name Section */}
-                <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex flex-col"
-                >
-                    <p className="text-rose-200 text-[10px] font-bold uppercase tracking-widest mb-0.5 ml-0.5">Welcome</p>
-                    <div className="flex items-center gap-2">
-                        <h2 className="text-4xl font-black text-white drop-shadow-xl tracking-tighter">
-                            {userName}
-                        </h2>
+                {!hideGreeting ? (
+                    <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="flex flex-col"
+                    >
+                        <p className="text-rose-200 text-[10px] font-bold uppercase tracking-widest mb-0.5 ml-0.5">Welcome</p>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-4xl font-black text-white drop-shadow-xl tracking-tighter">
+                                {userName}
+                            </h2>
+                            <motion.div
+                                animate={{
+                                    scale: [1, 1.2, 1],
+                                    rotate: [0, 10, -10, 0]
+                                }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="text-2xl filter drop-shadow-lg cursor-pointer active:scale-95"
+                                onClick={(e) => {
+                                    // Get click position relative to the header container
+                                    const headerRect = e.currentTarget.closest('.group')?.getBoundingClientRect();
+                                    if (headerRect) {
+                                        const x = e.clientX - headerRect.left;
+                                        const y = e.clientY - headerRect.top;
+                                        addHeart(x, y);
+                                    }
+                                }}
+                            >
+                                ❤️
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                ) : (
+                    /* Heart Pulse ECG Metaphor for Sales + Love */
+                    <div className="flex items-center gap-2 -translate-y-1">
                         <motion.div
                             animate={{
-                                scale: [1, 1.2, 1],
-                                rotate: [0, 10, -10, 0]
+                                scale: [1, 1.3, 1],
+                                filter: ["drop-shadow(0 0 0px #fff)", "drop-shadow(0 0 8px #fff)", "drop-shadow(0 0 0px #fff)"]
                             }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="text-2xl filter drop-shadow-lg"
+                            transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
+                            className="text-2xl"
                         >
                             ❤️
                         </motion.div>
+                        <div className="relative w-32 h-10 overflow-hidden">
+                            <svg width="120" height="40" viewBox="0 0 120 40" fill="none" className="drop-shadow-sm">
+                                <motion.path
+                                    d="M0 20H20L25 5L35 35L42 15L48 20H70L75 2L85 38L95 20H120"
+                                    stroke="white"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    initial={{ pathLength: 0, opacity: 0 }}
+                                    animate={{
+                                        pathLength: [0, 1, 1],
+                                        opacity: [0, 1, 0],
+                                        pathOffset: [0, 0, 0.2]
+                                    }}
+                                    transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                        times: [0, 0.8, 1]
+                                    }}
+                                />
+                            </svg>
+                        </div>
                     </div>
-                </motion.div>
+                )}
 
                 {/* Profile Icon */}
-                <div className="w-10 h-10 mb-1 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg cursor-pointer hover:bg-white/30 transition-colors">
+                <div
+                    onClick={() => router.push('/SEC/profile')}
+                    className="w-10 h-10 translate-y-2 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg cursor-pointer hover:bg-white/30 transition-colors"
+                >
                     <span className="text-lg">👤</span>
-                    <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-[#ec255a]"></div>
                 </div>
             </div>
         </div>
