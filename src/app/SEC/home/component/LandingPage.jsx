@@ -91,6 +91,16 @@ export default function LandingPage({ userName = '' }) {
       badge: 'NEW 🆕'
     },
     {
+      id: 'ranking',
+      title: 'ProtectMax Yoddha Briefing',
+      description: 'View Your Progress',
+      icon: '⚔️',
+      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
+      iconBg: 'bg-white/20',
+      link: '/SEC/yoddha-winnings',
+      badge: 'LIVE 🔴'
+    },
+    {
       id: 'claim-raise',
       title: 'SC+ Claim Raise Procedure',
       description: 'Learn More',

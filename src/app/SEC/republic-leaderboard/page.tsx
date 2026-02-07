@@ -353,123 +353,238 @@ export default function RepublicLeaderboardPage() {
                             <p className="text-slate-500 font-medium">Loading Ranks...</p>
                         </div>
                     ) : (
-                        RANKS.map((rank, rankIndex) => {
-                            const players: any[] = leaderboardData[rank.id] || [];
-                            const Icon = rank.icon;
-                            const isLast = rankIndex === RANKS.length - 1;
-                            const isEmpty = players.length === 0;
-                            const isJumping = animatedRankIndex === rankIndex; // Check if jumping indicator is on this rank
-
-                            return (
-                                <div
-                                    key={rank.id}
-                                    ref={el => { rankRefs.current[rank.id] = el }}
-                                    className="w-full flex flex-col items-center relative transition-all duration-500"
+                        <>
+                            {/* SALES GENERAL - The Ultimate Rank (Hardcoded) */}
+                            <div className="w-full flex flex-col items-center relative mb-8">
+                                <div className="mb-4 text-center">
+                                    <h2 className="text-4xl font-black bg-gradient-to-r from-[#FF9933] via-[#ffffe0] to-[#138808] bg-clip-text text-transparent uppercase tracking-wider drop-shadow-sm animate-pulse filter drop-shadow-lg">
+                                        WINNER
+                                    </h2>
+                                </div>
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.6, type: "spring" }}
+                                    className="w-full bg-gradient-to-br from-amber-50 via-white to-amber-50 rounded-3xl shadow-2xl border-4 border-amber-400 overflow-hidden relative z-10"
                                 >
+                                    {/* Decorative Elements */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/10 pointer-events-none" />
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-400/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-                                    {/* Connector Line (Top) - except for first item */}
-                                    {rankIndex !== 0 && (
-                                        <div className="h-8 w-0.5 border-l-2 border-dashed border-slate-300 my-1"></div>
-                                    )}
+                                    {/* Header */}
+                                    <div className="p-6 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-white relative overflow-hidden">
+                                        {/* Animated Shine Effect */}
+                                        <motion.div
+                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                            animate={{ x: ['-100%', '200%'] }}
+                                            transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                                        />
 
-                                    {/* Rank Block */}
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ duration: 0.5, delay: rankIndex * 0.1 }}
-                                        className={`
+                                        <div className="flex items-center justify-between relative z-10">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-14 h-14 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center border-2 border-white/50 shadow-2xl">
+                                                    <Crown size={28} className="text-white drop-shadow-lg" />
+                                                </div>
+                                                <div>
+                                                    <h2 className="font-black text-2xl uppercase tracking-wider font-poppins text-shadow-lg flex items-center gap-2">
+                                                        <span>SALES GENERAL</span>
+                                                        <motion.span
+                                                            animate={{ rotate: [0, 10, -10, 0] }}
+                                                            transition={{ duration: 2, repeat: Infinity }}
+                                                        >
+                                                            ⭐
+                                                        </motion.span>
+                                                    </h2>
+                                                    <p className="text-xs font-bold opacity-95 uppercase tracking-widest flex items-center gap-1">
+                                                        <span className="inline-block w-2 h-2 bg-white rounded-full animate-pulse" />
+                                                        THE ULTIMATE RANK
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Decorative Crown Icon */}
+                                            <Crown className="absolute -right-6 -bottom-6 text-white/10 w-32 h-32 rotate-12" />
+                                        </div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="p-4 bg-gradient-to-b from-white to-amber-50/30 relative">
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="border-2 border-amber-300 p-4 rounded-2xl bg-white shadow-lg relative overflow-hidden"
+                                        >
+                                            {/* Sparkle Effects */}
+                                            <div className="absolute top-2 right-2 text-2xl animate-pulse">✨</div>
+                                            <div className="absolute bottom-2 left-2 text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>✨</div>
+
+                                            <div className="flex items-center justify-between relative z-10">
+                                                <div className="flex items-center gap-4">
+                                                    {/* Rank #1 with Special Styling */}
+                                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center border-2 border-amber-500 shadow-xl">
+                                                        <Crown size={24} className="text-white drop-shadow-md" fill="white" fillOpacity={0.3} />
+                                                    </div>
+
+                                                    <div className="flex-1">
+                                                        <p className="font-black text-xl text-amber-900 flex items-center gap-2">
+                                                            VIKASH TOMAR
+
+                                                        </p>
+                                                        <p className="text-[10px] text-amber-600 font-medium mt-0.5">
+                                                            Croma- A204 -Delhi-Vegas Mall
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Sales Amount */}
+                                                <div className="text-right">
+                                                    <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white px-4 py-2 rounded-xl shadow-lg">
+                                                        <p className="text-xs font-bold uppercase tracking-wider opacity-90">Total Sales</p>
+                                                        <p className="text-lg font-black">₹2,60,323</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Inspirational Message */}
+                                        <div className="mt-3 text-center">
+                                            <p className="text-xs italic text-amber-800 font-medium">
+                                                "Leading the force with unmatched excellence"
+                                            </p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+
+                                {/* Connector Line to next rank */}
+                                <div className="h-12 w-0.5 border-l-2 border-dashed border-amber-300 my-2" />
+                            </div>
+
+                            {/* Regular Ranks */}
+                            {RANKS.map((rank, rankIndex) => {
+                                const rawPlayers: any[] = leaderboardData[rank.id] || [];
+                                // Filter out Vikash Tomar from Sales Chief Marshal as he is now Sales General
+                                const players = rawPlayers.filter((p: any) => {
+                                    if (rank.id === 'brigadier' && p.name?.toUpperCase() === 'VIKASH TOMAR') return false;
+                                    return true;
+                                });
+                                const Icon = rank.icon;
+                                const isLast = rankIndex === RANKS.length - 1;
+                                const isEmpty = players.length === 0;
+                                const isJumping = animatedRankIndex === rankIndex; // Check if jumping indicator is on this rank
+
+                                return (
+                                    <div
+                                        key={rank.id}
+                                        ref={el => { rankRefs.current[rank.id] = el }}
+                                        className="w-full flex flex-col items-center relative transition-all duration-500"
+                                    >
+
+                                        {/* Connector Line (Top) - except for first item */}
+                                        {rankIndex !== 0 && (
+                                            <div className="h-8 w-0.5 border-l-2 border-dashed border-slate-300 my-1"></div>
+                                        )}
+
+                                        {/* Rank Block */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ duration: 0.5, delay: rankIndex * 0.1 }}
+                                            className={`
                                             w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative z-10 transition-all duration-300
                                             ${currentUser?.rankId === rank.id ? 'ring-2 ring-orange-500 shadow-orange-100' : ''}
                                             ${isEmpty ? 'opacity-90 grayscale-[0.3]' : ''} 
                                         `}
-                                    >
-                                        {/* Rank Header */}
-                                        <div className={`p-4 bg-gradient-to-r ${rank.color} text-white flex items-center justify-between relative overflow-hidden transition-all duration-500`}>
-                                            <div className="flex items-center gap-3 relative z-10">
-                                                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
-                                                    <Icon size={20} className="text-white drop-shadow-sm" />
+                                        >
+                                            {/* Rank Header */}
+                                            <div className={`p-4 bg-gradient-to-r ${rank.color} text-white flex items-center justify-between relative overflow-hidden transition-all duration-500`}>
+                                                <div className="flex items-center gap-3 relative z-10">
+                                                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
+                                                        <Icon size={20} className="text-white drop-shadow-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <h2 className="font-black text-lg uppercase tracking-wider font-poppins text-shadow-sm">{rank.title}</h2>
+                                                        <p className="text-[10px] font-medium opacity-90 uppercase tracking-widest">{rank.min}+ Honour Points</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h2 className="font-black text-lg uppercase tracking-wider font-poppins text-shadow-sm">{rank.title}</h2>
-                                                    <p className="text-[10px] font-medium opacity-90 uppercase tracking-widest">{rank.min}+ Honour Points</p>
-                                                </div>
+
+                                                {/* Decorative Background Icon */}
+                                                <Icon className="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rotate-12" />
                                             </div>
 
-                                            {/* Decorative Background Icon */}
-                                            <Icon className="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rotate-12" />
-                                        </div>
+                                            {/* Salespersons List or Empty State */}
+                                            <div className="p-2 space-y-2 bg-slate-50/50">
+                                                {isEmpty ? (
+                                                    <div className="py-6 text-center text-slate-400 flex flex-col items-center gap-2">
+                                                        <Lock size={20} className="opacity-50" />
+                                                        <p className="text-xs font-medium italic">No officers at this rank yet.</p>
+                                                        <p className="text-[10px] uppercase tracking-wide font-bold text-orange-500/80">Be the first!</p>
+                                                    </div>
+                                                ) : (
+                                                    players.map((player, pIndex) => {
+                                                        const isMe = currentUser && currentUser.secId === player.secId;
 
-                                        {/* Salespersons List or Empty State */}
-                                        <div className="p-2 space-y-2 bg-slate-50/50">
-                                            {isEmpty ? (
-                                                <div className="py-6 text-center text-slate-400 flex flex-col items-center gap-2">
-                                                    <Lock size={20} className="opacity-50" />
-                                                    <p className="text-xs font-medium italic">No officers at this rank yet.</p>
-                                                    <p className="text-[10px] uppercase tracking-wide font-bold text-orange-500/80">Be the first!</p>
-                                                </div>
-                                            ) : (
-                                                players.map((player, pIndex) => {
-                                                    const isMe = currentUser && currentUser.secId === player.secId;
+                                                        // Determine Rank Icon/Number
+                                                        let RankIndicator;
+                                                        if (pIndex === 0) {
+                                                            RankIndicator = <Medal size={20} className="text-yellow-500 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
+                                                        } else if (pIndex === 1) {
+                                                            RankIndicator = <Medal size={20} className="text-slate-400 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
+                                                        } else if (pIndex === 2) {
+                                                            RankIndicator = <Medal size={20} className="text-amber-700 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
+                                                        } else {
+                                                            RankIndicator = <span className={`font-bold text-sm ${isMe ? 'text-orange-600' : 'text-slate-500'}`}>#{pIndex + 1}</span>;
+                                                        }
 
-                                                    // Determine Rank Icon/Number
-                                                    let RankIndicator;
-                                                    if (pIndex === 0) {
-                                                        RankIndicator = <Medal size={20} className="text-yellow-500 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
-                                                    } else if (pIndex === 1) {
-                                                        RankIndicator = <Medal size={20} className="text-slate-400 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
-                                                    } else if (pIndex === 2) {
-                                                        RankIndicator = <Medal size={20} className="text-amber-700 drop-shadow-sm" fill="currentColor" fillOpacity={0.2} />;
-                                                    } else {
-                                                        RankIndicator = <span className={`font-bold text-sm ${isMe ? 'text-orange-600' : 'text-slate-500'}`}>#{pIndex + 1}</span>;
-                                                    }
-
-                                                    return (
-                                                        <motion.div
-                                                            key={player.secId || pIndex}
-                                                            ref={isMe ? userRowRef : null}
-                                                            className={`
+                                                        return (
+                                                            <motion.div
+                                                                key={player.secId || pIndex}
+                                                                ref={isMe ? userRowRef : null}
+                                                                className={`
                                                                 border p-3 rounded-xl flex items-center justify-between shadow-sm hover:shadow-md transition-shadow
                                                                 ${isMe
-                                                                    ? 'bg-orange-50 border-orange-200 z-20 relative ring-2 ring-offset-2 ring-orange-400'
-                                                                    : 'bg-white border-slate-100'}
+                                                                        ? 'bg-orange-50 border-orange-200 z-20 relative ring-2 ring-offset-2 ring-orange-400'
+                                                                        : 'bg-white border-slate-100'}
                                                             `}
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                {/* Rank Indicator / Avatar Area */}
-                                                                <div className={`
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    {/* Rank Indicator / Avatar Area */}
+                                                                    <div className={`
                                                                     w-8 h-8 rounded-full flex items-center justify-center border shrink-0
                                                                     ${isMe && pIndex > 2 ? 'bg-orange-100 border-orange-200' : 'bg-slate-50 border-slate-200'}
                                                                     ${pIndex < 3 ? 'bg-white shrink-0' : ''}
                                                                 `}>
-                                                                    {RankIndicator}
-                                                                </div>
+                                                                        {RankIndicator}
+                                                                    </div>
 
-                                                                <div>
-                                                                    <p className={`font-bold text-sm ${isMe ? 'text-orange-900' : 'text-slate-700'}`}>
-                                                                        {player.name}
-                                                                        {isMe && <span className="ml-2 text-[10px] bg-orange-200 text-orange-800 px-1 rounded">YOU</span>}
-                                                                    </p>
-                                                                    <p className="text-[10px] text-slate-400 font-medium uppercase">{player.storeName}</p>
+                                                                    <div>
+                                                                        <p className={`font-bold text-sm ${isMe ? 'text-orange-900' : 'text-slate-700'}`}>
+                                                                            {player.name}
+                                                                            {isMe && <span className="ml-2 text-[10px] bg-orange-200 text-orange-800 px-1 rounded">YOU</span>}
+                                                                        </p>
+                                                                        <p className="text-[10px] text-slate-400 font-medium uppercase">{player.storeName}</p>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className={`font-bold text-sm ${isMe ? 'text-orange-700' : 'text-slate-800'}`}>₹{player.salesAmount.toLocaleString('en-IN')}</p>
-                                                            </div>
-                                                        </motion.div>
-                                                    )
-                                                })
-                                            )}
-                                        </div>
-                                    </motion.div>
+                                                                <div className="text-right">
+                                                                    <p className={`font-bold text-sm ${isMe ? 'text-orange-700' : 'text-slate-800'}`}>₹{player.salesAmount.toLocaleString('en-IN')}</p>
+                                                                </div>
+                                                            </motion.div>
+                                                        )
+                                                    })
+                                                )}
+                                            </div>
+                                        </motion.div>
 
-                                    {/* Connector Line (Bottom) - To connect to next block */}
-                                    {!isLast && (
-                                        <div className="h-0" /> // Spacer handled by margin
-                                    )}
-                                </div>
-                            );
-                        })
+                                        {/* Connector Line (Bottom) - To connect to next block */}
+                                        {!isLast && (
+                                            <div className="h-0" /> // Spacer handled by margin
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </>
                     )}
 
                 </div>

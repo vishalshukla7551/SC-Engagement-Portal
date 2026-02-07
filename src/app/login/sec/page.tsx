@@ -257,8 +257,8 @@ export default function SECLogin() {
       // OTP verified successfully; redirect to SEC landing page (via shared helper).
       // const target = getHomePathForRole(data.user.role || 'SEC');
 
-      // CAMPAIGN: Redirect to Republic Day Special Page first
-      const target = '/SEC/republic-day-hero';
+      // CAMPAIGN: Redirect to Yoddha Winnings Page
+      const target = '/SEC/yoddha-winnings';
 
       // Use window.location.href to ensure localStorage is fully written before redirect
       window.location.href = target;

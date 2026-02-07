@@ -162,6 +162,7 @@ const REGIMENTS = [
 ];
 
 const RANKS = [
+    { title: 'Sales General', shortTitle: 'Sales General', icon: Crown }, // Added Sales General
     { title: 'Sales Chief Marshal', shortTitle: 'Chief Marshal', icon: Star },
     { title: 'Sales Commander', shortTitle: 'Commander', icon: Target },
     { title: 'Sales Major', shortTitle: 'Major', icon: Shield },
@@ -253,17 +254,35 @@ export default function RegimentsPage() {
 
                 if (data.success) {
                     // Transform matrix data for display
-                    const transformedData = RANKS.map(rank => ({
-                        rank: rank.title,
-                        shortRank: rank.shortTitle,
-                        icon: rank.icon,
-                        counts: {
-                            NORTH: data.matrix[rank.title]?.NORTH || 0,
-                            SOUTH: data.matrix[rank.title]?.SOUTH || 0,
-                            WEST: data.matrix[rank.title]?.WEST || 0,
-                            EAST: data.matrix[rank.title]?.EAST || 0,
+                    const transformedData = RANKS.map(rank => {
+                        // Hardcoded logic for Sales General
+                        if (rank.title === 'Sales General') {
+                            return {
+                                rank: rank.title,
+                                shortRank: rank.shortTitle,
+                                icon: rank.icon,
+                                counts: {
+                                    NORTH: 1, // Hardcoded count
+                                    SOUTH: 0,
+                                    WEST: 0,
+                                    EAST: 0,
+                                }
+                            };
                         }
-                    }));
+
+                        // Regular logic for other ranks
+                        return {
+                            rank: rank.title,
+                            shortRank: rank.shortTitle,
+                            icon: rank.icon,
+                            counts: {
+                                NORTH: data.matrix[rank.title]?.NORTH || 0,
+                                SOUTH: data.matrix[rank.title]?.SOUTH || 0,
+                                WEST: data.matrix[rank.title]?.WEST || 0,
+                                EAST: data.matrix[rank.title]?.EAST || 0,
+                            }
+                        };
+                    });
 
                     setMatrixData(transformedData);
                     setPersonnelData(data.personnel);
@@ -379,7 +398,19 @@ export default function RegimentsPage() {
                                             {['NORTH', 'SOUTH', 'WEST', 'EAST'].map((zoneId) => {
                                                 const count = (row.counts as any)[zoneId];
                                                 const regimentLabel = REGIMENTS.find(r => r.id === zoneId)?.label;
-                                                const personnel = personnelData[row.rank]?.[zoneId] || [];
+
+                                                // Hardcoded Personnel for Sales General
+                                                let personnel: any[] = [];
+                                                if (row.rank === 'Sales General' && zoneId === 'NORTH') {
+                                                    personnel = [{
+                                                        fullName: 'VIKASH TOMAR',
+                                                        employeeId: 'SUPREME COMMANDER',
+                                                        storeName: 'Croma- A204 -Delhi-Vegas Mall',
+                                                        city: 'Delhi'
+                                                    }];
+                                                } else {
+                                                    personnel = personnelData[row.rank]?.[zoneId] || [];
+                                                }
 
                                                 // Hover color
                                                 const hoverColor = zoneId === 'NORTH' ? 'group-hover:text-orange-600' :
