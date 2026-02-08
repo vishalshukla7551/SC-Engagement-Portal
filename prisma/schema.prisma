@@ -265,6 +265,7 @@ model SEC {
   employeeId      String? // Unique employee identifier
   email       String?
   kycInfo     Json?
+  otherProfileInfo Json? // Stores { photoUrl, birthday, maritalStatus: { isMarried, date } } 
   lastLoginAt DateTime?
   storeId   String?
   store     Store?    @relation(fields: [storeId], references: [id])

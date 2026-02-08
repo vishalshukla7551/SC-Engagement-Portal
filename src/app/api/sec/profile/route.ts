@@ -14,41 +14,66 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Find SEC by phone (for SEC users, authUser.id is the phone number)
-    // Note: Use authUser.username if authUser.id is not the phone number strictly in all contexts, 
-    // but following existing pattern here.
-    const sec = await prisma.sEC.findUnique({
-      where: { phone: authUser.id },
-      select: {
-        id: true,
-        fullName: true,
-        phone: true,
-        employeeId: true,
-        storeId: true,
-        store: {
-          select: {
-            id: true,
-            name: true,
-            city: true,
+    // Safe Fetch Strategy
+    let sec;
+    try {
+      sec = await prisma.sEC.findUnique({
+        where: { phone: authUser.username },
+        select: {
+          id: true,
+          fullName: true,
+          phone: true,
+          employeeId: true,
+          storeId: true,
+          store: {
+            select: {
+              id: true,
+              name: true,
+              city: true,
+            }
+          },
+          otherProfileInfo: true
+        } as any
+      });
+    } catch (e: any) {
+      // Fallback for stale schema
+      console.warn('Prisma schema mismatch on GET. Fetching without new fields.');
+      sec = await prisma.sEC.findUnique({
+        where: { phone: authUser.username },
+        select: {
+          id: true,
+          fullName: true,
+          phone: true,
+          employeeId: true,
+          storeId: true,
+          store: {
+            select: {
+              id: true,
+              name: true,
+              city: true,
+            }
           }
         }
-      }
-    });
+      });
+    }
 
     if (!sec) {
       return NextResponse.json({ error: 'SEC profile not found' }, { status: 404 });
     }
 
+    const record: any = sec;
+
     return NextResponse.json({
       success: true,
       data: {
         sec: {
-          id: sec.id,
-          fullName: sec.fullName,
-          phone: sec.phone,
-          secId: sec.employeeId
+          id: record.id,
+          fullName: record.fullName,
+          phone: record.phone,
+          secId: record.employeeId,
+          otherProfileInfo: record.otherProfileInfo
         },
-        store: sec.store
+        store: record.store
       }
     });
   } catch (error) {

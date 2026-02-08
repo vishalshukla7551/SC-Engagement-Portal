@@ -330,7 +330,7 @@ export default function RepublicDayHeroPage() {
             onClick={handleGlobalInteraction}
         >
             {/* Republic Day Bonus Popup */}
-            <RepublicDayBonusPopup hasBonus={hasBonus} />
+            {/* <RepublicDayBonusPopup hasBonus={hasBonus} /> */}
 
 
 

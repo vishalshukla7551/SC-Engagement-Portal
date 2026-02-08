@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { History, ArrowLeft, Eye, Award } from 'lucide-react';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
-import RepublicHeader from '@/components/RepublicHeader';
-import RepublicFooter from '@/components/RepublicFooter';
+import ValentineHeader from '@/components/ValentineHeader';
+import ValentineFooter from '@/components/ValentineFooter';
 
 interface TestHistory {
   id: string;
@@ -70,8 +70,8 @@ export default function TestHistoryPage() {
   }, [router]);
 
   return (
-    <div className="h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col overflow-hidden">
-      <RepublicHeader hideGreeting />
+    <div className="h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 flex flex-col overflow-hidden">
+      <ValentineHeader hideGreeting />
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <button onClick={() => router.push('/SEC/training')} className="flex items-center gap-2 text-blue-600 mb-4">
@@ -121,7 +121,7 @@ export default function TestHistoryPage() {
           )}
         </div>
       </main>
-      <RepublicFooter />
+      <ValentineFooter />
     </div>
   );
 }

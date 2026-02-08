@@ -91,23 +91,23 @@ export default function FestiveFooter() {
           d="M0,15 C60,8 120,22 180,15 C240,8 300,22 360,15 C420,8 480,22 540,15 C600,8 660,22 720,15 C780,8 840,22 900,15 C960,8 1020,22 1080,15 C1140,8 1200,22 1260,15 C1320,8 1380,15 1440,12 L1440,40 L0,40 Z"
           fill="#1a1a2e"
         />
-      </svg>
+        </svg>
 
       {/* Dark footer content area */}
       <div className={styles.footerContent}>
         {/* Navigation */}
         <nav className={styles.nav}>
           {navItems.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
+              <Link
+                key={item.id}
+                href={item.href}
               className={`${styles.navItem} ${active === item.id ? styles.active : ''}`}
             >
-              {item.icon}
+                  {item.icon}
               <span className={styles.navLabel} style={{ whiteSpace: 'pre-line' }}>
-                {item.label}
-              </span>
-            </Link>
+                  {item.label}
+                </span>
+              </Link>
           ))}
         </nav>
 

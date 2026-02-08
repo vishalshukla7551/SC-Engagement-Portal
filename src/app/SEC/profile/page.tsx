@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
+import type { Area, Point } from 'react-easy-crop';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
-import RepublicHeader from '@/components/RepublicHeader';
-import RepublicFooter from '@/components/RepublicFooter';
+import ValentineHeader from '@/components/ValentineHeader';
+import ValentineFooter from '@/components/ValentineFooter';
 import AchievementsView from './AchievementsView';
 
 interface StoreInfo {
@@ -40,6 +42,24 @@ export default function ProfilePage() {
   const [showStoreChangeBanner, setShowStoreChangeBanner] = useState(false);
   const [showStoreArrow, setShowStoreArrow] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements'>('profile');
+
+  // New Profile Fields
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [birthday, setBirthday] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState<'yes' | 'no'>('no');
+  const [anniversaryDate, setAnniversaryDate] = useState('');
+
+  // Image Crop States
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  // Lock states for profile fields
+  const [isMaritalStatusSet, setIsMaritalStatusSet] = useState(false);
+  const [editBirthday, setEditBirthday] = useState(false);
+  const [editMaritalStatus, setEditMaritalStatus] = useState(false);
 
   // Store change functionality
   const [currentStore, setCurrentStore] = useState<StoreInfo | null>(null);
@@ -118,6 +138,18 @@ export default function ProfilePage() {
         setPanNumber(auth.kycInfo.pan || '');
         setKycStatus('approved');
       }
+
+      // Load other profile info from local storage if available
+      if (auth?.otherProfileInfo) {
+        const info = auth.otherProfileInfo;
+        if (info.photoUrl) setProfilePhoto(info.photoUrl);
+        if (info.birthday) setBirthday(info.birthday);
+        if (info.maritalStatus) {
+          setMaritalStatus(info.maritalStatus.isMarried ? 'yes' : 'no');
+          if (info.maritalStatus.date) setAnniversaryDate(info.maritalStatus.date);
+          setIsMaritalStatusSet(true);
+        }
+      }
     } catch {
       // ignore parse/storage errors
     }
@@ -126,6 +158,134 @@ export default function ProfilePage() {
     fetchKycInfo();
     fetchStoreInfo();
   }, []);
+
+  // Crop handlers
+  const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const createCroppedImage = async (imageSrc: string, pixelCrop: Area): Promise<string> => {
+    const image = new Image();
+    image.src = imageSrc;
+
+    return new Promise((resolve, reject) => {
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        canvas.width = pixelCrop.width;
+        canvas.height = pixelCrop.height;
+
+        ctx.drawImage(
+          image,
+          pixelCrop.x,
+          pixelCrop.y,
+          pixelCrop.width,
+          pixelCrop.height,
+          0,
+          0,
+          pixelCrop.width,
+          pixelCrop.height
+        );
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Failed to create blob'));
+            return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result as string);
+          };
+          reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.95);
+      };
+
+      image.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+    });
+  };
+
+  const handleCropSave = async () => {
+    if (!imageToCrop || !croppedAreaPixels) return;
+
+    try {
+      // Show loading state
+      const croppedImage = await createCroppedImage(imageToCrop, croppedAreaPixels);
+      setProfilePhoto(croppedImage);
+
+      // Close modal first for better UX
+      setShowCropModal(false);
+      setImageToCrop(null);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+
+      // Save to database immediately
+      setSubmittingPersonalInfo(true);
+
+      const res = await fetch('/api/sec/profile/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agencyName: agencyName.trim() || null,
+          otherProfileInfo: {
+            photoUrl: croppedImage,
+            birthday,
+            maritalStatus: {
+              isMarried: maritalStatus === 'yes',
+              date: maritalStatus === 'yes' ? anniversaryDate : null
+            }
+          }
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to upload profile photo');
+      }
+
+      const responseData = await res.json();
+
+      // Update localStorage with new data
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = window.localStorage.getItem('authUser');
+          if (raw) {
+            const parsed = JSON.parse(raw) as any;
+            const updated = {
+              ...parsed,
+              AgencyName: responseData.AgencyName,
+              otherProfileInfo: responseData.otherProfileInfo
+            };
+            window.localStorage.setItem('authUser', JSON.stringify(updated));
+          }
+        } catch {
+          // ignore parse/storage errors
+        }
+      }
+
+      // Update the profile photo state with the Cloudinary URL
+      if (responseData.otherProfileInfo?.photoUrl) {
+        setProfilePhoto(responseData.otherProfileInfo.photoUrl);
+      }
+
+      alert('✅ Profile photo uploaded successfully to cloud storage!');
+      setSubmittingPersonalInfo(false);
+    } catch (error) {
+      console.error('Error cropping/uploading image:', error);
+      alert('Failed to upload profile photo. Please try again.');
+      setSubmittingPersonalInfo(false);
+    }
+  };
+
 
   const fetchKycInfo = async () => {
     try {
@@ -149,6 +309,19 @@ export default function ProfilePage() {
       const response = await fetch('/api/sec/profile');
       if (response.ok) {
         const data = await response.json();
+        if (data.success && data.data.sec) { // Check for sec data
+          const sec = data.data.sec;
+          if (sec.otherProfileInfo) {
+            const info = sec.otherProfileInfo;
+            if (info.photoUrl) setProfilePhoto(info.photoUrl);
+            if (info.birthday) setBirthday(info.birthday);
+            if (info.maritalStatus) {
+              setMaritalStatus(info.maritalStatus.isMarried ? 'yes' : 'no');
+              if (info.maritalStatus.date) setAnniversaryDate(info.maritalStatus.date);
+              setIsMaritalStatusSet(true);
+            }
+          }
+        }
         if (data.success && data.data.store) {
           setCurrentStore(data.data.store);
           setStoreName(data.data.store.name);
@@ -277,6 +450,14 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           agencyName: agencyName.trim() || null,
+          otherProfileInfo: {
+            photoUrl: profilePhoto,
+            birthday,
+            maritalStatus: {
+              isMarried: maritalStatus === 'yes',
+              date: maritalStatus === 'yes' ? anniversaryDate : null
+            }
+          }
         }),
       });
 
@@ -296,6 +477,7 @@ export default function ProfilePage() {
             const updated = {
               ...parsed,
               AgencyName: responseData.AgencyName,
+              otherProfileInfo: responseData.otherProfileInfo
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
           }
@@ -304,7 +486,12 @@ export default function ProfilePage() {
         }
       }
 
-      alert('Personal info saved successfully!');
+      // Update the profile photo state with the Cloudinary URL
+      if (responseData.otherProfileInfo?.photoUrl) {
+        setProfilePhoto(responseData.otherProfileInfo.photoUrl);
+      }
+
+      alert('✅ Profile saved successfully! Your photo has been uploaded to cloud storage.');
     } catch (err: any) {
       setPersonalInfoError(err.message || 'Failed to update profile');
     } finally {
@@ -391,7 +578,7 @@ export default function ProfilePage() {
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
-      <RepublicHeader hideGreeting />
+      <ValentineHeader hideGreeting />
 
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-4 pt-4 pb-6 max-w-5xl mx-auto">
@@ -422,6 +609,41 @@ export default function ProfilePage() {
                 </div>
 
                 <form onSubmit={handlePersonalInfoSubmit}>
+                  {/* Profile Photo Upload */}
+                  <div className="mb-6 flex flex-col items-center justify-center border-b border-gray-100 pb-6">
+                    <div className="relative group cursor-pointer">
+                      <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-rose-100 shadow-md">
+                        {profilePhoto ? (
+                          <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                            <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                          </div>
+                        )}
+                      </div>
+                      <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <span className="text-white text-xs font-bold">Change</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setImageToCrop(reader.result as string);
+                                setShowCropModal(true);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Tap to change profile photo</p>
+                  </div>
+
                   {/* Personal Details */}
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -456,8 +678,8 @@ export default function ProfilePage() {
                       <div className="relative">
                         {showStoreArrow && (
                           <div className="absolute top-1/2 -translate-y-1/2 -left-38 flex items-center gap-1 animate-bounce z-10">
-                            <span className="text-xs font-semibold text-blue-600 bg-white px-2 py-1 rounded shadow-sm whitespace-nowrap">Change store here</span>
-                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span className="text-xs font-semibold text-rose-600 bg-white px-2 py-1 rounded shadow-sm whitespace-nowrap">Change store here</span>
+                            <svg className="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                             </svg>
                           </div>
@@ -467,8 +689,8 @@ export default function ProfilePage() {
                           onClick={handleEditStore}
                           disabled={pendingRequest?.status === 'PENDING'}
                           className={`p-1.5 rounded-lg transition-all ${showStoreArrow
-                            ? 'bg-blue-50 ring-2 ring-blue-500 text-blue-600 animate-pulse'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                            ? 'bg-rose-50 ring-2 ring-rose-500 text-rose-600 animate-pulse'
+                            : 'text-gray-600 hover:text-rose-600 hover:bg-rose-50'
                             } ${pendingRequest?.status === 'PENDING' ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
@@ -592,6 +814,101 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  {/* Birthday */}
+                  <div className="mb-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs text-gray-600">Birthday</label>
+                      {birthday && !editBirthday && (
+                        <button
+                          type="button"
+                          onClick={() => setEditBirthday(true)}
+                          className="text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {birthday && !editBirthday ? (
+                      <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 font-medium">
+                        {new Date(birthday).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </div>
+                    ) : (
+                      <input
+                        type="date"
+                        value={birthday}
+                        onChange={(e) => setBirthday(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    )}
+                  </div>
+
+                  {/* Marital Status */}
+                  <div className="mb-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs text-gray-600">Marital Status</label>
+                      {isMaritalStatusSet && !editMaritalStatus && (
+                        <button
+                          type="button"
+                          onClick={() => setEditMaritalStatus(true)}
+                          className="text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {isMaritalStatusSet && !editMaritalStatus ? (
+                      <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 font-medium capitalize">
+                        {maritalStatus === 'yes' ? 'Married' : 'Single'}
+                        {maritalStatus === 'yes' && anniversaryDate && (
+                          <span className="block text-xs text-gray-500 font-normal mt-1">
+                            Anniversary: {new Date(anniversaryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="animate-fade-in">
+                        <div className="flex gap-4 mb-3">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="maritalStatus"
+                              value="no"
+                              checked={maritalStatus === 'no'}
+                              onChange={() => setMaritalStatus('no')}
+                              className="w-4 h-4 text-rose-600 focus:ring-rose-500"
+                            />
+                            <span className="text-sm text-gray-700">Single</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="maritalStatus"
+                              value="yes"
+                              checked={maritalStatus === 'yes'}
+                              onChange={() => setMaritalStatus('yes')}
+                              className="w-4 h-4 text-rose-600 focus:ring-rose-500"
+                            />
+                            <span className="text-sm text-gray-700">Married</span>
+                          </label>
+                        </div>
+
+                        {maritalStatus === 'yes' && (
+                          <div className="mt-3">
+                            <label className="block text-xs text-gray-600 mb-1">Anniversary Date</label>
+                            <input
+                              type="date"
+                              value={anniversaryDate}
+                              onChange={(e) => setAnniversaryDate(e.target.value)}
+                              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Error Message */}
                   {personalInfoError && (
                     <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
@@ -605,7 +922,8 @@ export default function ProfilePage() {
                     disabled={submittingPersonalInfo}
                     className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                      background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                      boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                     }}
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -724,7 +1042,8 @@ export default function ProfilePage() {
                       disabled={verifyingPan}
                       className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{
-                        background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                        background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                        boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                       }}
                     >
                       <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -873,7 +1192,8 @@ export default function ProfilePage() {
                     type="submit"
                     className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
                     style={{
-                      background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                      background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                      boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                     }}
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -891,7 +1211,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <RepublicFooter />
+      <ValentineFooter />
 
       {/* Store Change Request Modal */}
       {showStoreChangeModal && (
@@ -1037,11 +1357,88 @@ export default function ProfilePage() {
                 disabled={submittingRequest || !selectedStoreId || selectedStoreId === currentStore?.id}
                 className="px-4 py-2 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
                 style={{
-                  background: 'linear-gradient(90deg, #FF9933 0%, #000080 50%, #138808 100%)'
+                  background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                  boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
                 }}
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                 <span className="relative">{submittingRequest ? 'Submitting...' : 'Submit Request'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Crop Modal */}
+      {showCropModal && imageToCrop && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">Crop Profile Photo</h3>
+              <p className="text-sm text-gray-500 mt-1">Adjust and crop your image</p>
+            </div>
+
+            {/* Cropper Area */}
+            <div className="relative w-full h-80 bg-gray-900">
+              <Cropper
+                image={imageToCrop}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+
+            {/* Zoom Slider */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Zoom
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+              />
+            </div>
+
+            {/* Modal Actions */}
+            <div className="px-6 py-4 flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowCropModal(false);
+                  setImageToCrop(null);
+                  setCrop({ x: 0, y: 0 });
+                  setZoom(1);
+                }}
+                className="px-5 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCropSave}
+                disabled={submittingPersonalInfo}
+                className="px-5 py-2.5 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                style={{
+                  background: submittingPersonalInfo ? '#9ca3af' : 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                  boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
+                }}
+              >
+                {submittingPersonalInfo && (
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                {submittingPersonalInfo ? 'Uploading...' : 'Crop & Set'}
               </button>
             </div>
           </div>
