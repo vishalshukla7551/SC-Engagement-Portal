@@ -41,8 +41,8 @@ export default function ZopperAdministratorLayout({
       title: 'Overview',
       items: [
         { name: 'Home', path: '/Zopper-Administrator', icon: '🏠' },
-        { name: 'Hall of Fame', path: '/Zopper-Administrator/hall-of-fame', icon: '🏅' },
-        { name: 'Regiments', path: '/Zopper-Administrator/regiments', icon: '⚔️' },
+        { name: 'Past Campaigns', path: '/Zopper-Administrator/past-campaigns', icon: '🏛️' },
+        { name: 'Customer Love Index', path: '/Zopper-Administrator/customer-love-index', icon: '❤️' },
       ]
     },
     {

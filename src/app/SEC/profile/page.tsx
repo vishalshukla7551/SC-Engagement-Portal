@@ -41,6 +41,17 @@ export default function ProfilePage() {
   const [showStoreArrow, setShowStoreArrow] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements'>('profile');
 
+  // New Profile Fields
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [birthday, setBirthday] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState<'yes' | 'no'>('no');
+  const [anniversaryDate, setAnniversaryDate] = useState('');
+
+  // Lock states for profile fields
+  const [isMaritalStatusSet, setIsMaritalStatusSet] = useState(false);
+  const [editBirthday, setEditBirthday] = useState(false);
+  const [editMaritalStatus, setEditMaritalStatus] = useState(false);
+
   // Store change functionality
   const [currentStore, setCurrentStore] = useState<StoreInfo | null>(null);
   const [allStores, setAllStores] = useState<StoreInfo[]>([]);
@@ -118,6 +129,18 @@ export default function ProfilePage() {
         setPanNumber(auth.kycInfo.pan || '');
         setKycStatus('approved');
       }
+
+      // Load other profile info from local storage if available
+      if (auth?.otherProfileInfo) {
+        const info = auth.otherProfileInfo;
+        if (info.photoUrl) setProfilePhoto(info.photoUrl);
+        if (info.birthday) setBirthday(info.birthday);
+        if (info.maritalStatus) {
+          setMaritalStatus(info.maritalStatus.isMarried ? 'yes' : 'no');
+          if (info.maritalStatus.date) setAnniversaryDate(info.maritalStatus.date);
+          setIsMaritalStatusSet(true);
+        }
+      }
     } catch {
       // ignore parse/storage errors
     }
@@ -149,6 +172,19 @@ export default function ProfilePage() {
       const response = await fetch('/api/sec/profile');
       if (response.ok) {
         const data = await response.json();
+        if (data.success && data.data.sec) { // Check for sec data
+          const sec = data.data.sec;
+          if (sec.otherProfileInfo) {
+            const info = sec.otherProfileInfo;
+            if (info.photoUrl) setProfilePhoto(info.photoUrl);
+            if (info.birthday) setBirthday(info.birthday);
+            if (info.maritalStatus) {
+              setMaritalStatus(info.maritalStatus.isMarried ? 'yes' : 'no');
+              if (info.maritalStatus.date) setAnniversaryDate(info.maritalStatus.date);
+              setIsMaritalStatusSet(true);
+            }
+          }
+        }
         if (data.success && data.data.store) {
           setCurrentStore(data.data.store);
           setStoreName(data.data.store.name);
@@ -277,6 +313,14 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           agencyName: agencyName.trim() || null,
+          otherProfileInfo: {
+            photoUrl: profilePhoto,
+            birthday,
+            maritalStatus: {
+              isMarried: maritalStatus === 'yes',
+              date: maritalStatus === 'yes' ? anniversaryDate : null
+            }
+          }
         }),
       });
 
@@ -296,6 +340,7 @@ export default function ProfilePage() {
             const updated = {
               ...parsed,
               AgencyName: responseData.AgencyName,
+              otherProfileInfo: responseData.otherProfileInfo
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
           }
@@ -303,6 +348,11 @@ export default function ProfilePage() {
           // ignore parse/storage errors
         }
       }
+
+      // Also update localStorage photo if available locally to immediately reflect in header if we were using context there
+      // But strictly speaking, we might need a context refresh or page reload. 
+      // For now, let's just alert.
+
 
       alert('Personal info saved successfully!');
     } catch (err: any) {
@@ -422,6 +472,40 @@ export default function ProfilePage() {
                 </div>
 
                 <form onSubmit={handlePersonalInfoSubmit}>
+                  {/* Profile Photo Upload */}
+                  <div className="mb-6 flex flex-col items-center justify-center border-b border-gray-100 pb-6">
+                    <div className="relative group cursor-pointer">
+                      <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-rose-100 shadow-md">
+                        {profilePhoto ? (
+                          <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                            <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                          </div>
+                        )}
+                      </div>
+                      <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <span className="text-white text-xs font-bold">Change</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setProfilePhoto(reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Tap to change profile photo</p>
+                  </div>
+
                   {/* Personal Details */}
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -590,6 +674,101 @@ export default function ProfilePage() {
                         <option value="AGENCY010">AGENCY010</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Birthday */}
+                  <div className="mb-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs text-gray-600">Birthday</label>
+                      {birthday && !editBirthday && (
+                        <button
+                          type="button"
+                          onClick={() => setEditBirthday(true)}
+                          className="text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {birthday && !editBirthday ? (
+                      <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 font-medium">
+                        {new Date(birthday).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </div>
+                    ) : (
+                      <input
+                        type="date"
+                        value={birthday}
+                        onChange={(e) => setBirthday(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    )}
+                  </div>
+
+                  {/* Marital Status */}
+                  <div className="mb-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs text-gray-600">Marital Status</label>
+                      {isMaritalStatusSet && !editMaritalStatus && (
+                        <button
+                          type="button"
+                          onClick={() => setEditMaritalStatus(true)}
+                          className="text-rose-500 hover:bg-rose-50 p-1 rounded transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {isMaritalStatusSet && !editMaritalStatus ? (
+                      <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 font-medium capitalize">
+                        {maritalStatus === 'yes' ? 'Married' : 'Single'}
+                        {maritalStatus === 'yes' && anniversaryDate && (
+                          <span className="block text-xs text-gray-500 font-normal mt-1">
+                            Anniversary: {new Date(anniversaryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="animate-fade-in">
+                        <div className="flex gap-4 mb-3">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="maritalStatus"
+                              value="no"
+                              checked={maritalStatus === 'no'}
+                              onChange={() => setMaritalStatus('no')}
+                              className="w-4 h-4 text-rose-600 focus:ring-rose-500"
+                            />
+                            <span className="text-sm text-gray-700">Single</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="maritalStatus"
+                              value="yes"
+                              checked={maritalStatus === 'yes'}
+                              onChange={() => setMaritalStatus('yes')}
+                              className="w-4 h-4 text-rose-600 focus:ring-rose-500"
+                            />
+                            <span className="text-sm text-gray-700">Married</span>
+                          </label>
+                        </div>
+
+                        {maritalStatus === 'yes' && (
+                          <div className="mt-3">
+                            <label className="block text-xs text-gray-600 mb-1">Anniversary Date</label>
+                            <input
+                              type="date"
+                              value={anniversaryDate}
+                              onChange={(e) => setAnniversaryDate(e.target.value)}
+                              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Error Message */}

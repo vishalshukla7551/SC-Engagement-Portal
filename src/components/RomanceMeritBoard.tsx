@@ -106,7 +106,11 @@ const MOCK_USERS = [
     { id: 122, name: "Shanaya", hearts: 0, avatar: "👗", store: "Dehradun" }
 ];
 
-export default function RomanceMeritBoard() {
+interface RomanceMeritBoardProps {
+    showFooter?: boolean;
+}
+
+export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoardProps) {
     const [users, setUsers] = useState<any[]>([]);
 
     useEffect(() => {
@@ -377,7 +381,7 @@ export default function RomanceMeritBoard() {
                     );
                 })}
             </div>
-            <ValentineFooter />
+            {showFooter && <ValentineFooter />}
         </div>
     );
 }
