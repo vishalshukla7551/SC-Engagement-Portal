@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, UserCircle2 } from 'lucide-react';
@@ -112,6 +112,27 @@ interface RomanceMeritBoardProps {
 
 export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoardProps) {
     const [users, setUsers] = useState<any[]>([]);
+    const [currentUserPhone, setCurrentUserPhone] = useState<string>('');
+    const currentUserRef = useRef<HTMLDivElement | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [hasInteracted, setHasInteracted] = useState(false);
+
+    // Get logged-in user's phone from localStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const raw = window.localStorage.getItem('authUser');
+                if (raw) {
+                    const auth = JSON.parse(raw);
+                    const phone = auth?.phone || '';
+                    setCurrentUserPhone(phone);
+                    console.log('Current user phone:', phone);
+                }
+            } catch (e) {
+                console.error('Error loading user phone:', e);
+            }
+        }
+    }, []);
 
     useEffect(() => {
         // Initial Load - Force reset with new data
@@ -138,6 +159,20 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
             clearInterval(interval);
         };
     }, []);
+
+    // Auto-scroll to current user's position when users are loaded
+    useEffect(() => {
+        if (users.length > 0 && currentUserRef.current) {
+            // Delay to ensure DOM is fully rendered
+            setTimeout(() => {
+                currentUserRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'nearest'
+                });
+            }, 800);
+        }
+    }, [users]);
 
     // Helper to get users for a specific rank
     const getUsersForRank = (rankThreshold: number, nextRankThreshold?: number) => {
@@ -174,8 +209,55 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
         return () => clearInterval(interval);
     }, []);
 
+    // Page Visibility API - Pause audio when tab goes to background
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (audioRef.current) {
+                if (document.hidden) {
+                    // Tab is hidden/in background - pause audio
+                    audioRef.current.pause();
+                } else {
+                    // Tab is visible again - resume audio if user has interacted
+                    if (hasInteracted) {
+                        audioRef.current.play().catch(e => console.log("Audio resume failed:", e));
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [hasInteracted]);
+
+    // Handle page click to play audio
+    const handlePageClick = () => {
+        if (audioRef.current) {
+            // Set volume if not already set
+            if (!hasInteracted) {
+                audioRef.current.volume = 0.3;
+                setHasInteracted(true);
+            }
+
+            // Play audio if it's paused
+            if (audioRef.current.paused) {
+                audioRef.current.play().catch(e => {
+                    console.log("Audio play failed:", e);
+                    console.log("Audio element:", audioRef.current);
+                });
+            }
+        } else {
+            console.log("Audio ref not available");
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-100 flex flex-col items-center py-10 overflow-hidden relative font-sans text-slate-900">
+        <div
+            className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-100 flex flex-col items-center py-10 overflow-hidden relative font-sans text-slate-900"
+            onClick={handlePageClick}
+        >
 
             {/* Original Falling Hearts Animation */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -328,47 +410,80 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
                                     )}
 
                                     {rankUsers.length > 0 ? (
-                                        rankUsers.map((user, i) => (
-                                            <motion.div
-                                                key={user.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                whileInView={{ opacity: 1, y: 0 }}
-                                                viewport={{ once: true }}
-                                                transition={{ duration: 0.3, delay: i * 0.05 }}
-                                                className={`flex items-center justify-between px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors group`}
-                                            >
-                                                <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                                                    {/* Rank # */}
-                                                    <span className="font-mono text-xs w-8 text-center font-bold flex-shrink-0">
-                                                        {i === 0 ? (
-                                                            <span className="text-lg filter drop-shadow-[0_0_8px_rgba(255,20,147,0.8)] animate-pulse">🥇</span>
-                                                        ) : i === 1 ? (
-                                                            <span className="text-lg filter drop-shadow-md opacity-90">🥈</span>
-                                                        ) : i === 2 ? (
-                                                            <span className="text-lg opacity-80">🥉</span>
-                                                        ) : (
-                                                            <span className="text-white/60">#{i + 1}</span>
-                                                        )}
-                                                    </span>
+                                        rankUsers.map((user, i) => {
+                                            // Check if this is the current logged-in user
+                                            // For demo, we'll use name matching since MOCK_USERS don't have phone
+                                            // In production, match by phone or user ID
+                                            const isCurrentUser = user.id === 108; // Example: Neha S. as current user for demo
 
-                                                    {/* Avatar & Name */}
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="font-bold text-sm md:text-base tracking-wide flex items-center gap-2 text-white truncate group-hover:text-rose-200 transition-colors">
-                                                            {user.name}
+                                            return (
+                                                <motion.div
+                                                    key={user.id}
+                                                    ref={isCurrentUser ? currentUserRef : null}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    whileInView={{ opacity: 1, y: 0 }}
+                                                    viewport={{ once: true }}
+                                                    transition={{ duration: 0.3, delay: i * 0.05 }}
+                                                    className={`relative flex items-center justify-between px-4 py-3 border-b border-white/5 last:border-0 transition-colors group ${isCurrentUser
+                                                        ? 'bg-gradient-to-r from-yellow-500/30 via-amber-500/20 to-yellow-500/30 border-2 !border-yellow-400/60 shadow-[0_0_20px_rgba(251,191,36,0.4)] animate-pulse-slow'
+                                                        : 'hover:bg-white/5'
+                                                        }`}
+                                                >
+                                                    {/* "You Are Here" Badge for Current User */}
+                                                    {isCurrentUser && (
+                                                        <motion.div
+                                                            initial={{ scale: 0, rotate: -180 }}
+                                                            animate={{ scale: 1, rotate: 0 }}
+                                                            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.5 }}
+                                                            className="absolute -left-2 top-1/2 -translate-y-1/2 z-20"
+                                                        >
+                                                            <div className="relative">
+                                                                <div className="absolute inset-0 bg-yellow-400 blur-md opacity-60 animate-pulse"></div>
+                                                                <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[8px] font-black px-2 py-1 rounded-full shadow-lg border-2 border-white/50 whitespace-nowrap uppercase tracking-wider">
+                                                                    👉 You
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+
+                                                    <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                                                        {/* Rank # */}
+                                                        <span className="font-mono text-xs w-8 text-center font-bold flex-shrink-0">
+                                                            {i === 0 ? (
+                                                                <span className="text-lg filter drop-shadow-[0_0_8px_rgba(255,20,147,0.8)] animate-pulse">🥇</span>
+                                                            ) : i === 1 ? (
+                                                                <span className="text-lg filter drop-shadow-md opacity-90">🥈</span>
+                                                            ) : i === 2 ? (
+                                                                <span className="text-lg opacity-80">🥉</span>
+                                                            ) : (
+                                                                <span className="text-white/60">#{i + 1}</span>
+                                                            )}
                                                         </span>
-                                                        <span className="text-[10px] text-white/60 flex items-center gap-1 truncate">
-                                                            <span className="opacity-50">📍</span> {user.store}
-                                                        </span>
+
+                                                        {/* Avatar & Name */}
+                                                        <div className="flex flex-col min-w-0">
+                                                            <span className={`font-bold text-sm md:text-base tracking-wide flex items-center gap-2 truncate transition-colors ${isCurrentUser ? 'text-yellow-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'text-white group-hover:text-rose-200'
+                                                                }`}>
+                                                                {user.name}
+                                                                {isCurrentUser && <span className="text-xs">✨</span>}
+                                                            </span>
+                                                            <span className="text-[10px] text-white/60 flex items-center gap-1 truncate">
+                                                                <span className="opacity-50">📍</span> {user.store}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                {/* Hearts Score */}
-                                                <div className="flex items-center gap-1.5 font-mono text-xs md:text-sm bg-white/10 px-3 py-1 rounded-full border border-white/5 ml-2 flex-shrink-0 group-hover:bg-white/20 transition-colors">
-                                                    <span className="font-bold text-white">{user.hearts}</span>
-                                                    <span className="text-[10px] text-rose-200">❤️</span>
-                                                </div>
-                                            </motion.div>
-                                        ))
+                                                    {/* Hearts Score */}
+                                                    <div className={`flex items-center gap-1.5 font-mono text-xs md:text-sm px-3 py-1 rounded-full border ml-2 flex-shrink-0 transition-colors ${isCurrentUser
+                                                        ? 'bg-yellow-500/30 border-yellow-400/60 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+                                                        : 'bg-white/10 border-white/5 group-hover:bg-white/20'
+                                                        }`}>
+                                                        <span className={`font-bold ${isCurrentUser ? 'text-yellow-100' : 'text-white'}`}>{user.hearts}</span>
+                                                        <span className="text-[10px] text-rose-200">❤️</span>
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })
                                     ) : (
                                         <div className="text-center text-white/40 italic text-sm py-8 flex flex-col items-center gap-2">
                                             <span className="text-2xl opacity-50">💨</span>
@@ -382,6 +497,15 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
                 })}
             </div>
             {showFooter && <ValentineFooter />}
+
+            {/* Background Audio Track */}
+            <audio
+                ref={audioRef}
+                loop
+                src="/audio track/goosebumps-music.mp3"
+                onError={(e) => console.error("Audio loading error:", e)}
+                onLoadedData={() => console.log("Audio loaded successfully")}
+            />
         </div>
     );
 }
