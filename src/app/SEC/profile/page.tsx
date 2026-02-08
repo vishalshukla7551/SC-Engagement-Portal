@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
+import type { Area, Point } from 'react-easy-crop';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
 import ValentineHeader from '@/components/ValentineHeader';
@@ -46,6 +48,13 @@ export default function ProfilePage() {
   const [birthday, setBirthday] = useState('');
   const [maritalStatus, setMaritalStatus] = useState<'yes' | 'no'>('no');
   const [anniversaryDate, setAnniversaryDate] = useState('');
+
+  // Image Crop States
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   // Lock states for profile fields
   const [isMaritalStatusSet, setIsMaritalStatusSet] = useState(false);
@@ -149,6 +158,134 @@ export default function ProfilePage() {
     fetchKycInfo();
     fetchStoreInfo();
   }, []);
+
+  // Crop handlers
+  const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const createCroppedImage = async (imageSrc: string, pixelCrop: Area): Promise<string> => {
+    const image = new Image();
+    image.src = imageSrc;
+
+    return new Promise((resolve, reject) => {
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        canvas.width = pixelCrop.width;
+        canvas.height = pixelCrop.height;
+
+        ctx.drawImage(
+          image,
+          pixelCrop.x,
+          pixelCrop.y,
+          pixelCrop.width,
+          pixelCrop.height,
+          0,
+          0,
+          pixelCrop.width,
+          pixelCrop.height
+        );
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Failed to create blob'));
+            return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result as string);
+          };
+          reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.95);
+      };
+
+      image.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+    });
+  };
+
+  const handleCropSave = async () => {
+    if (!imageToCrop || !croppedAreaPixels) return;
+
+    try {
+      // Show loading state
+      const croppedImage = await createCroppedImage(imageToCrop, croppedAreaPixels);
+      setProfilePhoto(croppedImage);
+
+      // Close modal first for better UX
+      setShowCropModal(false);
+      setImageToCrop(null);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+
+      // Save to database immediately
+      setSubmittingPersonalInfo(true);
+
+      const res = await fetch('/api/sec/profile/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agencyName: agencyName.trim() || null,
+          otherProfileInfo: {
+            photoUrl: croppedImage,
+            birthday,
+            maritalStatus: {
+              isMarried: maritalStatus === 'yes',
+              date: maritalStatus === 'yes' ? anniversaryDate : null
+            }
+          }
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to upload profile photo');
+      }
+
+      const responseData = await res.json();
+
+      // Update localStorage with new data
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = window.localStorage.getItem('authUser');
+          if (raw) {
+            const parsed = JSON.parse(raw) as any;
+            const updated = {
+              ...parsed,
+              AgencyName: responseData.AgencyName,
+              otherProfileInfo: responseData.otherProfileInfo
+            };
+            window.localStorage.setItem('authUser', JSON.stringify(updated));
+          }
+        } catch {
+          // ignore parse/storage errors
+        }
+      }
+
+      // Update the profile photo state with the Cloudinary URL
+      if (responseData.otherProfileInfo?.photoUrl) {
+        setProfilePhoto(responseData.otherProfileInfo.photoUrl);
+      }
+
+      alert('✅ Profile photo uploaded successfully to cloud storage!');
+      setSubmittingPersonalInfo(false);
+    } catch (error) {
+      console.error('Error cropping/uploading image:', error);
+      alert('Failed to upload profile photo. Please try again.');
+      setSubmittingPersonalInfo(false);
+    }
+  };
+
 
   const fetchKycInfo = async () => {
     try {
@@ -349,12 +486,12 @@ export default function ProfilePage() {
         }
       }
 
-      // Also update localStorage photo if available locally to immediately reflect in header if we were using context there
-      // But strictly speaking, we might need a context refresh or page reload. 
-      // For now, let's just alert.
+      // Update the profile photo state with the Cloudinary URL
+      if (responseData.otherProfileInfo?.photoUrl) {
+        setProfilePhoto(responseData.otherProfileInfo.photoUrl);
+      }
 
-
-      alert('Personal info saved successfully!');
+      alert('✅ Profile saved successfully! Your photo has been uploaded to cloud storage.');
     } catch (err: any) {
       setPersonalInfoError(err.message || 'Failed to update profile');
     } finally {
@@ -495,7 +632,8 @@ export default function ProfilePage() {
                             if (file) {
                               const reader = new FileReader();
                               reader.onloadend = () => {
-                                setProfilePhoto(reader.result as string);
+                                setImageToCrop(reader.result as string);
+                                setShowCropModal(true);
                               };
                               reader.readAsDataURL(file);
                             }
@@ -1225,6 +1363,82 @@ export default function ProfilePage() {
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                 <span className="relative">{submittingRequest ? 'Submitting...' : 'Submit Request'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Crop Modal */}
+      {showCropModal && imageToCrop && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">Crop Profile Photo</h3>
+              <p className="text-sm text-gray-500 mt-1">Adjust and crop your image</p>
+            </div>
+
+            {/* Cropper Area */}
+            <div className="relative w-full h-80 bg-gray-900">
+              <Cropper
+                image={imageToCrop}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+
+            {/* Zoom Slider */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Zoom
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+              />
+            </div>
+
+            {/* Modal Actions */}
+            <div className="px-6 py-4 flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowCropModal(false);
+                  setImageToCrop(null);
+                  setCrop({ x: 0, y: 0 });
+                  setZoom(1);
+                }}
+                className="px-5 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCropSave}
+                disabled={submittingPersonalInfo}
+                className="px-5 py-2.5 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                style={{
+                  background: submittingPersonalInfo ? '#9ca3af' : 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                  boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
+                }}
+              >
+                {submittingPersonalInfo && (
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                {submittingPersonalInfo ? 'Uploading...' : 'Crop & Set'}
               </button>
             </div>
           </div>

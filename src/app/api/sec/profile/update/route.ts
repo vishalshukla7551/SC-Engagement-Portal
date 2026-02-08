@@ -42,17 +42,30 @@ export async function POST(req: NextRequest) {
     // Handle Cloudinary Upload for Profile Photo
     if (otherProfileInfo?.photoUrl && otherProfileInfo.photoUrl.startsWith('data:image')) {
       try {
+        const publicId = `sec_profiles/profile_${phone}`;
+
+        // Try to delete the old image first (if exists)
+        try {
+          await cloudinary.uploader.destroy(publicId);
+        } catch (deleteError) {
+          // Ignore if image doesn't exist
+          console.log('No existing image to delete or deletion failed:', deleteError);
+        }
+
+        // Upload new image
         const uploadResponse = await cloudinary.uploader.upload(otherProfileInfo.photoUrl, {
           folder: 'sec_profiles',
-          public_id: `profile_${phone}`, // Use phone to overwrite existing
+          public_id: `profile_${phone}`,
           overwrite: true,
           invalidate: true,
           transformation: [
-            { width: 400, height: 400, crop: "fill", gravity: "face" } // Optional: Optimize for profile
+            { width: 500, height: 500, crop: "fill", gravity: "auto" }
           ]
         });
+
         // Update the URL to the Cloudinary URL
         otherProfileInfo.photoUrl = uploadResponse.secure_url;
+        console.log('Profile photo uploaded to Cloudinary:', uploadResponse.secure_url);
       } catch (uploadError) {
         console.error('Cloudinary upload failed:', uploadError);
         // Optionally fail or continue without updating photo
