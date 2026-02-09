@@ -14,7 +14,7 @@ const RANKS = [
         name: 'ProtectMax Titan',
         threshold: 36,
         emoji: '👑',
-        color: 'from-red-600 to-rose-900',
+        color: 'from-rose-600 to-red-900',
         textColor: 'text-rose-100'
     },
     {
@@ -22,48 +22,48 @@ const RANKS = [
         name: 'Supreme',
         threshold: 31,
         emoji: '🌟',
-        color: 'from-orange-500 to-amber-600',
-        textColor: 'text-amber-100'
+        color: 'from-fuchsia-600 to-purple-800',
+        textColor: 'text-fuchsia-100'
     },
     {
         id: 5,
         name: 'Diamond',
         threshold: 26,
-        emoji: '💓',
-        color: 'from-rose-500 to-red-600',
-        textColor: 'text-red-100'
+        emoji: '💎',
+        color: 'from-cyan-500 to-blue-700',
+        textColor: 'text-cyan-50'
     },
     {
         id: 4,
         name: 'Platinum',
         threshold: 21,
         emoji: '🏹',
-        color: 'from-pink-500 to-rose-600',
-        textColor: 'text-pink-100'
+        color: 'from-zinc-400 to-slate-600',
+        textColor: 'text-zinc-50'
     },
     {
         id: 3,
         name: 'Gold',
         threshold: 16,
         emoji: '💌',
-        color: 'from-purple-500 to-violet-600',
-        textColor: 'text-purple-100'
+        color: 'from-amber-400 to-yellow-600',
+        textColor: 'text-amber-50'
     },
     {
         id: 2,
         name: 'Silver',
         threshold: 1,
         emoji: '🎸',
-        color: 'from-blue-500 to-indigo-600',
-        textColor: 'text-blue-100'
+        color: 'from-slate-400 to-gray-500',
+        textColor: 'text-slate-50'
     },
     {
         id: 1,
         name: 'Bronze',
         threshold: 0,
         emoji: '🌹',
-        color: 'from-slate-500 to-slate-700',
-        textColor: 'text-slate-100'
+        color: 'from-orange-700 to-amber-900',
+        textColor: 'text-orange-100'
     }
 ];
 
@@ -115,6 +115,7 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
     const [currentUserPhone, setCurrentUserPhone] = useState<string>('');
     const currentUserRef = useRef<HTMLDivElement | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const hasScrolledToUser = useRef(false);
     const [hasInteracted, setHasInteracted] = useState(false);
 
     // Get logged-in user's phone from localStorage
@@ -162,7 +163,10 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
 
     // Auto-scroll to current user's position when users are loaded
     useEffect(() => {
-        if (users.length > 0 && currentUserRef.current) {
+        if (users.length > 0 && currentUserRef.current && !hasScrolledToUser.current) {
+            // Mark as scrolled to prevent repeated scrolls on data updates
+            hasScrolledToUser.current = true;
+
             // Delay to ensure DOM is fully rendered
             setTimeout(() => {
                 currentUserRef.current?.scrollIntoView({
@@ -255,7 +259,7 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
 
     return (
         <div
-            className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-100 flex flex-col items-center py-10 overflow-hidden relative font-sans text-slate-900"
+            className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-red-100 flex flex-col items-center py-10 overflow-hidden relative font-sans text-slate-900"
             onClick={handlePageClick}
         >
 

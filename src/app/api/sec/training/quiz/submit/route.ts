@@ -80,16 +80,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Check if this is first time scoring 80%+ on ProtectMax test
+    // Check if this is first time scoring 80%+ on ProtectMax test
     let bonusAwarded = false;
-    if (score >= 80 && testName?.toLowerCase().includes('protect') && !sec.hasProtectMaxBonus) {
-      // Award 10,000 bonus points by setting the flag
-      await prisma.sEC.update({
-        where: { id: sec.id },
-        data: { hasProtectMaxBonus: true }
-      });
-      bonusAwarded = true;
-      console.log('🎉 Bonus awarded to SEC:', sec.phone);
-    }
+    // Bonus logic removed as per request
+    // if (score >= 80 && testName?.toLowerCase().includes('protect') && !sec.hasProtectMaxBonus) {
+    //   // Award 10,000 bonus points by setting the flag
+    //   await prisma.sEC.update({
+    //     where: { id: sec.id },
+    //     data: { hasProtectMaxBonus: true }
+    //   });
+    //   bonusAwarded = true;
+    //   console.log('🎉 Bonus awarded to SEC:', sec.phone);
+    // }
 
     return NextResponse.json({
       success: true,

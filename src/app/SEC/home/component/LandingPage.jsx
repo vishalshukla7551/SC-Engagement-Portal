@@ -75,14 +75,24 @@ export default function LandingPage({ userName = '' }) {
       badge: 'SUBMIT ⚡'
     },
     {
-      id: 'past-campaigns',
-      title: 'Past Campaigns',
-      description: 'View Past Contests',
-      icon: '🏆',
-      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
+      id: 'customer-love-index',
+      title: 'Customer Love Index',
+      description: 'View Your Love Score',
+      icon: '❤️',
+      bgGradient: 'from-[#e11d48] via-[#db2777] to-[#be123c]',
       iconBg: 'bg-white/20',
-      link: '/SEC/past-campaigns',
-      badge: 'NEW 🆕'
+      link: '/SEC/romance-merit-board',
+      badge: 'HOT 🔥'
+    },
+    {
+      id: 'customer-honour',
+      title: 'Customer Obsession',
+      description: 'View Your Rewards',
+      icon: '🎖️',
+      bgGradient: 'from-[#059669] via-[#10b981] to-[#34d399]',
+      iconBg: 'bg-white/20',
+      link: '/SEC/valentine-day',
+      badge: 'REWARDS 🎁'
     },
     {
       id: 'assessment',
@@ -95,6 +105,16 @@ export default function LandingPage({ userName = '' }) {
       badge: 'TRAINING 📚'
     },
     {
+      id: 'past-campaigns',
+      title: 'Past Campaigns',
+      description: 'View Past Contests',
+      icon: '🏆',
+      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
+      iconBg: 'bg-white/20',
+      link: '/SEC/past-campaigns',
+      badge: 'NEW 🆕'
+    },
+    {
       id: 'claim-raise',
       title: 'SC+ Claim Raise Procedure',
       description: 'Learn More',
@@ -103,26 +123,6 @@ export default function LandingPage({ userName = '' }) {
       iconBg: 'bg-white/20',
       link: 'https://www.samsung.com/in/offer/samsung-care-plus/login/?usertype=customer',
       badge: 'GUIDE 📘'
-    },
-    {
-      id: 'customer-love-index',
-      title: 'Customer Love Index',
-      description: 'View Your Love Score',
-      icon: '❤️',
-      bgGradient: 'from-[#e11d48] via-[#db2777] to-[#be123c]',
-      iconBg: 'bg-white/20',
-      link: '/SEC/romance-merit-board',
-      badge: 'HOT 🔥'
-    },
-    {
-      id: 'customer-honour',
-      title: 'Customer Honour',
-      description: 'View Your Rewards',
-      icon: '🎖️',
-      bgGradient: 'from-[#059669] via-[#10b981] to-[#34d399]',
-      iconBg: 'bg-white/20',
-      link: '/SEC/valentine-day',
-      badge: 'REWARDS 🎁'
     },
   ];
 
