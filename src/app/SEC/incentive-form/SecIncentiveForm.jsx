@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 // OLD CONFETTI IMPORT - Uncomment after Christmas
@@ -24,6 +24,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const [deviceId, setDeviceId] = useState('');
   const [planId, setPlanId] = useState('');
   const [imeiNumber, setImeiNumber] = useState('');
+  const dateInputRef = useRef(null);
   const [imeiError, setImeiError] = useState('');
   const [duplicateError, setDuplicateError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
@@ -591,13 +592,18 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 <input
                   type="date"
                   id="dateOfSale"
+                  ref={dateInputRef}
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
+                  onClick={() => dateInputRef.current?.showPicker()}
                   disabled={false}
                   className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
                   placeholder="dd/mm/yyyy"
                 />
-                <div className="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none">
+                <div
+                  className="absolute inset-y-0 right-0 pr-6 flex items-center cursor-pointer"
+                  onClick={() => dateInputRef.current?.showPicker()}
+                >
                   <svg
                     className="w-5 h-5 text-slate-400"
                     fill="none"
