@@ -259,9 +259,28 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       }
 
       // Success - Show celebration modal
-      // User Request: Show Plan Price as Honor Points
+      // User Request: Show Hearts Earned based on Plan Type
       const selectedPlan = plans.find(p => p.id === planId);
-      setEarnedIncentive(selectedPlan?.price || 0);
+      let earnedHearts = 0;
+
+      if (selectedPlan) {
+        const type = (selectedPlan.planType || selectedPlan.label || '').toUpperCase();
+
+        if (type.includes('COMBO')) {
+          earnedHearts = 5;
+        } else if (type.includes('ADLD') || type.includes('DAMAGE')) {
+          earnedHearts = 3;
+        } else if (type.includes('SCREEN') || type.includes('PROTECTION')) {
+          earnedHearts = 1;
+        } else if (type.includes('WARRANTY') || type.includes('EXTENDED')) {
+          earnedHearts = 1;
+        } else {
+          // Default fallback
+          earnedHearts = 1;
+        }
+      }
+
+      setEarnedIncentive(earnedHearts);
       setShowSuccessModal(true);
 
       // OLD CONFETTI CODE - Uncomment after Christmas
@@ -575,10 +594,10 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
                   disabled={false}
-                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-all"
+                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
                   placeholder="dd/mm/yyyy"
                 />
-                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none">
                   <svg
                     className="w-5 h-5 text-slate-400"
                     fill="none"

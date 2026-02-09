@@ -73,6 +73,15 @@ export default function LoveSubmissionsPage() {
         TEST_PLAN: "Test Plan",
     };
 
+    const PLAN_HEARTS: Record<string, number> = {
+        'ADLD_1_YR': 3,
+        'COMBO_2_YRS': 5,
+        'SCREEN_PROTECT_1_YR': 1,
+        'SCREEN_PROTECT_2_YR': 1,
+        'EXTENDED_WARRANTY_1_YR': 1,
+        'TEST_PLAN': 0
+    };
+
     const shortMapping = {
         SCREEN_PROTECT_1_YR: "SP 1Y",
         SCREEN_PROTECT_2_YR: "SP 2Y",
@@ -153,7 +162,8 @@ export default function LoveSubmissionsPage() {
                 planType,
                 units: 0,
                 verifiedUnits: 0,
-                unverifiedUnits: 0
+                unverifiedUnits: 0,
+                heartsPerUnit: PLAN_HEARTS[planType] ?? 1 // Fallback to 1 if not in mapping
             };
         }
         acc[key].units += 1;
@@ -163,7 +173,7 @@ export default function LoveSubmissionsPage() {
             acc[key].unverifiedUnits += 1;
         }
         return acc;
-    }, {} as Record<string, { sortDate: string; displayDate: string; shortDate: string; deviceName: string; planType: string; units: number; verifiedUnits: number; unverifiedUnits: number }>);
+    }, {} as Record<string, { sortDate: string; displayDate: string; shortDate: string; deviceName: string; planType: string; units: number; verifiedUnits: number; unverifiedUnits: number; heartsPerUnit: number }>);
 
     const tableRows = Object.values(groupedTableData).sort((a, b) => b.sortDate.localeCompare(a.sortDate));
 
@@ -421,7 +431,7 @@ export default function LoveSubmissionsPage() {
                                             </td>
                                             <td className="px-3 py-4 text-center">
                                                 <span className="font-black text-rose-600 text-sm">
-                                                    {row.verifiedUnits > 0 ? (row.verifiedUnits * 1000).toLocaleString() : '-'}
+                                                    {row.verifiedUnits > 0 ? (row.verifiedUnits * row.heartsPerUnit).toLocaleString() : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-3 py-4 text-center">
