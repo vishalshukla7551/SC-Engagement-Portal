@@ -38,6 +38,7 @@ export async function GET() {
                         id: true,
                         phone: true,
                         fullName: true,
+                        otherProfileInfo: true,
                         store: {
                             select: {
                                 name: true
@@ -48,8 +49,29 @@ export async function GET() {
             }
         });
 
+        // Fetch SECs with profile info to ensure they get the bonus even without sales
+        const secsWithProfile = await prisma.sEC.findMany({
+            where: {
+                otherProfileInfo: {
+                    not: null
+                }
+            },
+            select: {
+                id: true,
+                phone: true,
+                fullName: true,
+                otherProfileInfo: true,
+                store: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
+
         // Group by SEC and calculate hearts
         const userHearts = new Map<string, {
+            id: string; // Add ID
             phone: string;
             name: string;
             store: string;
@@ -57,19 +79,49 @@ export async function GET() {
             submissions: number;
         }>();
 
+        // Helper to init user and add profile bonus
+        const initUser = (secId: string, secData: any) => {
+            if (userHearts.has(secId)) return;
+
+            let profileBonus = 0;
+            const info = secData?.otherProfileInfo as any;
+            if (info && info.photoUrl && info.birthday && info.maritalStatus) {
+                profileBonus = 20;
+            }
+
+            // If user has no sales and no bonus, we might not want to show them? 
+            // But if they are in this list, they might get sales later.
+            // For now, we add them if they have bonus OR are being called from sales loop.
+
+            userHearts.set(secId, {
+                id: secId, // Add ID for unique key
+                phone: secData?.phone || secId,
+                name: secData?.fullName || secData?.phone || 'Unknown',
+                store: secData?.store?.name || 'Unknown Store',
+                hearts: profileBonus,
+                submissions: 0
+            });
+        };
+
+        // 1. Process valid profiles
+        secsWithProfile.forEach(sec => {
+            const info = sec.otherProfileInfo as any;
+            // Only add to leaderboard if they actually qualify for the 20 pts (or have sales later)
+            // Here we strictly check for bonus qualification to avoid flooding leaderboard with 0 pt users
+            if (info && info.photoUrl && info.birthday && info.maritalStatus) {
+                initUser(sec.id, sec);
+            }
+        });
+
+        // 2. Process submissions
         submissions.forEach((submission: any) => {
             const secId = submission.secId;
             const planType = submission.plan?.planType || 'UNKNOWN';
             const hearts = PLAN_HEARTS[planType as keyof typeof PLAN_HEARTS] || 0;
 
             if (!userHearts.has(secId)) {
-                userHearts.set(secId, {
-                    phone: submission.secUser?.phone || secId,
-                    name: submission.secUser?.fullName || submission.secUser?.phone || 'Unknown',
-                    store: submission.secUser?.store?.name || 'Unknown Store',
-                    hearts: 0,
-                    submissions: 0
-                });
+                // Initialize if not present (e.g. profile was incomplete or not loaded)
+                initUser(secId, submission.secUser);
             }
 
             const userData = userHearts.get(secId)!;
