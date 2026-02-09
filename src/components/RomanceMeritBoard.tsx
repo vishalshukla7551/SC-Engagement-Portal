@@ -10,7 +10,7 @@ import ValentineFooter from '@/components/ValentineFooter';
 // Reuse the Ranks configuration
 const RANKS = [
     {
-        id: 7,
+        id: 6,
         name: 'ProtectMax Titan',
         threshold: 999,
         emoji: '👑',
@@ -18,17 +18,9 @@ const RANKS = [
         textColor: 'text-rose-100'
     },
     {
-        id: 6,
-        name: 'Supreme',
-        threshold: 90,
-        emoji: '🎖️',
-        color: 'from-fuchsia-600 to-purple-800',
-        textColor: 'text-fuchsia-100'
-    },
-    {
         id: 5,
         name: 'Diamond',
-        threshold: 70,
+        threshold: 90,
         emoji: '💎',
         color: 'from-cyan-500 to-blue-700',
         textColor: 'text-cyan-50'
@@ -36,7 +28,7 @@ const RANKS = [
     {
         id: 4,
         name: 'Platinum',
-        threshold: 50,
+        threshold: 70,
         emoji: '💠',
         color: 'from-zinc-400 to-slate-600',
         textColor: 'text-zinc-50'
@@ -44,7 +36,7 @@ const RANKS = [
     {
         id: 3,
         name: 'Gold',
-        threshold: 40,
+        threshold: 50,
         emoji: '⚜️',
         color: 'from-amber-400 to-yellow-600',
         textColor: 'text-amber-50'
@@ -52,7 +44,7 @@ const RANKS = [
     {
         id: 2,
         name: 'Silver',
-        threshold: 30,
+        threshold: 35,
         emoji: '⚔️',
         color: 'from-slate-400 to-gray-500',
         textColor: 'text-slate-50'
@@ -360,7 +352,9 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
                                     <h2 className={`font-black text-base md:text-lg uppercase tracking-widest ${rank.textColor} drop-shadow-md`}>
                                         {rank.name}
                                     </h2>
-                                    <span className="text-xs text-white/80 font-medium tracking-wide">Min {rank.threshold} Hearts</span>
+                                    {rank.threshold !== 999 && (
+                                        <span className="text-xs text-white/80 font-medium tracking-wide">Min {rank.threshold} Hearts</span>
+                                    )}
                                 </div>
 
                                 {/* Users List (Full Expansion) */}
