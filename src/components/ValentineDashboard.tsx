@@ -92,7 +92,7 @@ const RANKS = [
     },
 ];
 
-export default function ValentineDashboard({ userName = '' }: ValentineDashboardProps) {
+export default function ValentineDashboard({ userName: userNameProp = '' }: ValentineDashboardProps) {
     const router = useRouter();
     const [score, setScore] = useState(0);
     const [showLevelUp, setShowLevelUp] = useState(false);
@@ -102,6 +102,25 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
     const [showCupid, setShowCupid] = useState(false);
     const [isMuted, setIsMuted] = useState(false); // Default to unmuted but waiting for interaction
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [userName, setUserName] = useState(userNameProp);
+    const currentRankRef = useRef<HTMLDivElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+    // Load user name from localStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined' && !userName) {
+            try {
+                const raw = window.localStorage.getItem('authUser');
+                if (raw) {
+                    const auth = JSON.parse(raw);
+                    const name = auth?.name || auth?.employeeId || 'You';
+                    setUserName(name);
+                }
+            } catch (e) {
+                console.error('Error loading user name:', e);
+            }
+        }
+    }, [userName]);
 
     // Audio Control
     useEffect(() => {
@@ -114,6 +133,29 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
                 audioRef.current.pause();
             }
         }
+    }, [isMuted]);
+
+    // Page Visibility API - Pause audio when tab goes to background
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (audioRef.current) {
+                if (document.hidden) {
+                    // Tab is hidden/in background - pause audio
+                    audioRef.current.pause();
+                } else {
+                    // Tab is visible again - resume audio if not muted
+                    if (!isMuted) {
+                        audioRef.current.play().catch(e => console.log("Audio resume failed:", e));
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [isMuted]);
 
     // Cupid Scheduler
@@ -146,6 +188,20 @@ export default function ValentineDashboard({ userName = '' }: ValentineDashboard
             return () => clearTimeout(timer);
         }
     }, [visitingRankIndex, currentRankIndex, score]);
+
+    // Auto-scroll to center current rank position
+    useEffect(() => {
+        if (currentRankRef.current && containerRef.current) {
+            // Small delay to ensure DOM is updated
+            setTimeout(() => {
+                currentRankRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }, 100);
+        }
+    }, [visitingRankIndex]);
 
     // Level Up Check
     useEffect(() => {

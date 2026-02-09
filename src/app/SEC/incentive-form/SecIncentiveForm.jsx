@@ -292,7 +292,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
     setShowSuccessModal(false);
     // OLD CONFETTI CODE - Uncomment after Christmas
     // setShowConfetti(false);
-    router.push('/SEC/valentine-day');
+    router.push('/SEC/romance-merit-board');
   };
 
   const handleCancelConfirm = () => {
@@ -563,7 +563,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               </div>
             </div>
 
-            {/* Date of Sale - DISABLED */}
+            {/* Date of Sale */}
             <div>
               <label htmlFor="dateOfSale" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
                 Date of Sale
@@ -574,9 +574,9 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   id="dateOfSale"
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
-                  disabled={true}
-                  className="w-full pl-4 pr-12 py-3.5 bg-slate-200/50 border border-slate-200 rounded-xl text-slate-500 text-sm font-semibold cursor-not-allowed shadow-sm transition-all"
-                  placeholder="Submissions Closed"
+                  disabled={false}
+                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-all"
+                  placeholder="dd/mm/yyyy"
                 />
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                   <svg
@@ -594,22 +594,6 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   </svg>
                 </div>
               </div>
-              <motion.div
-                className="mt-3 p-3 bg-rose-50/80 backdrop-blur-sm border border-rose-200 rounded-xl flex items-center gap-3 shadow-sm"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                  <span className="text-lg">💔</span>
-                </div>
-                <div>
-                  <p className="text-xs text-rose-800 font-bold">
-                    Submissions are currently closed
-                  </p>
-                  <p className="text-[10px] text-rose-600 font-medium">
-                    Please check back later for updates
-                  </p>
-                </div>
-              </motion.div>
             </div>
 
             {/* Store Name - Always disabled, loaded from authUser */}
@@ -764,26 +748,32 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               )}
             </div>
 
-            {/* Submit Button - DISABLED (Submissions Closed) */}
+            {/* Submit Button */}
             <div className="pt-6 pb-6">
               <button
-                type="button"
-                disabled={true}
-                className="w-full text-white font-bold py-4 rounded-xl opacity-50 cursor-not-allowed transition-all text-base shadow-lg relative overflow-hidden"
+                type="submit"
+                disabled={isSubmitting || imeiError || duplicateError || !dateOfSale || !deviceId || !planId || !imeiNumber}
+                className="w-full text-white font-bold py-4 rounded-xl transition-all text-base shadow-lg relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: 'linear-gradient(90deg, #999 0%, #666 50%, #999 100%)',
+                  background: isSubmitting ? 'linear-gradient(90deg, #999 0%, #666 50%, #999 100%)' : 'linear-gradient(90deg, #e11d48 0%, #be123c 50%, #e11d48 100%)',
                 }}
               >
                 <div className="relative flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span>SUBMISSIONS CLOSED</span>
+                  {isSubmitting ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>SUBMITTING...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>💘</span>
+                      <span>SUBMIT SALE</span>
+                    </>
+                  )}
                 </div>
               </button>
-              <p className="mt-3 text-center text-xs text-slate-600 font-medium">
-                Sales submission period has ended. Thank you for your participation!
-              </p>
             </div>
           </motion.form>
         </div>
