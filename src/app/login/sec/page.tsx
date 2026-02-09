@@ -72,8 +72,8 @@ export default function SECLogin() {
   const LOVE_QUOTES = [
     "Selling with Heart ❤️",
     "Spread the Love, Close the Deal 🌹",
-    "You are the Heart of Zopper 💖",
-    "Happy Valentine's SalesDost! 💘"
+    "You are the Heart of Samsung 💖",
+    "Happy Valentine's Week! 💘"
   ];
 
   const fireHeartConfetti = () => {

@@ -15,77 +15,77 @@ const RANKS = [
     {
         id: 1,
         name: 'Bronze',
-        threshold: 0,
-        emoji: '🌹',
+        threshold: 20,
+        emoji: '🛡️',
         desc: 'The Beginning',
         color: 'from-slate-500 to-slate-700',
-        position: { left: '67%', top: '96%' },
+        position: { left: '75%', top: '90%' },
         rotation: 0,
         textSide: 'left'
     },
     {
         id: 2,
         name: 'Silver',
-        threshold: 1,
-        emoji: '🎸',
-        desc: 'Lost in Love',
+        threshold: 30,
+        emoji: '⚔️',
+        desc: 'Building Bonds',
         color: 'from-blue-500 to-indigo-600',
-        position: { left: '42%', top: '82%' },
+        position: { left: '20%', top: '77%' },
         rotation: 15,
         textSide: 'right'
     },
     {
         id: 3,
         name: 'Gold',
-        threshold: 16,
-        emoji: '💌',
-        desc: 'Crazy in Love',
+        threshold: 40,
+        emoji: '⚜️',
+        desc: 'Golden Trust',
         color: 'from-purple-500 to-violet-600',
-        position: { left: '30%', top: '62%' },
+        position: { left: '78%', top: '64%' },
         rotation: -5,
-        textSide: 'right'
+        textSide: 'left'
     },
     {
         id: 4,
         name: 'Platinum',
-        threshold: 21,
-        emoji: '🏹',
-        desc: 'The Beloved',
+        threshold: 50,
+        emoji: '💠',
+        desc: 'Pure Devotion',
         color: 'from-pink-500 to-rose-600',
-        position: { left: '64%', top: '48%' },
+        position: { left: '20%', top: '51%' },
         rotation: 5,
-        textSide: 'left'
+        textSide: 'right'
     },
     {
         id: 5,
         name: 'Diamond',
-        threshold: 26,
-        emoji: '💓',
-        desc: 'Heart Stealer',
+        threshold: 70,
+        emoji: '💎',
+        desc: 'Unbreakable Faith',
         color: 'from-rose-500 to-red-600',
-        position: { left: '55%', top: '32%' },
+        position: { left: '78%', top: '38%' },
         rotation: -5,
-        textSide: 'right'
+        textSide: 'left'
     },
     {
         id: 6,
         name: 'Supreme',
-        threshold: 31,
-        emoji: '🌟',
-        desc: 'Devoted Soul',
+        threshold: 90,
+        emoji: '🎖️',
+        desc: 'Supreme Loyalty',
         color: 'from-orange-500 to-amber-600',
-        position: { left: '30%', top: '18%' },
+        position: { left: '20%', top: '25%' },
         rotation: 10,
         textSide: 'right'
     },
     {
         id: 7,
         name: 'ProtectMax Titan',
-        threshold: 36,
+        threshold: 999,
         emoji: '👑',
         desc: 'The Ultimate Winner',
         color: 'from-red-600 to-rose-900',
-        position: { left: '60%', top: '2%' },
+        position: { left: '50%', top: '10%' },
         effect: true,
         customScale: 1.1,
         textSide: 'right'
@@ -173,7 +173,7 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
 
     // Calculate Current Rank
     const currentRankIndex = RANKS.findLastIndex(r => score >= r.threshold);
-    const currentRank = RANKS[currentRankIndex];
+    const currentRank = RANKS[currentRankIndex >= 0 ? currentRankIndex : 0]; // Default to first rank if below all thresholds
 
     // Travel Animation Effect
     useEffect(() => {
@@ -247,19 +247,24 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
         }
     };
 
-    // Simulating "Dummy Run" to ProtectMax Romeo (Rank 7, Threshold 36)
+    // Fetch real hearts from API
     useEffect(() => {
-        const interval = setInterval(() => {
-            setScore(prev => {
-                if (prev >= 40) {
-                    clearInterval(interval);
-                    return prev;
+        const fetchHearts = async () => {
+            try {
+                const res = await fetch('/api/user/valentine-submissions');
+                if (res.ok) {
+                    const data = await res.json();
+                    setScore(data.totalHearts || 0);
                 }
-                // Add 1 heart logic
-                return prev + 1;
-            });
-        }, 2000); // Update every 2s for slower progression
+            } catch (error) {
+                console.error('Failed to fetch hearts:', error);
+            }
+        };
 
+        fetchHearts();
+
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchHearts, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -327,11 +332,11 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
             onClick={handleInteraction}
             onMouseMove={handleMouseMove}
         >
-            {/* Heartbeat Vignette Overlay - Intensified */}
+            {/* Heartbeat Vignette Overlay - Medium Soft */}
             <motion.div
-                className="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_10%,rgba(230,0,40,0.45)_100%)]"
-                animate={{ opacity: [0.6, 1.05, 0.6] }}
-                transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_30%,rgba(230,0,40,0.25)_100%)]"
+                animate={{ opacity: [0.1, 0.4, 0.1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
 
             {/* Full Screen Background - Light Pinkish Theme */}
@@ -472,12 +477,9 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
             </div>
 
             {/* Content Container */}
-            <div className="relative z-10 h-full flex flex-col pt-2 pb-20 max-w-md mx-auto">
-                <img
-                    src="/images/path.PNG"
-                    alt="Love Path"
-                    className="absolute inset-0 w-full h-full object-fill opacity-60 pointer-events-none mix-blend-multiply -z-10"
-                />
+            {/* Content Container */}
+            <div className="relative z-10 h-full flex flex-col pt-2 pb-20 w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto transition-all duration-300">
+
 
                 {/* Header Stats - Compact */}
                 {/* Blinkit-Inspired Valentine Header */}
@@ -497,13 +499,13 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                         <div className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-gradient-to-b from-rose-300 via-red-500 to-rose-900 rounded-full shadow-[0_0_8px_rgba(225,29,72,0.6)]"></div>
 
                         <div className="flex flex-col">
-                            <h1 className="text-base leading-none font-serif italic font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-200 to-red-100 drop-shadow-[0_2px_2px_rgba(225,29,72,0.8)] filter contrast-125 whitespace-nowrap pr-1">
-                                Customer Honour
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-none font-serif italic font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-red-600 to-rose-800 drop-shadow-sm whitespace-nowrap pr-1 transition-all duration-300">
+                                Customer Obsession
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="h-[1.5px] w-5 bg-rose-400 rounded-full shadow-[0_0_4px_#fb7185]"></span>
-                                <p className="text-[6px] text-white font-bold tracking-[0.3em] uppercase drop-shadow-md opacity-90 whitespace-nowrap">
-                                    Journey of True Love
+                                <span className="h-[2px] w-6 md:w-10 bg-rose-600 rounded-full"></span>
+                                <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-rose-800 font-bold tracking-[0.2em] uppercase drop-shadow-sm opacity-90 whitespace-nowrap transition-all duration-300">
+                                    Journey of Trust
                                 </p>
                             </div>
                         </div>
@@ -513,7 +515,48 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                 </div>
 
                 {/* Snake Path Visualization */}
-                <div className="flex-1 relative w-full">
+                <div className="flex-1 relative w-full" ref={containerRef}>
+
+                    {/* Road SVG Path */}
+                    <svg
+                        className="absolute inset-0 w-full h-full pointer-events-none z-0"
+                        viewBox="0 0 100 100"
+                        preserveAspectRatio="none"
+                        style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.2))' }}
+                    >
+                        {/* Outer Road Border/Base */}
+                        <path
+                            d="M 75 90 C 50 90, 50 77, 25 77 S 50 64, 75 64 S 50 51, 25 51 S 50 38, 75 38 S 50 25, 25 25 C 25 15, 35 10, 50 10"
+                            fill="none"
+                            stroke="#be123c" // Rose-700 darker base
+                            strokeWidth="40"
+                            className="opacity-40"
+                            strokeLinecap="round"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        {/* Inner Road Surface */}
+                        <path
+                            d="M 75 90 C 50 90, 50 77, 25 77 S 50 64, 75 64 S 50 51, 25 51 S 50 38, 75 38 S 50 25, 25 25 C 25 15, 35 10, 50 10"
+                            fill="none"
+                            stroke="#fda4af" // Rose-300 lighter surface
+                            strokeWidth="32"
+                            className="opacity-60"
+                            strokeLinecap="round"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        {/* Dashed Center Line */}
+                        <path
+                            d="M 75 90 C 50 90, 50 77, 25 77 S 50 64, 75 64 S 50 51, 25 51 S 50 38, 75 38 S 50 25, 25 25 C 25 15, 35 10, 50 10"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeDasharray="10 10"
+                            className="opacity-80"
+                            strokeLinecap="round"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                    </svg>
+
                     {/* Render Ranks */}
                     {RANKS.map((rank, index) => {
                         const isUnlocked = index <= visitingRankIndex;
@@ -541,10 +584,10 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                                 <div className={`relative transition-all duration-500 flex-shrink-0 ${isUnlocked ? 'scale-110' : 'scale-95 opacity-80'}`}>
                                     {/* Icon Container with Glow & Sparkles */}
                                     <div
-                                        className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.3)] border-4 transition-all duration-300 ${isUnlocked ? 'bg-gradient-to-br from-rose-500/90 to-red-600/90 border-white shadow-rose-500/60' : 'bg-black/40 border-white/30 grayscale'}`}
+                                        className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 mx-auto rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.3)] border-4 transition-all duration-300 ${isUnlocked ? 'bg-gradient-to-br from-rose-500/90 to-red-600/90 border-white shadow-rose-500/60' : 'bg-black/40 border-white/30 grayscale'}`}
                                         style={{ transform: `rotate(${rotation}deg)` }}
                                     >
-                                        <span className={`text-5xl filter drop-shadow-lg ${isUnlocked ? 'animate-pulse' : ''}`}>{rank.emoji}</span>
+                                        <span className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl filter drop-shadow-lg ${isUnlocked ? 'animate-pulse' : ''}`}>{rank.emoji}</span>
 
                                         {/* Sparkles for Heart King & Titan */}
                                         {(rank.name === 'ProtectMax Titan' || rank.name === 'Bronze') && isUnlocked && (
@@ -570,15 +613,15 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                                     ${rank.name === 'ProtectMax Titan' ? (isLeft ? 'mr-1' : 'ml-1') : ''} 
                                 `}>
                                     {/* Rank Name Badge */}
-                                    <div className={`px-2 py-1 sm:px-4 sm:py-1.5 rounded-full border-2 shadow-xl backdrop-blur-md transform transition-all duration-300 ${isUnlocked ? 'bg-white text-rose-600 border-rose-500 rotate-0 scale-100' : 'bg-black/60 text-white/80 border-transparent rotate-0 scale-90'}`}>
+                                    <div className={`px-2 py-1 sm:px-4 sm:py-1.5 md:px-5 md:py-2 rounded-full border-2 shadow-xl backdrop-blur-md transform transition-all duration-300 ${isUnlocked ? 'bg-white text-rose-600 border-rose-500 rotate-0 scale-100' : 'bg-black/60 text-white/80 border-transparent rotate-0 scale-90'}`}>
                                         <div className={`flex flex-col ${isLeft ? 'items-end' : 'items-start'} leading-tight`}>
-                                            <span className={`${rank.name === 'ProtectMax Titan' ? 'text-[9px] sm:text-[10px] leading-3 whitespace-normal' : (rank.name.length >= 10 ? 'text-[10px] sm:text-xs whitespace-nowrap' : 'text-xs sm:text-base whitespace-nowrap')} font-serif font-black uppercase tracking-wide block text-transparent bg-clip-text bg-gradient-to-br from-rose-600 to-red-900 drop-shadow-sm`}>
+                                            <span className={`${rank.name === 'ProtectMax Titan' ? 'text-[9px] sm:text-[10px] md:text-xs lg:text-sm leading-3 whitespace-normal' : (rank.name.length >= 10 ? 'text-[10px] sm:text-xs md:text-sm lg:text-base whitespace-nowrap' : 'text-xs sm:text-base md:text-lg lg:text-xl whitespace-nowrap')} font-serif font-black uppercase tracking-wide block text-transparent bg-clip-text bg-gradient-to-br from-rose-600 to-red-900 drop-shadow-sm`}>
                                                 {rank.name === 'ProtectMax Titan' ? (
                                                     <>ProtectMax<br /><span className="text-[9px] sm:text-[10px]">Titan</span></>
                                                 ) : rank.name}
                                             </span>
                                             {/* Tagline */}
-                                            <span className="text-[8px] sm:text-[9px] font-medium text-gray-500 italic mt-0.5 whitespace-nowrap">
+                                            <span className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-medium text-gray-500 italic mt-0.5 whitespace-nowrap">
                                                 {rank.desc}
                                             </span>
                                         </div>

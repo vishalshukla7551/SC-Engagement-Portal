@@ -50,7 +50,7 @@ export default function ValentineFooter() {
         },
         {
             id: 'customer-honour',
-            label: 'Customer\nHonour',
+            label: 'Customer\nObsession',
             href: '/SEC/valentine-day',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
