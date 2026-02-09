@@ -37,6 +37,7 @@ export default function LoveSubmissionsPage() {
     const [verifiedCount, setVerifiedCount] = useState(0);
     const [unverifiedCount, setUnverifiedCount] = useState(0);
     const [totalHearts, setTotalHearts] = useState(0);
+    const [profileBonus, setProfileBonus] = useState(0);
     const [storeName, setStoreName] = useState('');
     const [userName, setUserName] = useState('');
     const [loading, setLoading] = useState(true);
@@ -53,6 +54,7 @@ export default function LoveSubmissionsPage() {
                 setVerifiedCount(data.verifiedCount);
                 setUnverifiedCount(data.unverifiedCount);
                 setTotalHearts(data.totalHearts);
+                setProfileBonus(data.profileBonus || 0);
                 setStoreName(data.storeName);
                 setUserName(data.userName);
             } catch (err) {
@@ -277,19 +279,33 @@ export default function LoveSubmissionsPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-2 gap-4 mb-4">
                             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
                                 <p className="text-[10px] text-pink-100 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                    Admin Verified
+                                    Sale Hearts
                                 </p>
                                 <div className="flex items-baseline gap-1">
-                                    <p className="text-2xl font-black tracking-tighter">{totalHearts.toLocaleString('en-IN')}</p>
+                                    <p className="text-2xl font-black tracking-tighter">{(totalHearts - profileBonus).toLocaleString('en-IN')}</p>
                                     <span className="text-sm">❤️</span>
                                 </div>
                                 <p className="text-[9px] text-pink-200 mt-1 font-medium italic">from {verifiedCount} verified units</p>
                             </div>
 
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                                <p className="text-[10px] text-pink-100 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                    Bonus
+                                </p>
+                                <div className="flex items-baseline gap-1">
+                                    <p className="text-2xl font-black tracking-tighter">{profileBonus.toLocaleString('en-IN')}</p>
+                                    <span className="text-sm">❤️</span>
+                                </div>
+                                <p className="text-[9px] text-pink-200 mt-1 font-medium italic">{profileBonus > 0 ? "Bonus Earned! ✨" : "Complete Profile to Earn"}</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 mb-6">
                             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
                                 <p className="text-[10px] text-pink-100 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
@@ -299,7 +315,7 @@ export default function LoveSubmissionsPage() {
                                     <p className="text-2xl font-black tracking-tighter text-yellow-200">-</p>
                                     <span className="text-sm">❤️</span>
                                 </div>
-                                <p className="text-[9px] text-pink-200 mt-1 font-medium italic">from {unverifiedCount} units</p>
+                                <p className="text-[9px] text-pink-200 mt-1 font-medium italic">from {unverifiedCount} units awaiting verification</p>
                             </div>
                         </div>
 
