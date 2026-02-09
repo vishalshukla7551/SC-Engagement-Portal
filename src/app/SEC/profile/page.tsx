@@ -277,7 +277,7 @@ export default function ProfilePage() {
         setProfilePhoto(responseData.otherProfileInfo.photoUrl);
       }
 
-      alert('✅ Profile photo uploaded successfully to cloud storage!');
+      alert('✅ Profile photo uploaded successfully!');
       setSubmittingPersonalInfo(false);
     } catch (error) {
       console.error('Error cropping/uploading image:', error);
@@ -491,7 +491,7 @@ export default function ProfilePage() {
         setProfilePhoto(responseData.otherProfileInfo.photoUrl);
       }
 
-      alert('✅ Profile saved successfully! Your photo has been uploaded to cloud storage.');
+      alert('✅ Profile saved successfully!');
     } catch (err: any) {
       setPersonalInfoError(err.message || 'Failed to update profile');
     } finally {
