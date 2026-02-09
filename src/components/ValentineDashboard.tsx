@@ -10,7 +10,7 @@ interface ValentineDashboardProps {
     userName?: string;
 }
 
-// 7 Ranks: Aashiq -> Majnu -> Deewana -> Mehboob -> Dilruba -> Raanjha -> ProtectMax Romeo
+// 5 Ranks: Bronze -> Silver -> Gold -> Platinum -> Diamond
 const RANKS = [
     {
         id: 1,
@@ -26,7 +26,7 @@ const RANKS = [
     {
         id: 2,
         name: 'Silver',
-        threshold: 30,
+        threshold: 35,
         emoji: '⚔️',
         desc: 'Building Bonds',
         color: 'from-blue-500 to-indigo-600',
@@ -37,7 +37,7 @@ const RANKS = [
     {
         id: 3,
         name: 'Gold',
-        threshold: 40,
+        threshold: 50,
         emoji: '⚜️',
         desc: 'Golden Trust',
         color: 'from-purple-500 to-violet-600',
@@ -48,7 +48,7 @@ const RANKS = [
     {
         id: 4,
         name: 'Platinum',
-        threshold: 50,
+        threshold: 70,
         emoji: '💠',
         desc: 'Pure Devotion',
         color: 'from-pink-500 to-rose-600',
@@ -59,7 +59,7 @@ const RANKS = [
     {
         id: 5,
         name: 'Diamond',
-        threshold: 70,
+        threshold: 90,
         emoji: '💎',
         desc: 'Unbreakable Faith',
         color: 'from-rose-500 to-red-600',
@@ -69,17 +69,6 @@ const RANKS = [
     },
     {
         id: 6,
-        name: 'Supreme',
-        threshold: 90,
-        emoji: '🎖️',
-        desc: 'Supreme Loyalty',
-        color: 'from-orange-500 to-amber-600',
-        position: { left: '20%', top: '25%' },
-        rotation: 10,
-        textSide: 'right'
-    },
-    {
-        id: 7,
         name: 'ProtectMax Titan',
         threshold: 999,
         emoji: '👑',
@@ -89,7 +78,7 @@ const RANKS = [
         effect: true,
         customScale: 1.1,
         textSide: 'right'
-    },
+    }
 ];
 
 export default function ValentineDashboard({ userName: userNameProp = '' }: ValentineDashboardProps) {
@@ -589,8 +578,8 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                                     >
                                         <span className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl filter drop-shadow-lg ${isUnlocked ? 'animate-pulse' : ''}`}>{rank.emoji}</span>
 
-                                        {/* Sparkles for Heart King & Titan */}
-                                        {(rank.name === 'ProtectMax Titan' || rank.name === 'Bronze') && isUnlocked && (
+                                        {/* Sparkles for Bronze (or others if added) */}
+                                        {rank.name === 'Bronze' && isUnlocked && (
                                             <div className="absolute inset-0 w-full h-full pointer-events-none">
                                                 <motion.div
                                                     className="absolute -top-2 -right-2 text-yellow-300 text-xl"
@@ -610,10 +599,9 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                                 {/* Info Container (Name + Pts) */}
                                 <div className={`flex flex-col absolute top-1/2 -translate-y-1/2 w-max 
                                     ${isLeft ? 'right-full mr-4 items-end text-right' : 'left-full ml-4 items-start text-left'}
-                                    ${rank.name === 'ProtectMax Titan' ? (isLeft ? 'mr-1' : 'ml-1') : ''} 
                                 `}>
                                     {/* Rank Name Badge */}
-                                    <div className={`px-2 py-1 sm:px-4 sm:py-1.5 md:px-5 md:py-2 rounded-full border-2 shadow-xl backdrop-blur-md transform transition-all duration-300 ${isUnlocked ? 'bg-white text-rose-600 border-rose-500 rotate-0 scale-100' : 'bg-black/60 text-white/80 border-transparent rotate-0 scale-90'}`}>
+                                    <div className={`px-2 py-1 sm:px-4 sm:py-1.5 md:px-5 md:py-2 rounded-full border-2 shadow-xl backdrop-blur-md transform transition-all duration-300 bg-white text-rose-600 border-rose-500 rotate-0 scale-100`}>
                                         <div className={`flex flex-col ${isLeft ? 'items-end' : 'items-start'} leading-tight`}>
                                             <span className={`${rank.name === 'ProtectMax Titan' ? 'text-[9px] sm:text-[10px] md:text-xs lg:text-sm leading-3 whitespace-normal' : (rank.name.length >= 10 ? 'text-[10px] sm:text-xs md:text-sm lg:text-base whitespace-nowrap' : 'text-xs sm:text-base md:text-lg lg:text-xl whitespace-nowrap')} font-serif font-black uppercase tracking-wide block text-transparent bg-clip-text bg-gradient-to-br from-rose-600 to-red-900 drop-shadow-sm`}>
                                                 {rank.name === 'ProtectMax Titan' ? (
@@ -629,11 +617,13 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                                 </div>
 
                                 {/* Points Label */}
-                                {!isUnlocked && (
-                                    <div className="mt-1 text-[10px] font-bold text-white bg-black/40 px-2 rounded-full inline-block backdrop-blur-sm border border-white/10 ml-2">
-                                        {rank.threshold.toLocaleString()} pts
-                                    </div>
-                                )}
+                                {
+                                    !isUnlocked && rank.threshold !== 999 && (
+                                        <div className="mt-1 text-[10px] font-bold text-white bg-black/40 px-2 rounded-full inline-block backdrop-blur-sm border border-white/10 ml-2">
+                                            {rank.threshold.toLocaleString()} pts
+                                        </div>
+                                    )
+                                }
                             </motion.div>
                         );
                     })}
