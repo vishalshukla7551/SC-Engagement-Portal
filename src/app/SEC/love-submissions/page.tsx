@@ -36,10 +36,9 @@ export default function LoveSubmissionsPage() {
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [verifiedCount, setVerifiedCount] = useState(0);
     const [unverifiedCount, setUnverifiedCount] = useState(0);
-    const [verifiedSalesTotal, setVerifiedSalesTotal] = useState(0);
-    const [bonusAmount, setBonusAmount] = useState(0);
-    const [totalPoints, setTotalPoints] = useState(0);
-    const [hasProtectMaxBonus, setHasProtectMaxBonus] = useState(false);
+    const [totalHearts, setTotalHearts] = useState(0);
+    const [storeName, setStoreName] = useState('');
+    const [userName, setUserName] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
@@ -47,16 +46,15 @@ export default function LoveSubmissionsPage() {
     useEffect(() => {
         async function fetchSubmissions() {
             try {
-                const res = await fetch("/api/user/sales-submissions");
+                const res = await fetch("/api/user/valentine-submissions");
                 if (!res.ok) throw new Error("Failed to fetch data");
                 const data = await res.json();
                 setSubmissions(data.submissions);
                 setVerifiedCount(data.verifiedCount);
                 setUnverifiedCount(data.unverifiedCount);
-                setVerifiedSalesTotal(data.verifiedSalesTotal);
-                setBonusAmount(data.bonusAmount);
-                setTotalPoints(data.totalPoints);
-                setHasProtectMaxBonus(data.hasProtectMaxBonus || false);
+                setTotalHearts(data.totalHearts);
+                setStoreName(data.storeName);
+                setUserName(data.userName);
             } catch (err) {
                 setError("Could not load submissions");
             } finally {
@@ -276,7 +274,7 @@ export default function LoveSubmissionsPage() {
                                     Admin Verified
                                 </p>
                                 <div className="flex items-baseline gap-1">
-                                    <p className="text-2xl font-black tracking-tighter">{verifiedSalesTotal.toLocaleString('en-IN')}</p>
+                                    <p className="text-2xl font-black tracking-tighter">{totalHearts.toLocaleString('en-IN')}</p>
                                     <span className="text-sm">❤️</span>
                                 </div>
                                 <p className="text-[9px] text-pink-200 mt-1 font-medium italic">from {verifiedCount} verified units</p>
@@ -295,29 +293,14 @@ export default function LoveSubmissionsPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            {bonusAmount > 0 && (
-                                <div className="bg-gradient-to-br from-yellow-400/30 to-rose-400/30 backdrop-blur-sm rounded-2xl p-4 border border-white/20 relative group">
-                                    <div className="absolute -top-1 -right-1">✨</div>
-                                    <p className="text-[10px] text-yellow-100 font-bold uppercase tracking-wider mb-2">🎁 Bonus Hearts</p>
-                                    <div className="flex items-baseline gap-1">
-                                        <p className="text-2xl font-black tracking-tighter text-yellow-100">+{bonusAmount.toLocaleString('en-IN')}</p>
-                                        <span className="text-sm">❤️</span>
-                                    </div>
-                                    <div className="mt-2 space-y-0.5">
-                                        {bonusAmount >= 21000 && <p className="text-[8px] text-pink-100">Jan Festivity: +21k</p>}
-                                        {/* {hasProtectMaxBonus && <p className="text-[8px] text-pink-100">Assesment: +10k</p>} */}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="bg-white p-4 rounded-2xl shadow-inner border border-white/50 flex flex-col items-center justify-center col-span-1 ml-auto w-full group overflow-hidden relative">
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="bg-white p-4 rounded-2xl shadow-inner border border-white/50 flex flex-col items-center justify-center group overflow-hidden relative">
                                 <motion.div
                                     className="absolute inset-0 bg-rose-50 opacity-0 group-hover:opacity-100 transition-opacity"
                                 />
                                 <p className="text-[10px] text-rose-500 font-black uppercase tracking-wider mb-1 relative z-10">Total Hearts Earned</p>
                                 <div className="flex items-center gap-2 relative z-10 transition-transform group-hover:scale-110">
-                                    <span className="text-3xl font-black text-rose-700 tracking-tighter">{totalPoints.toLocaleString('en-IN')}</span>
+                                    <span className="text-3xl font-black text-rose-700 tracking-tighter">{totalHearts.toLocaleString('en-IN')}</span>
                                     <motion.span
                                         animate={{ scale: [1, 1.3, 1] }}
                                         transition={{ duration: 1, repeat: Infinity }}

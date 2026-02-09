@@ -12,7 +12,7 @@ const RANKS = [
     {
         id: 7,
         name: 'ProtectMax Titan',
-        threshold: 36,
+        threshold: 999,
         emoji: '👑',
         color: 'from-rose-600 to-red-900',
         textColor: 'text-rose-100'
@@ -20,15 +20,15 @@ const RANKS = [
     {
         id: 6,
         name: 'Supreme',
-        threshold: 31,
-        emoji: '🌟',
+        threshold: 90,
+        emoji: '🎖️',
         color: 'from-fuchsia-600 to-purple-800',
         textColor: 'text-fuchsia-100'
     },
     {
         id: 5,
         name: 'Diamond',
-        threshold: 26,
+        threshold: 70,
         emoji: '💎',
         color: 'from-cyan-500 to-blue-700',
         textColor: 'text-cyan-50'
@@ -36,74 +36,35 @@ const RANKS = [
     {
         id: 4,
         name: 'Platinum',
-        threshold: 21,
-        emoji: '🏹',
+        threshold: 50,
+        emoji: '💠',
         color: 'from-zinc-400 to-slate-600',
         textColor: 'text-zinc-50'
     },
     {
         id: 3,
         name: 'Gold',
-        threshold: 16,
-        emoji: '💌',
+        threshold: 40,
+        emoji: '⚜️',
         color: 'from-amber-400 to-yellow-600',
         textColor: 'text-amber-50'
     },
     {
         id: 2,
         name: 'Silver',
-        threshold: 1,
-        emoji: '🎸',
+        threshold: 30,
+        emoji: '⚔️',
         color: 'from-slate-400 to-gray-500',
         textColor: 'text-slate-50'
     },
     {
         id: 1,
         name: 'Bronze',
-        threshold: 0,
-        emoji: '🌹',
+        threshold: 20,
+        emoji: '🛡️',
         color: 'from-orange-700 to-amber-900',
         textColor: 'text-orange-100'
     }
-];
-
-// Mock User Data
-const MOCK_USERS = [
-    // ProtectMax Titan (36+)
-    { id: 101, name: "Rahul S.", hearts: 42, avatar: "👨‍✈️", store: "Delhi Central" },
-    { id: 109, name: "Karan J.", hearts: 45, avatar: "🎥", store: "Mumbai West" },
-    { id: 112, name: "Aditya R.", hearts: 39, avatar: "🦸‍♂️", store: "Bangalore North" },
-
-    // Supreme (31-35)
-    { id: 103, name: "Amit K.", hearts: 33, avatar: "🦸‍♂️", store: "Pune City" },
-    { id: 110, name: "Simran", hearts: 35, avatar: "👰", store: "Chandigarh Hub" },
-    { id: 113, name: "Pooja H.", hearts: 32, avatar: "💃", store: "Jaipur Main" },
-
-    // Diamond (26-30)
-    { id: 104, name: "Sneha G.", hearts: 29, avatar: "🧚‍♀️", store: "Kolkata South" },
-    { id: 111, name: "Raj M.", hearts: 28, avatar: "🤵", store: "Hydrebad Tech" },
-    { id: 114, name: "Vikas D.", hearts: 27, avatar: "🕴️", store: "Noida Sec 18" },
-
-    // Platinum (21-25)
-    { id: 105, name: "Vikram R.", hearts: 24, avatar: "🕵️‍♂️", store: "Gurgaon Cyber" },
-    { id: 115, name: "Tina T.", hearts: 22, avatar: "🧘‍♀️", store: "Chennal OMR" },
-    { id: 116, name: "Kabir S.", hearts: 25, avatar: "🏍️", store: "Delhi South" },
-
-    // Gold (16-20)
-    { id: 106, name: "Anjali P.", hearts: 19, avatar: "👩‍🎤", store: "Mumbai South" },
-    { id: 117, name: "Geet K.", hearts: 17, avatar: "🚆", store: "Bhatinda" },
-    { id: 118, name: "Bunny", hearts: 18, avatar: "🎒", store: "Manali" },
-
-    // Silver (1-15)
-    { id: 102, name: "Priya M.", hearts: 14, avatar: "👩‍💼", store: "Lucknow" },
-    { id: 107, name: "Rohit V.", hearts: 12, avatar: "👷", store: "Patna" },
-    { id: 108, name: "Neha S.", hearts: 5, avatar: "👩‍🎨", store: "Indore" },
-    { id: 119, name: "Sid M.", hearts: 9, avatar: "📷", store: "Goa" },
-    { id: 120, name: "Aisha", hearts: 8, avatar: "✍️", store: "Mumbai Bandra" },
-
-    // Bronze (0)
-    { id: 121, name: "Rohan", hearts: 0, avatar: "👶", store: "Mumbai Dadar" },
-    { id: 122, name: "Shanaya", hearts: 0, avatar: "👗", store: "Dehradun" }
 ];
 
 interface RomanceMeritBoardProps {
@@ -113,6 +74,7 @@ interface RomanceMeritBoardProps {
 export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoardProps) {
     const [users, setUsers] = useState<any[]>([]);
     const [currentUserPhone, setCurrentUserPhone] = useState<string>('');
+    const [loading, setLoading] = useState(true);
     const currentUserRef = useRef<HTMLDivElement | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const hasScrolledToUser = useRef(false);
@@ -135,30 +97,29 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
         }
     }, []);
 
+    // Fetch real leaderboard data from API
     useEffect(() => {
-        // Initial Load - Force reset with new data
-        const timeout = setTimeout(() => {
-            const sorted = [...MOCK_USERS].sort((a, b) => b.hearts - a.hearts);
-            console.log("Loading users:", sorted); // Debug log
-            setUsers(sorted);
-        }, 500);
-
-        // Simulation: Every 3 seconds, pick a random user and give them +5 hearts
-        const interval = setInterval(() => {
-            setUsers(prevUsers => {
-                const newUsers = [...prevUsers];
-                const randomIndex = Math.floor(Math.random() * newUsers.length);
-                const user = { ...newUsers[randomIndex] };
-                user.hearts += 5; // boost score
-                newUsers[randomIndex] = user;
-                return newUsers.sort((a, b) => b.hearts - a.hearts); // Re-sort
-            });
-        }, 3000);
-
-        return () => {
-            clearTimeout(timeout);
-            clearInterval(interval);
+        const fetchLeaderboard = async () => {
+            try {
+                setLoading(true);
+                const res = await fetch('/api/sec/customer-love-index');
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('Leaderboard data:', data.leaderboard);
+                    setUsers(data.leaderboard || []);
+                }
+            } catch (error) {
+                console.error('Failed to fetch leaderboard:', error);
+            } finally {
+                setLoading(false);
+            }
         };
+
+        fetchLeaderboard();
+
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchLeaderboard, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     // Auto-scroll to current user's position when users are loaded

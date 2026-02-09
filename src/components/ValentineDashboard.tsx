@@ -15,7 +15,7 @@ const RANKS = [
     {
         id: 1,
         name: 'Bronze',
-        threshold: 0,
+        threshold: 20,
         emoji: '🛡️',
         desc: 'The Beginning',
         color: 'from-slate-500 to-slate-700',
@@ -26,7 +26,7 @@ const RANKS = [
     {
         id: 2,
         name: 'Silver',
-        threshold: 1,
+        threshold: 30,
         emoji: '⚔️',
         desc: 'Building Bonds',
         color: 'from-blue-500 to-indigo-600',
@@ -37,7 +37,7 @@ const RANKS = [
     {
         id: 3,
         name: 'Gold',
-        threshold: 16,
+        threshold: 40,
         emoji: '⚜️',
         desc: 'Golden Trust',
         color: 'from-purple-500 to-violet-600',
@@ -48,7 +48,7 @@ const RANKS = [
     {
         id: 4,
         name: 'Platinum',
-        threshold: 21,
+        threshold: 50,
         emoji: '💠',
         desc: 'Pure Devotion',
         color: 'from-pink-500 to-rose-600',
@@ -59,7 +59,7 @@ const RANKS = [
     {
         id: 5,
         name: 'Diamond',
-        threshold: 26,
+        threshold: 70,
         emoji: '💎',
         desc: 'Unbreakable Faith',
         color: 'from-rose-500 to-red-600',
@@ -70,18 +70,18 @@ const RANKS = [
     {
         id: 6,
         name: 'Supreme',
-        threshold: 31,
+        threshold: 90,
         emoji: '🎖️',
         desc: 'Supreme Loyalty',
         color: 'from-orange-500 to-amber-600',
-        position: { left: '25%', top: '25%' },
+        position: { left: '20%', top: '25%' },
         rotation: 10,
         textSide: 'right'
     },
     {
         id: 7,
         name: 'ProtectMax Titan',
-        threshold: 36,
+        threshold: 999,
         emoji: '👑',
         desc: 'The Ultimate Winner',
         color: 'from-red-600 to-rose-900',
@@ -173,7 +173,7 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
 
     // Calculate Current Rank
     const currentRankIndex = RANKS.findLastIndex(r => score >= r.threshold);
-    const currentRank = RANKS[currentRankIndex];
+    const currentRank = RANKS[currentRankIndex >= 0 ? currentRankIndex : 0]; // Default to first rank if below all thresholds
 
     // Travel Animation Effect
     useEffect(() => {
@@ -247,19 +247,24 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
         }
     };
 
-    // Simulating "Dummy Run" to ProtectMax Romeo (Rank 7, Threshold 36)
+    // Fetch real hearts from API
     useEffect(() => {
-        const interval = setInterval(() => {
-            setScore(prev => {
-                if (prev >= 40) {
-                    clearInterval(interval);
-                    return prev;
+        const fetchHearts = async () => {
+            try {
+                const res = await fetch('/api/user/valentine-submissions');
+                if (res.ok) {
+                    const data = await res.json();
+                    setScore(data.totalHearts || 0);
                 }
-                // Add 1 heart logic
-                return prev + 1;
-            });
-        }, 2000); // Update every 2s for slower progression
+            } catch (error) {
+                console.error('Failed to fetch hearts:', error);
+            }
+        };
 
+        fetchHearts();
+
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchHearts, 30000);
         return () => clearInterval(interval);
     }, []);
 
