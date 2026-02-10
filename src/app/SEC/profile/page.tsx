@@ -787,6 +787,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label htmlFor="agencyName" className="block text-xs text-gray-600 mb-1">Agency Name</label>
+
                       <select
                         id="agencyName"
                         value={agencyName}
@@ -800,16 +801,9 @@ export default function ProfilePage() {
                         }}
                       >
                         <option value="">Select Agency</option>
-                        <option value="AGENCY001">AGENCY001</option>
-                        <option value="AGENCY002">AGENCY002</option>
-                        <option value="AGENCY003">AGENCY003</option>
-                        <option value="AGENCY004">AGENCY004</option>
-                        <option value="AGENCY005">AGENCY005</option>
-                        <option value="AGENCY006">AGENCY006</option>
-                        <option value="AGENCY007">AGENCY007</option>
-                        <option value="AGENCY008">AGENCY008</option>
-                        <option value="AGENCY009">AGENCY009</option>
-                        <option value="AGENCY010">AGENCY010</option>
+                        <option value="Ikya Staffing">Ikya Staffing</option>
+                        <option value="Quesscorp">Quesscorp</option>
+                        <option value="Teamlease">Teamlease</option>
                       </select>
                     </div>
                   </div>
@@ -1209,241 +1203,245 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
-      </main>
+      </main >
 
       <ValentineFooter />
 
       {/* Store Change Request Modal */}
-      {showStoreChangeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Change Store</h3>
-                <button
-                  onClick={() => setShowStoreChangeModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+      {
+        showStoreChangeModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Change Store</h3>
+                  <button
+                    onClick={() => setShowStoreChangeModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="p-4 overflow-y-auto max-h-[60vh]">
-              {/* Current Store */}
-              {currentStore && (
+              <div className="p-4 overflow-y-auto max-h-[60vh]">
+                {/* Current Store */}
+                {currentStore && (
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                      Current Store
+                    </label>
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                      <div className="text-sm font-medium text-gray-900">{currentStore.name}</div>
+                      {currentStore.city && (
+                        <div className="text-xs text-gray-600">{currentStore.city}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="mb-4">
                   <label className="block text-xs font-medium text-gray-700 mb-2">
-                    Current Store
+                    Search Stores
                   </label>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <div className="text-sm font-medium text-gray-900">{currentStore.name}</div>
-                    {currentStore.city && (
-                      <div className="text-xs text-gray-600">{currentStore.city}</div>
+                  <input
+                    type="text"
+                    placeholder="Search by store name, city, or state..."
+                    value={storeSearch}
+                    onChange={(e) => {
+                      setStoreSearch(e.target.value);
+                      fetchAllStores(e.target.value);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder:text-gray-500"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                    Select New Store
+                  </label>
+                  <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-lg">
+                    {allStores.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500 text-sm">
+                        {storeSearch ? 'No stores found matching your search' : 'Loading stores...'}
+                      </div>
+                    ) : (
+                      allStores.map((store) => {
+                        const isSelected = selectedStoreId === store.id;
+                        const isCurrent = currentStore?.id === store.id;
+                        return (
+                          <label
+                            key={store.id}
+                            className={`flex items-center p-3 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors ${isSelected
+                              ? 'bg-blue-50 hover:bg-blue-100'
+                              : isCurrent
+                                ? 'bg-gray-50'
+                                : 'hover:bg-gray-50'
+                              }`}
+                          >
+                            <input
+                              type="radio"
+                              name="storeSelection"
+                              checked={isSelected}
+                              onChange={() => setSelectedStoreId(store.id)}
+                              disabled={isCurrent}
+                              className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <div className="flex-1">
+                              <div className={`text-sm font-medium ${isSelected ? 'text-blue-900' :
+                                isCurrent ? 'text-gray-500' : 'text-gray-900'
+                                }`}>
+                                {store.name}
+                                {isCurrent && (
+                                  <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                                    Current
+                                  </span>
+                                )}
+                                {isSelected && !isCurrent && (
+                                  <span className="ml-2 text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">
+                                    Selected
+                                  </span>
+                                )}
+                              </div>
+                              {(store.city) && (
+                                <div className={`text-xs ${isSelected ? 'text-blue-700' :
+                                  isCurrent ? 'text-gray-400' : 'text-gray-500'
+                                  }`}>
+                                  {[store.city].filter(Boolean).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        );
+                      })
                     )}
                   </div>
                 </div>
-              )}
 
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Search Stores
-                </label>
-                <input
-                  type="text"
-                  placeholder="Search by store name, city, or state..."
-                  value={storeSearch}
-                  onChange={(e) => {
-                    setStoreSearch(e.target.value);
-                    fetchAllStores(e.target.value);
-                  }}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder:text-gray-500"
-                />
-              </div>
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                    Reason for Change (Optional)
+                  </label>
+                  <textarea
+                    value={changeReason}
+                    onChange={(e) => setChangeReason(e.target.value)}
+                    placeholder="Please provide a reason for requesting this store change..."
+                    rows={3}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm placeholder:text-gray-500"
+                  />
+                </div>
 
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Select New Store
-                </label>
-                <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-lg">
-                  {allStores.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500 text-sm">
-                      {storeSearch ? 'No stores found matching your search' : 'Loading stores...'}
-                    </div>
-                  ) : (
-                    allStores.map((store) => {
-                      const isSelected = selectedStoreId === store.id;
-                      const isCurrent = currentStore?.id === store.id;
-                      return (
-                        <label
-                          key={store.id}
-                          className={`flex items-center p-3 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors ${isSelected
-                            ? 'bg-blue-50 hover:bg-blue-100'
-                            : isCurrent
-                              ? 'bg-gray-50'
-                              : 'hover:bg-gray-50'
-                            }`}
-                        >
-                          <input
-                            type="radio"
-                            name="storeSelection"
-                            checked={isSelected}
-                            onChange={() => setSelectedStoreId(store.id)}
-                            disabled={isCurrent}
-                            className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                          />
-                          <div className="flex-1">
-                            <div className={`text-sm font-medium ${isSelected ? 'text-blue-900' :
-                              isCurrent ? 'text-gray-500' : 'text-gray-900'
-                              }`}>
-                              {store.name}
-                              {isCurrent && (
-                                <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                                  Current
-                                </span>
-                              )}
-                              {isSelected && !isCurrent && (
-                                <span className="ml-2 text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">
-                                  Selected
-                                </span>
-                              )}
-                            </div>
-                            {(store.city) && (
-                              <div className={`text-xs ${isSelected ? 'text-blue-700' :
-                                isCurrent ? 'text-gray-400' : 'text-gray-500'
-                                }`}>
-                                {[store.city].filter(Boolean).join(', ')}
-                              </div>
-                            )}
-                          </div>
-                        </label>
-                      );
-                    })
-                  )}
+                <div className="text-xs text-gray-600 mb-4">
+                  <p>• Your request will be sent to the administrator for approval</p>
+                  <p>• You will be notified once the request is reviewed</p>
+                  <p>• Current store mapping will remain until the request is approved</p>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Reason for Change (Optional)
-                </label>
-                <textarea
-                  value={changeReason}
-                  onChange={(e) => setChangeReason(e.target.value)}
-                  placeholder="Please provide a reason for requesting this store change..."
-                  rows={3}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm placeholder:text-gray-500"
+              <div className="p-4 border-t border-gray-200 flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowStoreChangeModal(false)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitStoreChangeRequest}
+                  disabled={submittingRequest || !selectedStoreId || selectedStoreId === currentStore?.id}
+                  className="px-4 py-2 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+                  style={{
+                    background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                    boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                  <span className="relative">{submittingRequest ? 'Submitting...' : 'Submit Request'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Image Crop Modal */}
+      {
+        showCropModal && imageToCrop && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900">Crop Profile Photo</h3>
+                <p className="text-sm text-gray-500 mt-1">Adjust and crop your image</p>
+              </div>
+
+              {/* Cropper Area */}
+              <div className="relative w-full h-80 bg-gray-900">
+                <Cropper
+                  image={imageToCrop}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  showGrid={false}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={onCropComplete}
                 />
               </div>
 
-              <div className="text-xs text-gray-600 mb-4">
-                <p>• Your request will be sent to the administrator for approval</p>
-                <p>• You will be notified once the request is reviewed</p>
-                <p>• Current store mapping will remain until the request is approved</p>
+              {/* Zoom Slider */}
+              <div className="px-6 py-4 border-b border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Zoom
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                />
+              </div>
+
+              {/* Modal Actions */}
+              <div className="px-6 py-4 flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setShowCropModal(false);
+                    setImageToCrop(null);
+                    setCrop({ x: 0, y: 0 });
+                    setZoom(1);
+                  }}
+                  className="px-5 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCropSave}
+                  disabled={submittingPersonalInfo}
+                  className="px-5 py-2.5 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  style={{
+                    background: submittingPersonalInfo ? '#9ca3af' : 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
+                    boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
+                  }}
+                >
+                  {submittingPersonalInfo && (
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  {submittingPersonalInfo ? 'Uploading...' : 'Crop & Set'}
+                </button>
               </div>
             </div>
-
-            <div className="p-4 border-t border-gray-200 flex gap-3 justify-end">
-              <button
-                onClick={() => setShowStoreChangeModal(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmitStoreChangeRequest}
-                disabled={submittingRequest || !selectedStoreId || selectedStoreId === currentStore?.id}
-                className="px-4 py-2 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
-                style={{
-                  background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
-                  boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
-                }}
-              >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                <span className="relative">{submittingRequest ? 'Submitting...' : 'Submit Request'}</span>
-              </button>
-            </div>
           </div>
-        </div>
-      )}
-
-      {/* Image Crop Modal */}
-      {showCropModal && imageToCrop && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">Crop Profile Photo</h3>
-              <p className="text-sm text-gray-500 mt-1">Adjust and crop your image</p>
-            </div>
-
-            {/* Cropper Area */}
-            <div className="relative w-full h-80 bg-gray-900">
-              <Cropper
-                image={imageToCrop}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                cropShape="round"
-                showGrid={false}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-              />
-            </div>
-
-            {/* Zoom Slider */}
-            <div className="px-6 py-4 border-b border-gray-200">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Zoom
-              </label>
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.1}
-                value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
-              />
-            </div>
-
-            {/* Modal Actions */}
-            <div className="px-6 py-4 flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setShowCropModal(false);
-                  setImageToCrop(null);
-                  setCrop({ x: 0, y: 0 });
-                  setZoom(1);
-                }}
-                className="px-5 py-2.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCropSave}
-                disabled={submittingPersonalInfo}
-                className="px-5 py-2.5 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                style={{
-                  background: submittingPersonalInfo ? '#9ca3af' : 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
-                  boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
-                }}
-              >
-                {submittingPersonalInfo && (
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {submittingPersonalInfo ? 'Uploading...' : 'Crop & Set'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
