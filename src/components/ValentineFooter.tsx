@@ -142,7 +142,7 @@ export default function ValentineFooter() {
                                 >
                                     {item.icon}
                                 </motion.div>
-                                <span className={`text-[10px] mobile-s:text-[8px] font-medium text-center whitespace-pre-line leading-tight transition-all ${isActive ? 'font-bold' : ''}`}>
+                                <span className={`text-[10px] mobile-s:text-[8px] font-bold text-center whitespace-pre-line leading-tight transition-all`}>
                                     {item.label}
                                 </span>
                             </Link>
@@ -152,7 +152,7 @@ export default function ValentineFooter() {
 
                 {/* Powered By */}
                 <div className="text-center pb-2 opacity-30 text-[10px] text-white relative z-10">
-                    <p className="flex items-center justify-center gap-1">
+                    <p className="flex items-center justify-center gap-1 font-bold">
                         Powered by Zopper
                         <motion.span
                             animate={{ scale: [1, 1.2, 1] }}
@@ -161,7 +161,7 @@ export default function ValentineFooter() {
                             ❤️
                         </motion.span>
                     </p>
-                    <p>salesdost.com</p>
+                    <p className="font-bold">salesdost.com</p>
                 </div>
             </div>
         </footer>
