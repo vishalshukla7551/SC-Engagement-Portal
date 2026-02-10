@@ -2,14 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
-// New heart point system
-const PLAN_HEARTS = {
-    'ADLD_1_YR': 3,
-    'COMBO_2_YRS': 5,
-    'SCREEN_PROTECT_1_YR': 1,
-    'SCREEN_PROTECT_2_YR': 1,
-    'EXTENDED_WARRANTY_1_YR': 1,
-    'TEST_PLAN': 0
+// Heart point system - matches incentive form logic
+const getHeartsByPlanType = (planType: string): number => {
+    const type = (planType || '').toUpperCase();
+    
+    if (type.includes('COMBO')) {
+        return 5;
+    } else if (type.includes('ADLD') || type.includes('DAMAGE')) {
+        return 3;
+    } else if (type.includes('SCREEN') || type.includes('PROTECTION')) {
+        return 1;
+    } else if (type.includes('WARRANTY') || type.includes('EXTENDED')) {
+        return 1;
+    } else {
+        return 1; // Default
+    }
 };
 
 export async function GET(request: NextRequest) {
@@ -21,9 +28,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Get today's date at midnight
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Valentine campaign start date: 10-02-2026
+        const valentineStartDate = new Date('2026-02-10T00:00:00.000Z');
 
         // Fetch SEC details first
         const sec = await prisma.sEC.findUnique({
@@ -55,15 +61,12 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Fetch submissions from today onwards, only verified ones
+        // Fetch ALL submissions from 10-02-2026 onwards (verified AND unverified)
         const submissions = await prisma.spotIncentiveReport.findMany({
             where: {
                 secId: sec.id,
                 Date_of_sale: {
-                    gte: today
-                },
-                spotincentivepaidAt: {
-                    not: null
+                    gte: valentineStartDate
                 }
             },
             include: {
@@ -85,10 +88,10 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        // Calculate hearts for each submission
+        // Calculate hearts for each submission (for both verified and unverified)
         const submissionsWithHearts = submissions.map(submission => {
             const planType = submission.plan?.planType || 'UNKNOWN';
-            const hearts = PLAN_HEARTS[planType as keyof typeof PLAN_HEARTS] || 0;
+            const hearts = getHeartsByPlanType(planType); // Calculate for all, regardless of verification status
 
             return {
                 ...submission,
@@ -97,18 +100,15 @@ export async function GET(request: NextRequest) {
         });
 
         // Calculate totals
-        const verifiedCount = submissions.length;
-        const unverifiedCount = await prisma.spotIncentiveReport.count({
-            where: {
-                secId: sec.id,
-                Date_of_sale: {
-                    gte: today
-                },
-                spotincentivepaidAt: null
-            }
-        });
+        const verifiedCount = submissions.filter(s => s.spotincentivepaidAt !== null).length;
+        const unverifiedCount = submissions.filter(s => s.spotincentivepaidAt === null).length;
 
-        const totalHearts = submissionsWithHearts.reduce((sum, s) => sum + s.heartsEarned, 0);
+        // Total hearts from verified submissions only
+        const verifiedHearts = submissionsWithHearts
+            .filter(s => s.spotincentivepaidAt !== null)
+            .reduce((sum, s) => sum + s.heartsEarned, 0);
+
+        const totalHearts = verifiedHearts + profileBonus;
 
         return NextResponse.json({
             submissions: submissionsWithHearts,

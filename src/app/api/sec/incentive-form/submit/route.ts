@@ -149,17 +149,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate spot incentive based on store name prefix
-    // If store name starts with "Hotspot" or "Reliance Digital", earn ₹100, else ₹0
+    // Spot incentive is no longer calculated based on store name
     let spotincentiveEarned = 0;
-    const storeName = store.name.trim();
-    const isCampaignActive = storeName.startsWith('Hotspot') || storeName.startsWith('Reliance Digital');
-
-    if (isCampaignActive) {
-      spotincentiveEarned = 100;
-    }
+    const isCampaignActive = false;
 
     // Use provided dateOfSale or default to now
+    const now = new Date();
     const saleDate = dateOfSale ? new Date(dateOfSale) : now;
 
     // Create the spot incentive report (RESTRICTED TO SPOT INCENTIVE ONLY)

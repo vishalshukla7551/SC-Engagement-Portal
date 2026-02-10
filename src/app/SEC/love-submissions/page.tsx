@@ -75,13 +75,21 @@ export default function LoveSubmissionsPage() {
         TEST_PLAN: "Test Plan",
     };
 
-    const PLAN_HEARTS: Record<string, number> = {
-        'ADLD_1_YR': 3,
-        'COMBO_2_YRS': 5,
-        'SCREEN_PROTECT_1_YR': 1,
-        'SCREEN_PROTECT_2_YR': 1,
-        'EXTENDED_WARRANTY_1_YR': 1,
-        'TEST_PLAN': 0
+    // Heart calculation function - matches incentive form logic
+    const getHeartsByPlanType = (planType: string): number => {
+        const type = (planType || '').toUpperCase();
+        
+        if (type.includes('COMBO')) {
+            return 5;
+        } else if (type.includes('ADLD') || type.includes('DAMAGE')) {
+            return 3;
+        } else if (type.includes('SCREEN') || type.includes('PROTECTION')) {
+            return 1;
+        } else if (type.includes('WARRANTY') || type.includes('EXTENDED')) {
+            return 1;
+        } else {
+            return 1; // Default
+        }
     };
 
     const shortMapping = {
@@ -165,7 +173,7 @@ export default function LoveSubmissionsPage() {
                 units: 0,
                 verifiedUnits: 0,
                 unverifiedUnits: 0,
-                heartsPerUnit: PLAN_HEARTS[planType] ?? 1 // Fallback to 1 if not in mapping
+                heartsPerUnit: getHeartsByPlanType(planType)
             };
         }
         acc[key].units += 1;
@@ -283,13 +291,18 @@ export default function LoveSubmissionsPage() {
                             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
                                 <p className="text-[10px] text-pink-100 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                    Sale Hearts
+                                    Total Heart Points
                                 </p>
                                 <div className="flex items-baseline gap-1">
-                                    <p className="text-2xl font-black tracking-tighter">{(totalHearts - profileBonus).toLocaleString('en-IN')}</p>
+                                    <p className="text-2xl font-black tracking-tighter">
+                                        {(() => {
+                                            const totalSaleHearts = submissions.reduce((sum, s) => sum + getHeartsByPlanType(s.plan?.planType || ''), 0);
+                                            return totalSaleHearts.toLocaleString('en-IN');
+                                        })()}
+                                    </p>
                                     <span className="text-sm">❤️</span>
                                 </div>
-                                <p className="text-[9px] text-pink-200 mt-1 font-medium italic">from {verifiedCount} verified units</p>
+                                <p className="text-[9px] text-pink-200 mt-1 font-medium italic">from {verifiedCount} verified + {unverifiedCount} unverified units</p>
                             </div>
 
                             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
@@ -301,7 +314,7 @@ export default function LoveSubmissionsPage() {
                                     <p className="text-2xl font-black tracking-tighter">{profileBonus.toLocaleString('en-IN')}</p>
                                     <span className="text-sm">❤️</span>
                                 </div>
-                                <p className="text-[9px] text-pink-200 mt-1 font-medium italic">{profileBonus > 0 ? "Bonus Earned! ✨" : "Complete Profile to Earn"}</p>
+                                <p className="text-[9px] text-pink-200 mt-1 font-medium italic">{profileBonus > 0 ? "Bonus Earned! ✨" : "Complete Profile to Earn +20 ❤️"}</p>
                             </div>
                         </div>
 
@@ -312,7 +325,14 @@ export default function LoveSubmissionsPage() {
                                     Pending Review
                                 </p>
                                 <div className="flex items-baseline gap-1">
-                                    <p className="text-2xl font-black tracking-tighter text-yellow-200">-</p>
+                                    <p className="text-2xl font-black tracking-tighter text-yellow-200">
+                                        {(() => {
+                                            const pendingHearts = submissions
+                                                .filter(s => s.spotincentivepaidAt === null)
+                                                .reduce((sum, s) => sum + getHeartsByPlanType(s.plan?.planType || ''), 0);
+                                            return pendingHearts > 0 ? pendingHearts.toLocaleString('en-IN') : '-';
+                                        })()}
+                                    </p>
                                     <span className="text-sm">❤️</span>
                                 </div>
                                 <p className="text-[9px] text-pink-200 mt-1 font-medium italic">from {unverifiedCount} units awaiting verification</p>
@@ -447,7 +467,7 @@ export default function LoveSubmissionsPage() {
                                             </td>
                                             <td className="px-3 py-4 text-center">
                                                 <span className="font-black text-rose-600 text-sm">
-                                                    {row.verifiedUnits > 0 ? (row.verifiedUnits * row.heartsPerUnit).toLocaleString() : '-'}
+                                                    {(row.verifiedUnits + row.unverifiedUnits) > 0 ? ((row.verifiedUnits + row.unverifiedUnits) * row.heartsPerUnit).toLocaleString() : '-'}
                                                 </span>
                                             </td>
                                             <td className="px-3 py-4 text-center">
