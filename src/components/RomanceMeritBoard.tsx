@@ -371,9 +371,7 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
                                     {rankUsers.length > 0 ? (
                                         rankUsers.map((user, i) => {
                                             // Check if this is the current logged-in user
-                                            // For demo, we'll use name matching since MOCK_USERS don't have phone
-                                            // In production, match by phone or user ID
-                                            const isCurrentUser = user.id === 108; // Example: Neha S. as current user for demo
+                                            const isCurrentUser = user.phone === currentUserPhone;
 
                                             return (
                                                 <motion.div

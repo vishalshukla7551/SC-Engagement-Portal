@@ -41,6 +41,20 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'SEC not found' }, { status: 404 });
         }
 
+        // Calculate Profile Bonus (20 hearts if photo, birthday, and marital status are set)
+        let profileBonus = 0;
+        if (sec.otherProfileInfo && typeof sec.otherProfileInfo === 'object') {
+            const info = sec.otherProfileInfo as any;
+            // Check if all three required fields are present
+            const hasPhoto = !!info.photoUrl;
+            const hasBirthday = !!info.birthday;
+            const hasMaritalStatus = !!info.maritalStatus; // Checks for existence of the object/value
+
+            if (hasPhoto && hasBirthday && hasMaritalStatus) {
+                profileBonus = 20;
+            }
+        }
+
         // Fetch submissions from today onwards, only verified ones
         const submissions = await prisma.spotIncentiveReport.findMany({
             where: {
@@ -100,7 +114,8 @@ export async function GET(request: NextRequest) {
             submissions: submissionsWithHearts,
             verifiedCount,
             unverifiedCount,
-            totalHearts,
+            totalHearts: totalHearts + profileBonus,
+            profileBonus,
             storeName: sec?.store?.name || 'Unknown Store',
             userName: sec?.fullName || authUser.id
         });

@@ -86,7 +86,7 @@ export default function ValentineSuccessModal({
 
                 {/* Subtext */}
                 <p className="text-gray-600 text-sm font-medium mb-1 uppercase tracking-wide">
-                    Honor Points Earned
+                    Hearts Earned
                 </p>
 
                 {/* Amount */}

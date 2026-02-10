@@ -30,27 +30,6 @@ export default function LandingPage({ userName = '' }) {
       link: '/SEC/romance-merit-board',
       showLiveBadge: false,
     },
-    {
-      id: 3,
-      title: 'SPECIAL OFFER 🎯',
-      subtitle: 'EXCLUSIVE DEALS',
-      description: 'LIMITED TIME PROMOTION',
-      isImageBanner: true,
-      imageSrc: '/images/banner3.jpeg',
-      imageAlt: 'Special Promotion Banner',
-      link: '/SEC/republic-leaderboard',
-      showLiveBadge: false,
-    },
-    {
-      id: 2,
-      title: 'PITCH SULTAN',
-      subtitle: 'SPECIAL PROMOTION',
-      description: 'EXCLUSIVE OFFER',
-      isImageBanner: true,
-      imageSrc: '/pitchsultan_banner.png',
-      imageAlt: 'Pitch Sultan Banner',
-      link: 'https://salesdost.vercel.app/pitchsultan/rewards',
-    },
   ];
 
   // Auto-scroll banner every 3 seconds
@@ -69,7 +48,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'Sales Submission Form',
       description: 'Submit your sales IMEI wise',
       icon: '📝',
-      bgGradient: 'from-[#2563eb] via-[#3b82f6] to-[#06b6d4]',
+      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
       iconBg: 'bg-white/20',
       link: '/SEC/incentive-form',
       badge: 'SUBMIT ⚡'
@@ -79,7 +58,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'Customer Love Index',
       description: 'View Your Love Score',
       icon: '❤️',
-      bgGradient: 'from-[#e11d48] via-[#db2777] to-[#be123c]',
+      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
       iconBg: 'bg-white/20',
       link: '/SEC/romance-merit-board',
       badge: 'HOT 🔥'
@@ -89,7 +68,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'Customer Obsession',
       description: 'View Your Rewards',
       icon: '🎖️',
-      bgGradient: 'from-[#059669] via-[#10b981] to-[#34d399]',
+      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
       iconBg: 'bg-white/20',
       link: '/SEC/valentine-day',
       badge: 'REWARDS 🎁'
@@ -99,7 +78,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'Assessment',
       description: 'Test Your Knowledge',
       icon: '🧠',
-      bgGradient: 'from-[#f59e0b] via-[#d97706] to-[#b45309]',
+      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
       iconBg: 'bg-white/20',
       link: '/SEC/training',
       badge: 'TRAINING 📚'
@@ -109,7 +88,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'Past Campaigns',
       description: 'View Past Contests',
       icon: '🏆',
-      bgGradient: 'from-[#6366f1] via-[#8b5cf6] to-[#ec4899]',
+      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
       iconBg: 'bg-white/20',
       link: '/SEC/past-campaigns',
       badge: 'NEW 🆕'
@@ -119,7 +98,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'SC+ Claim Raise Procedure',
       description: 'Learn More',
       icon: '📢',
-      bgGradient: 'from-[#ea580c] via-[#f97316] to-[#fbbf24]',
+      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
       iconBg: 'bg-white/20',
       link: 'https://www.samsung.com/in/offer/samsung-care-plus/login/?usertype=customer',
       badge: 'GUIDE 📘'

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import ValentineFooter from './ValentineFooter';
 import { useRouter } from 'next/navigation';
+import { UserCircle2 } from 'lucide-react';
 
 interface ValentineDashboardProps {
     userName?: string;
@@ -89,6 +90,7 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
     const [visitingRankIndex, setVisitingRankIndex] = useState(0);
     const [clickEffects, setClickEffects] = useState<{ id: number, x: number, y: number }[]>([]);
     const [showCupid, setShowCupid] = useState(false);
+    const [showAnnouncement, setShowAnnouncement] = useState(true);
     const [isMuted, setIsMuted] = useState(false); // Default to unmuted but waiting for interaction
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [userName, setUserName] = useState(userNameProp);
@@ -769,6 +771,62 @@ export default function ValentineDashboard({ userName: userNameProp = '' }: Vale
                         <p className="text-sm text-white/80 font-serif italic mt-2 text-center px-6">
                             {currentRank.desc}
                         </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Announcement Popup */}
+            <AnimatePresence>
+                {showAnnouncement && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl relative border-4 border-rose-100"
+                            style={{
+                                boxShadow: '0 20px 50px rgba(225, 29, 72, 0.2)'
+                            }}
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setShowAnnouncement(false)}
+                                className="absolute -top-3 -right-3 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 border border-rose-50 transition-all z-10 font-bold text-2xl"
+                            >
+                                ×
+                            </button>
+
+                            <div className="text-center">
+                                <div className="mb-4 inline-flex items-center justify-center w-16 h-16 bg-rose-50 rounded-full text-4xl animate-bounce">
+                                    🎁
+                                </div>
+
+                                <h3 className="text-xl font-black text-rose-600 uppercase tracking-tight mb-2">
+                                    Bonus Hearts Await!
+                                </h3>
+
+                                <p className="text-sm text-slate-600 font-medium mb-6 leading-relaxed">
+                                    Set your <span className="font-bold text-rose-500">profile photo</span>, <span className="font-bold text-rose-500">marital status</span> and <span className="font-bold text-rose-500">birthday</span> and earn <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded-lg font-black">20 HEARTS</span> as a bonus!
+                                </p>
+
+                                <button
+                                    onClick={() => router.push('/SEC/profile')}
+                                    className="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-rose-200 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                >
+                                    <UserCircle2 size={18} />
+                                    Go to Profile
+                                </button>
+
+                                <button
+                                    onClick={() => setShowAnnouncement(false)}
+                                    className="mt-4 text-[10px] font-black text-rose-300 uppercase tracking-[0.2em] hover:text-rose-500 transition-colors"
+                                >
+                                    Maybe Later
+                                </button>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
