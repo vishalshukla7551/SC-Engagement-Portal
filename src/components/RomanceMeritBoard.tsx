@@ -361,7 +361,9 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
                                         {rank.name}
                                     </h2>
                                     {rank.threshold !== 999 && (
-                                        <span className="text-xs text-white/80 font-medium tracking-wide">Min {rank.threshold} Hearts</span>
+                                        <span className="text-xs text-white/80 font-medium tracking-wide">
+                                            Min {rank.threshold} {rank.threshold === 1 ? 'Heart' : 'Hearts'}
+                                        </span>
                                     )}
                                 </div>
 
