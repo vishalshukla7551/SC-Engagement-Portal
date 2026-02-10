@@ -56,6 +56,14 @@ const RANKS = [
         emoji: '🛡️',
         color: 'from-orange-700 to-amber-900',
         textColor: 'text-orange-100'
+    },
+    {
+        id: 0,
+        name: 'Entry Level',
+        threshold: 1,
+        emoji: '🌱',
+        color: 'from-green-600 to-emerald-800',
+        textColor: 'text-green-100'
     }
 ];
 
