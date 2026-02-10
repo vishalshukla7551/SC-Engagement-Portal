@@ -56,6 +56,14 @@ const RANKS = [
         emoji: '🛡️',
         color: 'from-orange-700 to-amber-900',
         textColor: 'text-orange-100'
+    },
+    {
+        id: 0,
+        name: 'Entry Level',
+        threshold: 1,
+        emoji: '🌱',
+        color: 'from-green-600 to-emerald-800',
+        textColor: 'text-green-100'
     }
 ];
 
@@ -353,7 +361,9 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
                                         {rank.name}
                                     </h2>
                                     {rank.threshold !== 999 && (
-                                        <span className="text-xs text-white/80 font-medium tracking-wide">Min {rank.threshold} Hearts</span>
+                                        <span className="text-xs text-white/80 font-medium tracking-wide">
+                                            Min {rank.threshold} {rank.threshold === 1 ? 'Heart' : 'Hearts'}
+                                        </span>
                                     )}
                                 </div>
 

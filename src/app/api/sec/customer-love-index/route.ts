@@ -49,26 +49,6 @@ export async function GET() {
             }
         });
 
-        // Fetch SECs with profile info to ensure they get the bonus even without sales
-        const secsWithProfile = await prisma.sEC.findMany({
-            where: {
-                otherProfileInfo: {
-                    not: null
-                }
-            },
-            select: {
-                id: true,
-                phone: true,
-                fullName: true,
-                otherProfileInfo: true,
-                store: {
-                    select: {
-                        name: true
-                    }
-                }
-            }
-        });
-
         // Group by SEC and calculate hearts
         const userHearts = new Map<string, {
             id: string; // Add ID
@@ -103,14 +83,39 @@ export async function GET() {
             });
         };
 
-        // 1. Process valid profiles
-        secsWithProfile.forEach(sec => {
-            const info = sec.otherProfileInfo as any;
-            // Only add to leaderboard if they actually qualify for the 20 pts (or have sales later)
-            // Here we strictly check for bonus qualification to avoid flooding leaderboard with 0 pt users
-            if (info && info.photoUrl && info.birthday && info.maritalStatus) {
-                initUser(sec.id, sec);
+        // 1. Process all SECs to ensure everyone appears on the leaderboard
+        const allSecs = await prisma.sEC.findMany({
+            select: {
+                id: true,
+                phone: true,
+                fullName: true,
+                otherProfileInfo: true,
+                store: {
+                    select: {
+                        name: true
+                    }
+                }
             }
+        });
+
+        // Initialize all SECs with their profile bonus (if applicable)
+        allSecs.forEach(sec => {
+            const info = sec.otherProfileInfo as any;
+            let profileBonus = 0;
+
+            // Check if they qualify for the 20 point profile bonus
+            if (info && info.photoUrl && info.birthday && info.maritalStatus) {
+                profileBonus = 20;
+            }
+
+            userHearts.set(sec.id, {
+                id: sec.id,
+                phone: sec.phone || sec.id,
+                name: sec.fullName || sec.phone || 'Unknown',
+                store: sec.store?.name || 'Unknown Store',
+                hearts: profileBonus,
+                submissions: 0
+            });
         });
 
         // 2. Process submissions
@@ -129,8 +134,9 @@ export async function GET() {
             userData.submissions += 1;
         });
 
-        // Convert to array and sort by hearts
+        // Convert to array, filter users with at least 1 heart, and sort by hearts
         const leaderboard = Array.from(userHearts.values())
+            .filter(user => user.hearts >= 1)
             .sort((a, b) => b.hearts - a.hearts);
 
         return NextResponse.json({
