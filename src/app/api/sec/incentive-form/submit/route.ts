@@ -149,31 +149,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check for active spot incentive campaign
-    const now = new Date();
-    const activeCampaign = await prisma.spotIncentiveCampaign.findFirst({
-      where: {
-        storeId: store.id,
-        samsungSKUId: device.id,
-        planId: plan.id,
-        active: true,
-        startDate: { lte: now },
-        endDate: { gte: now },
-      },
-    });
-
-    // Calculate spot incentive based on active campaign
+    // Calculate spot incentive based on store name prefix
+    // If store name starts with "Hotspot" or "Reliance Digital", earn ₹100, else ₹0
     let spotincentiveEarned = 0;
-    const isCampaignActive = !!activeCampaign;
+    const storeName = store.name.trim();
+    const isCampaignActive = storeName.startsWith('Hotspot') || storeName.startsWith('Reliance Digital');
 
-    if (activeCampaign) {
-      if (activeCampaign.incentiveType === 'FIXED') {
-        spotincentiveEarned = Math.round(activeCampaign.incentiveValue);
-      } else if (activeCampaign.incentiveType === 'PERCENTAGE') {
-        spotincentiveEarned = Math.round(plan.price * (activeCampaign.incentiveValue / 100));
-      }
+    if (isCampaignActive) {
+      spotincentiveEarned = 100;
     }
-    // If no active campaign, spotincentiveEarned remains 0
 
     // Use provided dateOfSale or default to now
     const saleDate = dateOfSale ? new Date(dateOfSale) : now;
