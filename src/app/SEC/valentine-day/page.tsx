@@ -18,7 +18,10 @@ import {
     Crown,
     Gem,
     Trophy,
-    PartyPopper
+    PartyPopper,
+    UserCircle,
+    X,
+    User
 } from "lucide-react";
 
 type Rank = {
@@ -133,6 +136,28 @@ export default function ValentineRoadmapPage() {
     const [boxOpened, setBoxOpened] = useState(false);
     const [selectedRank, setSelectedRank] = useState<Rank | null>(null);
     const [lastAchievedRankId, setLastAchievedRankId] = useState<string | null>(null);
+    const [showProfilePrompt, setShowProfilePrompt] = useState(true);
+    const [pendingHearts, setPendingHearts] = useState(0);
+    const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+    // Initialize audio
+    useEffect(() => {
+        audioRef.current = new Audio("/audio track/valentinfirstpage.mp3");
+        audioRef.current.loop = true;
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, []);
+
+    const handleClosePrompt = () => {
+        setShowProfilePrompt(false);
+        if (audioRef.current) {
+            audioRef.current.play().catch(err => console.error("Audio play failed:", err));
+        }
+    };
 
     // Trigger box opening animation sequence
     useEffect(() => {
@@ -155,14 +180,10 @@ export default function ValentineRoadmapPage() {
                     const data = await res.json();
                     const realHearts = data.totalHearts || 0;
 
-                    // Start at 0 first to show Cupid at Entry Level
+                    // Store the value but keep Cupid at Entry (0)
+                    setPendingHearts(realHearts);
                     setHearts(0);
                     setLoading(false);
-
-                    // Wait 1.5s so user sees the roadmap, then "travel" to real rank
-                    setTimeout(() => {
-                        setHearts(realHearts);
-                    }, 1500);
                 }
             } catch (error) {
                 console.error("Failed to fetch hearts", error);
@@ -171,6 +192,17 @@ export default function ValentineRoadmapPage() {
         }
         fetchData();
     }, []);
+
+    // Trigger Cupid movement ONLY after the profile prompt is dismissed
+    useEffect(() => {
+        if (!showProfilePrompt && !loading && pendingHearts >= 0) {
+            // Wait a small moment after modal closes, then "travel" to real rank
+            const timer = setTimeout(() => {
+                setHearts(pendingHearts);
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [showProfilePrompt, loading, pendingHearts]);
 
     // Scroll to follow cupid accurately
     useEffect(() => {
@@ -630,6 +662,74 @@ export default function ValentineRoadmapPage() {
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                                 Tap to continue journey
                             </p>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Bonus Hearts Profile Prompt Modal */}
+            <AnimatePresence>
+                {showProfilePrompt && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-rose-950/60 backdrop-blur-md">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="bg-white rounded-[2rem] w-full max-w-sm relative p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-rose-100 text-center overflow-hidden"
+                        >
+                            {/* Decorative Background Pulsing Heart */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-rose-100/50 rounded-full blur-3xl -z-10 animate-pulse" />
+
+                            {/* Close Button */}
+                            <button
+                                onClick={handleClosePrompt}
+                                className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 text-slate-400 rounded-full transition-colors z-20"
+                            >
+                                <X size={20} />
+                            </button>
+
+                            {/* Gift Icon Header */}
+                            <div className="flex justify-center mb-6">
+                                <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center shadow-inner relative">
+                                    <div className="absolute inset-0 bg-rose-200/30 rounded-full animate-ping" />
+                                    <Image
+                                        src="/images/gift-box.png"
+                                        alt="Bonus"
+                                        width={50}
+                                        height={50}
+                                        className="relative z-10 drop-shadow-md"
+                                    />
+                                </div>
+                            </div>
+
+                            <h2 className="text-2xl font-black text-rose-600 mb-4 leading-tight uppercase tracking-tight">
+                                Bonus Hearts Await!
+                            </h2>
+
+                            <p className="text-slate-600 font-medium mb-8 text-sm px-4">
+                                Set your <span className="text-rose-500 font-bold">profile photo</span>,
+                                <span className="text-rose-500 font-bold"> marital status</span> and
+                                <span className="text-rose-500 font-bold"> birthday</span> and earn
+                                <span className="inline-block mx-1 px-2 py-0.5 bg-rose-100 text-rose-600 font-black rounded text-xs">20 HEARTS</span>
+                                as a bonus!
+                            </p>
+
+                            <div className="space-y-4">
+                                <Link
+                                    href="/SEC/profile"
+                                    className="flex items-center justify-center gap-2 w-full py-4 bg-[#ff0066] hover:bg-[#e6005c] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_10px_20px_rgba(255,0,102,0.3)] transition-all active:scale-95 group"
+                                >
+                                    <UserCircle size={20} className="group-hover:rotate-12 transition-transform" />
+                                    Go to Profile
+                                </Link>
+
+                                <button
+                                    onClick={handleClosePrompt}
+                                    className="text-slate-400 hover:text-slate-600 font-black text-[10px] uppercase tracking-[0.2em] transition-colors py-2"
+                                >
+                                    Maybe Later
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}
