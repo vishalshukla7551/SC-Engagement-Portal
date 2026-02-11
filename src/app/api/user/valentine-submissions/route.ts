@@ -5,7 +5,7 @@ import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 // Heart point system - matches incentive form logic
 const getHeartsByPlanType = (planType: string): number => {
     const type = (planType || '').toUpperCase();
-    
+
     if (type.includes('COMBO')) {
         return 5;
     } else if (type.includes('ADLD') || type.includes('DAMAGE')) {
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
             submissions: submissionsWithHearts,
             verifiedCount,
             unverifiedCount,
-            totalHearts: totalHearts + profileBonus,
+            totalHearts: totalHearts,
             profileBonus,
             storeName: sec?.store?.name || 'Unknown Store',
             userName: sec?.fullName || authUser.id

@@ -1,27 +1,33 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// New heart point system
-const PLAN_HEARTS = {
-    'ADLD_1_YR': 3,
-    'COMBO_2_YRS': 5,
-    'SCREEN_PROTECT_1_YR': 1,
-    'SCREEN_PROTECT_2_YR': 1,
-    'EXTENDED_WARRANTY_1_YR': 1,
-    'TEST_PLAN': 0
+// Heart point system - matches incentive form logic
+const getHeartsByPlanType = (planType: string): number => {
+    const type = (planType || '').toUpperCase();
+
+    if (type.includes('COMBO')) {
+        return 5;
+    } else if (type.includes('ADLD') || type.includes('DAMAGE')) {
+        return 3;
+    } else if (type.includes('SCREEN') || type.includes('PROTECTION')) {
+        return 1;
+    } else if (type.includes('WARRANTY') || type.includes('EXTENDED')) {
+        return 1;
+    } else {
+        return 1; // Default
+    }
 };
 
 export async function GET() {
     try {
-        // Get today's date at midnight
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Valentine campaign start date: 10-02-2026
+        const valentineStartDate = new Date('2026-02-10T00:00:00.000Z');
 
-        // Fetch all approved submissions from today onwards
+        // Fetch all approved submissions from campaign start onwards
         const submissions = await prisma.spotIncentiveReport.findMany({
             where: {
                 Date_of_sale: {
-                    gte: today
+                    gte: valentineStartDate
                 },
                 spotincentivepaidAt: {
                     not: null
@@ -51,37 +57,13 @@ export async function GET() {
 
         // Group by SEC and calculate hearts
         const userHearts = new Map<string, {
-            id: string; // Add ID
+            id: string;
             phone: string;
             name: string;
             store: string;
             hearts: number;
             submissions: number;
         }>();
-
-        // Helper to init user and add profile bonus
-        const initUser = (secId: string, secData: any) => {
-            if (userHearts.has(secId)) return;
-
-            let profileBonus = 0;
-            const info = secData?.otherProfileInfo as any;
-            if (info && info.photoUrl && info.birthday && info.maritalStatus) {
-                profileBonus = 20;
-            }
-
-            // If user has no sales and no bonus, we might not want to show them? 
-            // But if they are in this list, they might get sales later.
-            // For now, we add them if they have bonus OR are being called from sales loop.
-
-            userHearts.set(secId, {
-                id: secId, // Add ID for unique key
-                phone: secData?.phone || secId,
-                name: secData?.fullName || secData?.phone || 'Unknown',
-                store: secData?.store?.name || 'Unknown Store',
-                hearts: profileBonus,
-                submissions: 0
-            });
-        };
 
         // 1. Process all SECs to ensure everyone appears on the leaderboard
         const allSecs = await prisma.sEC.findMany({
@@ -122,11 +104,24 @@ export async function GET() {
         submissions.forEach((submission: any) => {
             const secId = submission.secId;
             const planType = submission.plan?.planType || 'UNKNOWN';
-            const hearts = PLAN_HEARTS[planType as keyof typeof PLAN_HEARTS] || 0;
+            const hearts = getHeartsByPlanType(planType);
 
             if (!userHearts.has(secId)) {
-                // Initialize if not present (e.g. profile was incomplete or not loaded)
-                initUser(secId, submission.secUser);
+                // Initialize if not present (should be covered by allSecs but safety check)
+                const info = submission.secUser?.otherProfileInfo as any;
+                let profileBonus = 0;
+                if (info && info.photoUrl && info.birthday && info.maritalStatus) {
+                    profileBonus = 20;
+                }
+
+                userHearts.set(secId, {
+                    id: secId,
+                    phone: submission.secUser?.phone || secId,
+                    name: submission.secUser?.fullName || submission.secUser?.phone || 'Unknown',
+                    store: submission.secUser?.store?.name || 'Unknown Store',
+                    hearts: profileBonus,
+                    submissions: 0
+                });
             }
 
             const userData = userHearts.get(secId)!;

@@ -312,7 +312,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
     setShowSuccessModal(false);
     // OLD CONFETTI CODE - Uncomment after Christmas
     // setShowConfetti(false);
-    router.push('/SEC/romance-merit-board');
+    router.push('/SEC/love-submissions');
   };
 
   const handleCancelConfirm = () => {

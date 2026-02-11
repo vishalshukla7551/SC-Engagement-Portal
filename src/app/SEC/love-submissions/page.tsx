@@ -78,7 +78,7 @@ export default function LoveSubmissionsPage() {
     // Heart calculation function - matches incentive form logic
     const getHeartsByPlanType = (planType: string): number => {
         const type = (planType || '').toUpperCase();
-        
+
         if (type.includes('COMBO')) {
             return 5;
         } else if (type.includes('ADLD') || type.includes('DAMAGE')) {
@@ -474,12 +474,12 @@ export default function LoveSubmissionsPage() {
                                                 <div className="flex flex-col gap-1 items-center">
                                                     {row.verifiedUnits > 0 && (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-green-50 text-green-600 border border-green-200 whitespace-nowrap">
-                                                            Verified
+                                                            Approved
                                                         </span>
                                                     )}
                                                     {row.unverifiedUnits > 0 && (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-200 whitespace-nowrap">
-                                                            Reviewing
+                                                            Pending
                                                         </span>
                                                     )}
                                                 </div>
