@@ -608,7 +608,7 @@ export default function ValentineRoadmapPage() {
                             >
                                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-rose-50 rounded-full text-[#d61c4e] text-xs font-black uppercase tracking-widest mb-4 border border-rose-100">
                                     <PartyPopper size={14} />
-                                    New Rank Unlocked
+                                    New Level Unlocked
                                 </div>
                                 <h2 className="text-3xl font-black text-[#d61c4e] mb-2 uppercase leading-none">
                                     {selectedRank.name}
@@ -624,7 +624,7 @@ export default function ValentineRoadmapPage() {
                                 onClick={() => setShowModal(false)}
                                 className="w-full bg-[#d61c4e] text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-rose-200 hover:brightness-110 mb-2 mt-4"
                             >
-                                Collect Your Love
+                                Collect Your Hearts
                             </motion.button>
 
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
