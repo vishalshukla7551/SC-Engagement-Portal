@@ -429,13 +429,16 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
 
                                                         {/* Avatar & Name */}
                                                         <div className="flex flex-col min-w-0">
-                                                            <span className={`font-bold text-sm md:text-base tracking-wide flex items-center gap-2 truncate transition-colors ${isCurrentUser ? 'text-yellow-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'text-white group-hover:text-rose-200'
+                                                            <span className={`font-bold text-sm md:text-base tracking-wide flex items-center flex-wrap gap-x-2 transition-colors ${isCurrentUser ? 'text-yellow-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'text-white group-hover:text-rose-200'
                                                                 }`}>
                                                                 {user.name}
                                                                 {isCurrentUser && <span className="text-xs">✨</span>}
                                                             </span>
-                                                            <span className="text-[10px] text-white/60 flex items-center gap-1 truncate">
-                                                                <span className="opacity-50">📍</span> {user.store}
+                                                            <span className="text-[10px] text-white/60 flex items-start gap-1 mt-0.5">
+                                                                <span className="opacity-50 shrink-0 mt-0.5">📍</span>
+                                                                <span className="leading-tight">
+                                                                    {user.store}
+                                                                </span>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -454,7 +457,7 @@ export default function RomanceMeritBoard({ showFooter = true }: RomanceMeritBoa
                                     ) : (
                                         <div className="text-center text-white/40 italic text-sm py-8 flex flex-col items-center gap-2">
                                             <span className="text-2xl opacity-50">💨</span>
-                                            <span>No lovers here yet...</span>
+                                            <span>No SECs here yet...</span>
                                         </div>
                                     )}
                                 </div>

@@ -98,6 +98,7 @@ export default function SpotIncentiveReport() {
   const [planFilter, setPlanFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
   const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
@@ -265,10 +266,8 @@ export default function SpotIncentiveReport() {
       if (storeFilter) params.append('storeId', storeFilter);
       if (planFilter) params.append('planType', planFilter);
       if (paymentFilter !== 'all') params.append('paymentStatus', paymentFilter);
-      if (startDate) {
-        params.append('startDate', startDate);
-        params.append('endDate', startDate);
-      }
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
 
       const response = await fetch(`/api/zopper-administrator/spot-incentive-report?${params}`);
 
@@ -295,13 +294,13 @@ export default function SpotIncentiveReport() {
   // Fetch data on component mount and when filters change
   useEffect(() => {
     fetchData();
-  }, [page, query, storeFilter, planFilter, paymentFilter, startDate]);
+  }, [page, query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
 
   // Reset page and selection when filters change
   useEffect(() => {
     setPage(1);
     setSelectedIds(new Set());
-  }, [query, storeFilter, planFilter, paymentFilter, startDate]);
+  }, [query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
 
   const reports = data?.reports || [];
   const pagination = data?.pagination || { page: 1, totalPages: 1, hasNext: false, hasPrev: false };
@@ -323,10 +322,8 @@ export default function SpotIncentiveReport() {
       if (storeFilter) params.append('storeId', storeFilter);
       if (planFilter) params.append('planType', planFilter);
       if (paymentFilter !== 'all') params.append('paymentStatus', paymentFilter);
-      if (startDate) {
-        params.append('startDate', startDate);
-        params.append('endDate', startDate);
-      }
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
 
       // Fetch all data
       const response = await fetch(`/api/zopper-administrator/spot-incentive-report?${params}`);
@@ -472,13 +469,22 @@ export default function SpotIncentiveReport() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <input
-            type="date"
-            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
-            placeholder="Date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
+          <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-700 rounded-lg px-2">
+            <span className="text-xs text-neutral-500 font-medium uppercase">From</span>
+            <input
+              type="date"
+              className="bg-transparent py-2 text-sm text-white focus:outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:invert"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <span className="text-xs text-neutral-500 font-medium uppercase">To</span>
+            <input
+              type="date"
+              className="bg-transparent py-2 text-sm text-white focus:outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:invert"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
           <select
             className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
             value={storeFilter}
@@ -816,10 +822,10 @@ export default function SpotIncentiveReport() {
                                       <td className="p-3 text-sm text-neutral-900 font-mono">{detail.reportId}</td>
                                       <td className="p-3">
                                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${detail.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                                            detail.status === 'deleted' ? 'bg-purple-100 text-purple-700' :
-                                              detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
-                                                detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
-                                                  'bg-red-100 text-red-700'
+                                          detail.status === 'deleted' ? 'bg-purple-100 text-purple-700' :
+                                            detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
+                                              detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
+                                                'bg-red-100 text-red-700'
                                           }`}>
                                           {detail.status.replace('_', ' ')}
                                         </span>
