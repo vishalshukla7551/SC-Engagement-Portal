@@ -263,6 +263,19 @@ export default function ValentineHeader({ userName = 'Dreamer', hideGreeting = f
 
                                         <button
                                             onClick={() => {
+                                                router.push('/SEC/support');
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className="w-full px-4 py-3 text-left text-gray-700 hover:bg-rose-50 flex items-center gap-3 transition-colors group"
+                                        >
+                                            <span className="bg-rose-100 p-1.5 rounded-lg group-hover:bg-rose-200 transition-colors">❓</span>
+                                            <span className="font-medium text-sm">Help & Support</span>
+                                        </button>
+
+                                        <div className="h-px bg-gray-100 mx-2"></div>
+
+                                        <button
+                                            onClick={() => {
                                                 clientLogout('/login/sec');
                                                 setIsDropdownOpen(false);
                                             }}
