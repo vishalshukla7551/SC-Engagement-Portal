@@ -1,0 +1,129 @@
+🔄 Analyzing profile completion for Entry Level users (1-19 Hearts)...
+
+✅ Found 119 Entry Level users.
+
+Status Key: ✅ = Filled, ❌ = Missing
+
+Name                      | Phone        | Store                          | Photo | Bday | Marital | Hearts
+------------------------------------------------------------------------------------------------------------------------
+ONKAR RAJSHEKHAR UMBRAJKA | 8087704399   | Croma- A243 -Solapur-Murarji P |  ✅    |  ❌   |    ✅     | 19
+Shivam sharma             | 7428877742   | Croma- A048 -Delhi-SouthEx     |  ❌    |  ❌   |    ❌     | 19
+Umesh p shinde            | 9922663882   | Croma- A156 -Pune-Baner        |  ❌    |  ❌   |    ❌     | 19
+TUSHAR SETHI              | 8218981308   | Croma- A135 -Noida-Logix Mall  |  ❌    |  ✅   |    ✅     | 18
+Anvihalankar43@gmail.com  | 9049078997   | Croma- A172 -Porvorim-Bardez   |  ❌    |  ✅   |    ✅     | 17
+Mahadev Prasad N          | 7899180977   | Croma- A073 -Bangalore-Banshan |  ❌    |  ❌   |    ❌     | 17
+Syed Abbas                | 8892227414   | Croma- A045 -Bangalore-Indira  |  ❌    |  ❌   |    ❌     | 15
+Chandrashekar R           | 9036451290   | Croma- A515 -Bangalore-Gottige |  ❌    |  ❌   |    ❌     | 13
+GOVINDA MAHILANGE         | 9713096992   | Croma- A219 -Raipur-VIP Chowk  |  ❌    |  ✅   |    ✅     | 13
+ALAGAPPAN KARTHICK        | 9345535583   | Croma- A213 -Salem-Bharathi St |  ❌    |  ❌   |    ❌     | 13
+Sanket sanjayrao andeo    | 8788991233   | Croma- A354 -Nagpur-Wardha Roa |  ❌    |  ❌   |    ❌     | 12
+NAVEEN KUMAR DUBEY        | 9582576831   | Croma- A306 -Gurugram-Sector 8 |  ❌    |  ✅   |    ✅     | 11
+MOHAMED IMRAN AHMED       | 9945111142   | Croma- A066 -Bangalore-Bannerg |  ❌    |  ✅   |    ✅     | 11
+Shahbaaz shaikh           | 9324052838   | Croma- A507 -Navi Mumbai-Ulwe  |  ❌    |  ❌   |    ❌     | 11
+Imran Khan                | 9384622471   | Reliance Digital- TAZ4 - RRL C |  ❌    |  ❌   |    ❌     | 11
+Mishall Martin H          | 8939887188   | Croma- A037 -Chennai-Anna Naga |  ❌    |  ❌   |    ❌     | 11
+Prabhakar Kumar Poddar    | 8130780119   | Croma- A276 -Delhi-Civil Lines |  ❌    |  ❌   |    ❌     | 10
+Abhishek Bhujang          | 9922130718   | Croma- A314 -Ahmednagar-Kohino |  ❌    |  ✅   |    ✅     | 10
+SHAHNAWAZ MOHAMMED AZAD S | 9321222370   | VS- Vasai Br                   |  ❌    |  ✅   |    ✅     | 10
+Pradeep kumar             | 7844862077   | Croma- A032 -Delhi-Kamlanagar  |  ❌    |  ❌   |    ❌     |  9
+Altamash Miyabhai Shaikh  | 7020496418   | Croma- A215 -Nashik-Nashik Roa |  ❌    |  ✅   |    ✅     |  9
+Vasanthi                  | 8248188669   | Croma- A097 -Chennai-PMC Mall  |  ❌    |  ❌   |    ❌     |  9
+MONU                      | 7210101783   | Croma- A718 -Noida-Expo Plaza  |  ❌    |  ❌   |    ✅     |  9
+REHAAN                    | 9911912199   | Croma- A555 -Noida-Sector 122  |  ✅    |  ❌   |    ✅     |  9
+Ajay Bapu Khade           | 9762449504   | VS- Pune(Station Rd) Br        |  ❌    |  ❌   |    ❌     |  8
+SOURAV KUMAR              | 9814654646   | Croma- A163 -Jalandhar-Lajpat  |  ❌    |  ❌   |    ❌     |  8
+Prashanth                 | 7780617002   | Croma- A170 -Hyderabad-Kukatpa |  ❌    |  ❌   |    ❌     |  8
+Aviazuu                   | 9019950849   | Croma- A605 -Bangalore-Basaves |  ❌    |  ❌   |    ❌     |  8
+Sonu Tanwar               | 7000079717   | Croma- A186 -Indore-Vijay Naga |  ❌    |  ❌   |    ❌     |  8
+SHAIKH SHAHEBAZ           | 7218253698   | VS- Pune(Hadapsar)             |  ❌    |  ❌   |    ❌     |  7
+YASHWANT SINGH            | 8896365474   | Croma- A039 -Mumbai-Sion       |  ❌    |  ✅   |    ✅     |  7
+Shekh malik shekh rashid  | 8788883037   | VS- Pune(Kondhawa)             |  ❌    |  ❌   |    ❌     |  7
+MOHIT SITYAPPA HARIJAN    | 7499257797   | Croma- A172 -Porvorim-Bardez   |  ❌    |  ❌   |    ❌     |  6
+Shubham Rana              | 7018315588   | Croma- A080 -Chandigarh-Sector |  ❌    |  ❌   |    ❌     |  6
+Imran Motiwala            | 7977773143   | Croma- A488 -Nashik-Dindori Ro |  ❌    |  ✅   |    ✅     |  6
+Seema shriram yadav       | 8488905860   | Croma- A195 -Vapi-Daman Road   |  ❌    |  ❌   |    ❌     |  6
+Bhavnil patel             | 9377706162   | VS- Ahmedabad(Chandkheda Rd) B |  ❌    |  ❌   |    ❌     |  6
+AJMERI SHAMVILAHEMAD DILA | 6352720564   | Croma- A250 -Ahmedabad-Bopal   |  ❌    |  ✅   |    ✅     |  6
+MOHAMMED TABEEHAN         | 8722727829   | Croma- A539 -Bangalore-Mall of |  ❌    |  ❌   |    ❌     |  6
+Rahul rai                 | 8010193101   | Croma- A050 -Gurugram-Dlf Mega |  ❌    |  ❌   |    ❌     |  6
+Abdurrazzaque Sayed       | 8286460726   | Croma- A009 -Navi Mumbai-Belap |  ❌    |  ❌   |    ❌     |  6
+ROHIT DILIP SHELAR        | 7263993030   | Croma- A049 -Pune-Kothrud      |  ❌    |  ✅   |    ✅     |  6
+Vikram Kumar              | 9877732964   | Croma- A162 -Mohali-VR Mall    |  ❌    |  ❌   |    ❌     |  6
+Hemalatha                 | 8971383391   | Croma- A060 -Bangalore-Maratha |  ❌    |  ❌   |    ❌     |  6
+SACHIN SHARMA             | 9625253553   | VS- Delhi(Dwarka) Br           |  ❌    |  ✅   |    ✅     |  6
+Thimmaiah g               | 8147888964   | Croma- A591 -Tumkur-BH Road    |  ❌    |  ✅   |    ✅     |  6
+SYED ABDUL MAJEED         | 7386047386   | Reliance Digital- TB83 - Panja |  ❌    |  ✅   |    ✅     |  6
+RAKESH AJINATH SONAWANE   | 7499489496   | Croma- A399 -Pune-Bavdhan      |  ❌    |  ✅   |    ✅     |  5
+Swapnil chintal           | 7040589065   | Croma- A314 -Ahmednagar-Kohino |  ❌    |  ❌   |    ❌     |  5
+AKASH PAL                 | 8777459719   | Croma- A385 -Kolkata-Acropolis |  ❌    |  ✅   |    ✅     |  5
+Preeti                    | 8447229213   | Croma- A120 -Gurugram-Sector 2 |  ❌    |  ❌   |    ❌     |  5
+MENTLA ARAVIND            | 9391576815   | VS- Ts(Kothapet)               |  ❌    |  ❌   |    ❌     |  5
+Md sajid Hussain          | 8826718526   | Reliance Digital- TA9U - BB-NO |  ❌    |  ❌   |    ❌     |  5
+SOUMAJIT ROY              | 8100432608   | Croma- A633 -Kolkata-Salt Lake |  ❌    |  ❌   |    ❌     |  5
+Mansoor                   | 8296299896   | Croma- A272 -Shivamoga-Savalan |  ❌    |  ❌   |    ❌     |  5
+ANSARI SAJID SAJJAD AHMED | 8208406748   | Croma- A222 -Pune-Katraj       |  ❌    |  ✅   |    ✅     |  5
+Srinidhi                  | 8088099933   | Croma- A236 -Bangalore-Mallesh |  ❌    |  ❌   |    ✅     |  5
+Vinoth M                  | 8939590763   | Croma- A034 -Chennai-Mount Roa |  ❌    |  ❌   |    ❌     |  5
+Ajharul haque             | 6009139717   | Croma- A150 -Bangalore-Whitefi |  ❌    |  ❌   |    ❌     |  5
+Md sadab ahmad            | 9871392425   | Croma- A135 -Noida-Logix Mall  |  ❌    |  ✅   |    ✅     |  5
+Pappu kumar thakur        | 9958081152   | Croma- A212 -Gurugram-Worldmar |  ❌    |  ✅   |    ✅     |  5
+Mohammed nayab            | 7032236130   | Croma- A029 -Hyderabad-Panjagu |  ❌    |  ❌   |    ❌     |  5
+KAPIL KUMAR               | 9350771004   | Croma- A024 -Ghazibad-Aditya M |  ❌    |  ✅   |    ✅     |  5
+ANAND KUMAR CHOUBEY       | 7020936996   | Reliance Digital- TX08 - RRL C |  ❌    |  ❌   |    ❌     |  5
+Saad Mahemood Siddiqui    | 8379043649   | Reliance Digital- TZ8D - RRL C |  ❌    |  ❌   |    ❌     |  5
+Jatin Mahajan             | 9828499293   | A740 - Gorakhpur Taramandal    |  ❌    |  ❌   |    ❌     |  5
+Rupesh                    | 9008016679   | Croma- A452 -Bangalore-KR Pura |  ❌    |  ❌   |    ❌     |  5
+Mohammed Waseem           | 9963708076   | Reliance Digital- 8823 - RRL C |  ❌    |  ❌   |    ❌     |  5
+Vikas kumar singh         | 7827178933   | Reliance Digital- TA9U - BB-NO |  ❌    |  ❌   |    ❌     |  5
+KALAI SELVAN VINOTH KUMAR | 9626983020   | Croma- A650 -Madurai-100 Feet  |  ❌    |  ❌   |    ❌     |  4
+Hasan ali                 | 6300217495   | Croma- A470 -Hyderabad-Hydergu |  ❌    |  ❌   |    ❌     |  4
+VINEET CHOPRA             | 7289808873   | Croma- A182 -Gwalior-City Cent |  ❌    |  ❌   |    ❌     |  3
+Ashwani                   | 8130340268   | Croma- A417 -Delhi-Patparganj  |  ❌    |  ❌   |    ❌     |  3
+KAMALDEEP                 | 9729342716   | Croma- A355 -Yamunanagar-Gobin |  ❌    |  ✅   |    ✅     |  3
+PREETY SINHA              | 9762975009   | VS- Pune(Dange Chowk)          |  ❌    |  ❌   |    ❌     |  3
+Salman Khan               | 7676060317   | Croma- A326 -Bangalore-Kanakpu |  ❌    |  ❌   |    ❌     |  3
+REHAN ABRAR KADRI         | 9082546823   | Reliance Digital- TB84 - RRL C |  ❌    |  ✅   |    ✅     |  3
+Sofiyan Billahamar        | 9322868460   | Croma- A413 -Jalna-Old Mondha  |  ❌    |  ❌   |    ❌     |  3
+Nawab sandimani           | 9538293353   | Croma- A167 -Hubli-Gokul Road  |  ❌    |  ✅   |    ✅     |  3
+Manoj Singh Rathour       | 8840997933   | Croma- A359 -Kanpur-Awas Vikas |  ❌    |  ❌   |    ❌     |  3
+Thakor MohammadAtik       | 9033786559   | VS- Ahmedabad(Odhav) Br        |  ❌    |  ❌   |    ❌     |  3
+Thangamani                | 9952020332   | Croma- A157 -Chennai-Avadi     |  ❌    |  ❌   |    ❌     |  3
+PREETI KUMARI             | 9509795132   | Reliance Digital- TVL2 - RRL C |  ❌    |  ❌   |    ❌     |  3
+Sahil Qureshi             | 7383843672   | Croma- A107 -Ahmedabad-Ratna   |  ❌    |  ❌   |    ❌     |  3
+KHALANDER SHAFI           | 8618660044   | Croma- A642 -Bangalore-Vega Ci |  ❌    |  ❌   |    ❌     |  3
+Suraj Kumar               | 9517662406   | Croma- A041 -Mumbai-Oberoi Mal |  ❌    |  ❌   |    ❌     |  3
+Rahul mukati              | 9685858504   | Croma- A456 -Indore-Annapurna  |  ❌    |  ✅   |    ✅     |  3
+VASANTHAKUMAR             | 8248905986   | Croma- A138 -Chennai-BSR Mall  |  ❌    |  ❌   |    ❌     |  3
+GADIGI NAGENDRAPPA ABHISH | 8548878859   | Croma- A185 -Davanagere-Hadadi |  ❌    |  ✅   |    ✅     |  3
+SAMAR SEN                 | 8409675656   | Croma- A245 -Dhanbad-Prabhatam |  ❌    |  ❌   |    ❌     |  3
+DINESH KUMAR              | 7055566688   | Croma- A050 -Gurugram-Dlf Mega |  ❌    |  ❌   |    ✅     |  3
+Md Rashid                 | 8434343404   | Reliance Digital- TC2V - RRL C |  ❌    |  ❌   |    ❌     |  3
+LALIT MANIK JAVHERI       | 7776990478   | Reliance Digital- TZ8E - RRL C |  ❌    |  ❌   |    ✅     |  3
+Siddheshwar Sanjay Gaikwa | 9130537009   | Reliance Digital- TJ3X - RRL C |  ❌    |  ❌   |    ❌     |  3
+AKSHAY NAMDEVRAO MALEKAR  | 8482855517   | Reliance Digital- TOH3 - RRL C |  ❌    |  ✅   |    ✅     |  3
+Siddharth suresh dhage    | 9112171775   | Reliance Digital- 8916 - RRL C |  ❌    |  ❌   |    ❌     |  3
+Mohammad Ibrahim shaikh   | 7039978507   | Reliance Digital- TQB3 - RRL C |  ❌    |  ❌   |    ❌     |  3
+PANCHATCHARAM KANNAN      | 6379961402   | Reliance Digital- 8943 - RRL C |  ❌    |  ✅   |    ✅     |  3
+Satyajit prusty           | 8260544344   | Croma- A454 -Cuttack-College S |  ❌    |  ❌   |    ❌     |  3
+Hemant sharma             | 8000774890   | Reliance Digital- TO34 - RRL C |  ❌    |  ❌   |    ❌     |  3
+PODISHETTI KISHORE        | 7382470372   | Croma- A422 -Secunderabad-Naga |  ❌    |  ❌   |    ❌     |  3
+Pawan lodhi               | 9644410662   | Reliance Digital- TFJ5 - RRL C |  ❌    |  ❌   |    ❌     |  3
+Vanzara mehul             | 8849996057   | Croma- A302 -Vadodara-Nizampur |  ❌    |  ❌   |    ❌     |  3
+NISHANTH                  | 8148819432   | Croma- A391 -Chennai-Vivira Ma |  ❌    |  ❌   |    ❌     |  2
+VIKASH KUMAR GUPTA        | 7002712796   | VS- Delhi(Karol Bagh) Br       |  ❌    |  ❌   |    ❌     |  2
+Mohd abrar mirza          | 8555993060   | VS- Ts(Chandrayangutta)        |  ❌    |  ❌   |    ❌     |  1
+Umer sayyed               | 9359012298   | Croma- A129 -Pune-PMC Mall     |  ❌    |  ❌   |    ❌     |  1
+YASH ANIL TOURANI         | 8668993472   | Croma- A108 -Nashik-Solitario  |  ❌    |  ❌   |    ❌     |  1
+Arvind                    | 8700075610   | Croma- A311 -Delhi-DB Gupta Ro |  ❌    |  ❌   |    ❌     |  1
+Mohammed riyahhan A       | 9843327813   | Croma- A516 -Vellore-Katpadi   |  ❌    |  ❌   |    ❌     |  1
+MOHAMMED ATIQUE ABDUL RAF | 7498516090   | Croma- A062 -Chhatrapati Sambh |  ❌    |  ✅   |    ✅     |  1
+Karthika                  | 8220163707   | Croma- A647 -Chennai-Tambaram  |  ❌    |  ✅   |    ✅     |  1
+Anjali Gupta              | 8700074285   | VS- Haryana(Mewla M.) Br       |  ❌    |  ❌   |    ❌     |  1
+Mukesh kumar              | 9899538328   | Croma- A336 -Delhi-Shahdara    |  ❌    |  ❌   |    ❌     |  1
+Vivek kumar singh         | 9534403408   | Croma- A258 -Delhi-Pitampura   |  ❌    |  ❌   |    ❌     |  1
+Kavuri raja               | 7815985243   | VS- Ts(Kompally- Golden Plaza) |  ❌    |  ❌   |    ❌     |  1
+Ibrahim patel             | 9052262007   | Croma- A196 -Hyderabad-Madinag |  ❌    |  ❌   |    ❌     |  1
+Anup chakraborty          | 9263405982   | Croma- A618 -Burdwan-Regent Cr |  ❌    |  ❌   |    ❌     |  1
+Fayas ahamed              | 9952917590   | Croma- A034 -Chennai-Mount Roa |  ❌    |  ❌   |    ❌     |  1
+
+Note: Completing all 3 profile details grants a 20-heart bonus, pushing users out of Entry Level into Bronze.
