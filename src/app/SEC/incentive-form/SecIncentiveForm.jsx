@@ -193,8 +193,6 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('🛑 Sales submissions are currently closed.');
-    return;
 
     if (!secPhone) {
       setShowSecAlert(true);
@@ -499,17 +497,6 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-5 pt-6 pb-6">
-          {/* Submissions Closed Banner */}
-          <div className="mb-6 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 border border-rose-300 px-5 py-4 flex items-center gap-3 shadow-md">
-            <span className="text-2xl">⚠️</span>
-            <div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-tight">Campaign Period Ended</h3>
-              <p className="text-[11px] text-rose-100 font-medium leading-tight">
-                Sales submissions for the current campaign are now closed. Please check the announcements for the next campaign start date.
-              </p>
-            </div>
-          </div>
-
           {/* SEC ID Alert */}
           {showSecAlert && (
             <div className="mb-4 rounded-xl bg-gradient-to-r from-pink-50 to-rose-100 border border-rose-200 px-4 py-3 flex items-center justify-between gap-3 text-[13px] text-rose-900">
@@ -545,8 +532,8 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               </h1>
               <span className="text-2xl">💘</span>
             </div>
-            <p className="text-xs font-bold text-rose-500 uppercase tracking-wider italic">
-              📢 Sales submissions are currently closed
+            <p className="text-xs font-bold text-rose-500 uppercase tracking-wider">
+              Submit your plan sales below
             </p>
           </motion.div>
 
@@ -609,8 +596,8 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   value={dateOfSale}
                   onChange={(e) => setDateOfSale(e.target.value)}
                   onClick={() => dateInputRef.current?.showPicker()}
-                  disabled={true}
-                  className="w-full pl-4 pr-12 py-3.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold focus:outline-none shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden cursor-not-allowed"
+                  disabled={false}
+                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
                   placeholder="dd/mm/yyyy"
                 />
                 <div
@@ -684,8 +671,8 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                     setDeviceId(e.target.value);
                     setPlanId(''); // Reset plan when device changes
                   }}
-                  disabled={true}
-                  className="w-full px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold focus:outline-none appearance-none disabled:opacity-50 shadow-sm transition-all cursor-not-allowed"
+                  disabled={loadingDevices}
+                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
                 >
                   <option value="">{loadingDevices ? 'Loading devices...' : 'Select Device'}</option>
                   {devices.map((device) => (
@@ -710,8 +697,8 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   id="planId"
                   value={planId}
                   onChange={(e) => setPlanId(e.target.value)}
-                  disabled={true}
-                  className="w-full px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold focus:outline-none appearance-none disabled:opacity-50 shadow-sm transition-all cursor-not-allowed"
+                  disabled={!deviceId || loadingPlans}
+                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
                 >
                   <option value="">
                     {!deviceId ? 'Select device first' : loadingPlans ? 'Loading plans...' : 'Select Plan'}
@@ -742,14 +729,16 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   placeholder="Enter IMEI Number"
                   inputMode="numeric"
                   maxLength="15"
-                  disabled={true}
-                  className="w-full pl-4 pr-24 py-3.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold focus:outline-none placeholder:text-slate-300 shadow-sm transition-all cursor-not-allowed"
+                  className={`w-full pl-4 pr-24 py-3.5 bg-white border rounded-xl text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 placeholder:text-slate-400 shadow-sm transition-all ${imeiError || duplicateError || imeiExists
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-slate-200 focus:ring-rose-500 focus:border-rose-500'
+                    }`}
                 />
                 <button
                   type="button"
                   onClick={handleScan}
-                  disabled={true}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-400 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-not-allowed"
+                  disabled={isScanning}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -788,15 +777,26 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
             <div className="pt-6 pb-6">
               <button
                 type="submit"
-                disabled={true}
-                className="w-full text-white font-bold py-4 rounded-xl transition-all text-base shadow-lg relative overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={isSubmitting || imeiError || duplicateError || !dateOfSale || !deviceId || !planId || !imeiNumber}
+                className="w-full text-white font-bold py-4 rounded-xl transition-all text-base shadow-lg relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: 'linear-gradient(90deg, #999 0%, #666 50%, #999 100%)',
+                  background: isSubmitting ? 'linear-gradient(90deg, #999 0%, #666 50%, #999 100%)' : 'linear-gradient(90deg, #e11d48 0%, #be123c 50%, #e11d48 100%)',
                 }}
               >
                 <div className="relative flex items-center justify-center gap-2">
-                  <span>🚫</span>
-                  <span>SUBMISSIONS CLOSED</span>
+                  {isSubmitting ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>SUBMITTING...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>💘</span>
+                      <span>SUBMIT SALE</span>
+                    </>
+                  )}
                 </div>
               </button>
             </div>
