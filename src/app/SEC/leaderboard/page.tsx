@@ -61,10 +61,26 @@ export default function SalesChampionLeaderboardPage() {
     MONTH_OPTIONS[new Date().getMonth()] ?? `November ${CURRENT_YEAR_SHORT}`,
   );
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
-
   const [activeCampaignsData, setActiveCampaignsData] = useState<ActiveCampaignsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRelianceStore, setIsRelianceStore] = useState<boolean | null>(null);
+
+  // Check store access on mount
+  useEffect(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem('authUser') : null;
+      if (raw) {
+        const auth = JSON.parse(raw);
+        const storeName: string = auth?.store?.name || '';
+        setIsRelianceStore(storeName.startsWith('Reliance Digital'));
+      } else {
+        setIsRelianceStore(false);
+      }
+    } catch {
+      setIsRelianceStore(false);
+    }
+  }, []);
 
   const fetchLeaderboard = async () => {
     try {
@@ -102,8 +118,12 @@ export default function SalesChampionLeaderboardPage() {
   };
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, []);
+    if (isRelianceStore) {
+      fetchLeaderboard();
+    } else if (isRelianceStore === false) {
+      setLoading(false);
+    }
+  }, [isRelianceStore]);
 
   const podiumData = leaderboardData?.stores.slice(0, 3).map((store, idx) => ({
     rank: store.rank,
@@ -155,10 +175,10 @@ export default function SalesChampionLeaderboardPage() {
               <span className="text-4xl">🏆</span>
             </div>
             <h1 className="text-2xl font-bold mb-1">
-              Sales Champion Leaderboard
+              Spot Incentive Leaderboard
             </h1>
             <p className="text-sm text-gray-200 mb-4">
-              Top stores by total incentives
+              Top stores by campaign incentives earned
             </p>
 
             {/* Stats - removed Total Sales per request */}
@@ -188,15 +208,23 @@ export default function SalesChampionLeaderboardPage() {
 
           {/* Active Campaigns - Hidden from UI but data still fetched */}
 
+          {/* Non-Reliance stores: neutral empty state */}
+          {isRelianceStore === false && (
+            <div className="text-center py-16 px-6">
+              <div className="text-5xl mb-4">🏆</div>
+              <p className="text-gray-400 text-sm">No leaderboard data available yet.</p>
+            </div>
+          )}
+
           {/* Loading/Error States */}
-          {loading && (
+          {isRelianceStore && loading && (
             <div className="text-center text-white py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
               <p>Loading leaderboard...</p>
             </div>
           )}
 
-          {error && (
+          {isRelianceStore && error && (
             <div className="text-center text-red-400 py-12">
               <p>{error}</p>
               <button
@@ -208,7 +236,7 @@ export default function SalesChampionLeaderboardPage() {
             </div>
           )}
 
-          {!loading && !error && leaderboardData && (
+          {isRelianceStore && !loading && !error && leaderboardData && (
             <>
               {/* Podium - 3 cards side by side, aligned at bottom */}
               {reorderedPodium.length > 0 && (

@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import ValentineHeader from '@/components/ValentineHeader';
-import ValentineFooter from '@/components/ValentineFooter';
+import SECHeader from '@/app/SEC/SECHeader';
+import SECFooter from '@/app/SEC/SECFooter';
 import ValentineSuccessModal from '@/components/ValentineSuccessModal';
 
 const RELIANCE_STORE_PREFIX = 'Reliance Digital';
@@ -441,51 +441,34 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const isFormDisabled = !isRelianceStore || !profileComplete;
 
   return (
-    <div className="h-screen bg-gradient-to-b from-pink-50 via-white to-rose-50 flex flex-col overflow-hidden font-sans relative">
-      {/* Background Floating Hearts */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-pink-200/60"
-            initial={{ opacity: 0, y: '100vh', scale: 0.5 }}
-            animate={{ opacity: [0, 0.8, 0], y: '-10vh', x: [0, Math.sin(i) * 50, 0], rotate: [0, 20, -20, 0] }}
-            transition={{ duration: 10 + Math.random() * 5, repeat: Infinity, delay: i * 2, ease: 'linear' }}
-            style={{ left: `${10 + i * 15}%`, fontSize: `${20 + Math.random() * 20}px` }}
-          >
-            {['❤️', '💖', '💌', '💕'][i % 4]}
-          </motion.div>
-        ))}
-      </div>
-
-      <ValentineHeader hideGreeting />
+    <div className="h-screen bg-white flex flex-col overflow-hidden font-sans relative">
+      <SECHeader />
 
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-5 pt-6 pb-6">
 
           {/* SEC ID Alert */}
           {showSecAlert && (
-            <div className="mb-4 rounded-xl bg-gradient-to-r from-pink-50 to-rose-100 border border-rose-200 px-4 py-3 flex items-center justify-between gap-3 text-[13px] text-rose-900">
+            <div className="mb-4 rounded-xl bg-gradient-to-r from-blue-50 to-slate-100 border border-blue-200 px-4 py-3 flex items-center justify-between gap-3 text-[13px] text-blue-900">
               <span className="font-medium">Session expired. Please login again.</span>
-              <a href="/login" className="shrink-0 px-3 py-1.5 rounded-full bg-rose-600 text-white text-xs font-semibold shadow-sm">Login</a>
+              <a href="/login" className="shrink-0 px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold shadow-sm">Login</a>
             </div>
           )}
 
           {/* Page Heading */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="mb-6 relative pl-3 z-10">
-            <div className="absolute left-0 top-1 bottom-1 w-1 rounded-full bg-gradient-to-b from-rose-400 via-red-500 to-pink-600 shadow-sm" />
+            <div className="absolute left-0 top-1 bottom-1 w-1 rounded-full bg-blue-600 shadow-sm" />
             <div className="flex items-center gap-2 mb-0.5">
-              <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-red-600 tracking-tight uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>
                 Sales Submission
               </h1>
-              <span className="text-2xl">💘</span>
             </div>
             {isRelianceStore ? (
               <p className="text-xs font-bold text-green-600 uppercase tracking-wider">
                 ✅ Reliance Digital Campaign — Active
               </p>
             ) : (
-              <p className="text-xs font-bold text-rose-500 uppercase tracking-wider italic">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider italic">
                 📢 Sales submissions are currently closed for your store
               </p>
             )}
@@ -507,7 +490,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               >
                 {/* SEC ID */}
                 <div>
-                  <label htmlFor="secId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">SEC ID</label>
+                  <label htmlFor="secId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">SEC ID</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -516,7 +499,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       onChange={(e) => setSecId(e.target.value)}
                       disabled={!isSecIdEditable}
                       className={`w-full px-4 py-3 border rounded-xl text-sm font-medium transition-all ${isSecIdEditable
-                        ? 'bg-white border-rose-500 text-slate-800 ring-2 ring-rose-100'
+                        ? 'bg-white border-blue-500 text-slate-800 ring-2 ring-blue-100'
                         : 'bg-slate-200/50 border-slate-200 text-slate-500'}`}
                       placeholder="SEC ID"
                     />
@@ -536,7 +519,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
                 {/* Date of Sale */}
                 <div>
-                  <label htmlFor="dateOfSale" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">Date of Sale</label>
+                  <label htmlFor="dateOfSale" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Date of Sale</label>
                   <div className="relative">
                     <input
                       type="date"
@@ -546,10 +529,10 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       max={new Date().toISOString().split('T')[0]}
                       onChange={(e) => setDateOfSale(e.target.value)}
                       onClick={() => dateInputRef.current?.showPicker()}
-                      className="w-full pl-4 pr-12 py-3.5 bg-white border border-rose-200 rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-300 shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+                      className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-200 shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
                     />
                     <div className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer" onClick={() => dateInputRef.current?.showPicker()}>
-                      <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
@@ -558,7 +541,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
                 {/* Store Name */}
                 <div>
-                  <label htmlFor="storeId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">Store Name</label>
+                  <label htmlFor="storeId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Store Name</label>
                   <input
                     type="text"
                     id="storeId"
@@ -581,14 +564,14 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
                 {/* Device Name */}
                 <div>
-                  <label htmlFor="deviceId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">Device Name</label>
+                  <label htmlFor="deviceId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Device Name</label>
                   <div className="relative">
                     <select
                       id="deviceId"
                       value={deviceId}
                       onChange={(e) => { setDeviceId(e.target.value); setPlanId(''); }}
                       required
-                      className="w-full px-4 py-3.5 bg-white border border-rose-200 rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none shadow-sm transition-all"
+                      className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none shadow-sm transition-all"
                     >
                       <option value="">{loadingDevices ? 'Loading devices...' : 'Select Device'}</option>
                       {devices.map((device) => (
@@ -598,14 +581,14 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       ))}
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                      <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                     </div>
                   </div>
                 </div>
 
                 {/* Plan Type */}
                 <div>
-                  <label htmlFor="planId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">Plan Type</label>
+                  <label htmlFor="planId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Plan Type</label>
                   <div className="relative">
                     <select
                       id="planId"
@@ -613,7 +596,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       onChange={(e) => setPlanId(e.target.value)}
                       required
                       disabled={!deviceId || loadingPlans}
-                      className="w-full px-4 py-3.5 bg-white border border-rose-200 rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none disabled:bg-slate-100 disabled:text-slate-400 shadow-sm transition-all"
+                      className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none disabled:bg-slate-100 disabled:text-slate-400 shadow-sm transition-all"
                     >
                       <option value="">{!deviceId ? 'Select device first' : loadingPlans ? 'Loading plans...' : 'Select Plan'}</option>
                       {plans.map((plan) => (
@@ -621,14 +604,14 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       ))}
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                      <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                     </div>
                   </div>
                 </div>
 
                 {/* IMEI Number */}
                 <div>
-                  <label htmlFor="imeiNumber" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">IMEI Number</label>
+                  <label htmlFor="imeiNumber" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">IMEI Number</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -638,12 +621,12 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                       placeholder="Enter IMEI Number"
                       inputMode="numeric"
                       maxLength="15"
-                      className={`w-full pl-4 pr-24 py-3.5 bg-white border rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 placeholder:text-slate-300 shadow-sm transition-all ${imeiError || duplicateError ? 'border-red-400 focus:ring-red-200' : 'border-rose-200 focus:ring-rose-300'}`}
+                      className={`w-full pl-4 pr-24 py-3.5 bg-white border rounded-xl text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 placeholder:text-slate-300 shadow-sm transition-all ${imeiError || duplicateError ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-200'}`}
                     />
                     <button
                       type="button"
                       onClick={handleScan}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -658,7 +641,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
                 {/* ─── SELFIE WITH POSM ─────────────────────────────────────────── */}
                 <div>
-                  <label className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     📸 Selfie with Samsung ProtectMax POSM <span className="text-red-500">*</span>
                   </label>
                   <p className="text-[11px] text-slate-500 mb-2 font-medium">
@@ -667,7 +650,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
                   {/* Preview area */}
                   {selfiePreview ? (
-                    <div className="relative rounded-xl overflow-hidden border-2 border-rose-300 shadow-md mb-2">
+                    <div className="relative rounded-xl overflow-hidden border-2 border-blue-200 shadow-md mb-2">
                       <img src={selfiePreview} alt="Selfie Preview" className="w-full h-48 object-cover" />
                       <button
                         type="button"
@@ -684,10 +667,10 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                     <button
                       type="button"
                       onClick={() => selfieInputRef.current?.click()}
-                      className="w-full border-2 border-dashed border-rose-300 rounded-xl py-6 flex flex-col items-center gap-2 hover:border-rose-500 hover:bg-rose-50/50 transition-all active:scale-[0.98]"
+                      className="w-full border-2 border-dashed border-slate-200 rounded-xl py-6 flex flex-col items-center gap-2 hover:border-blue-400 hover:bg-blue-50/50 transition-all active:scale-[0.98]"
                     >
                       <span className="text-3xl">📷</span>
-                      <span className="text-sm font-bold text-rose-600">Tap to take / upload selfie</span>
+                      <span className="text-sm font-bold text-blue-600">Tap to take / upload selfie</span>
                       <span className="text-xs text-slate-400">JPG, PNG up to 10MB</span>
                     </button>
                   )}
@@ -710,7 +693,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                     type="submit"
                     disabled={isSubmitting || !!imeiError || !!duplicateError || imeiExists}
                     className="w-full text-white font-bold py-4 rounded-xl transition-all text-base shadow-lg relative overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.98]"
-                    style={{ background: 'linear-gradient(90deg, #ec255a 0%, #c41230 50%, #ec255a 100%)', backgroundSize: '200% 100%' }}
+                    style={{ background: 'linear-gradient(90deg, #1d4ed8 0%, #1e40af 50%, #1d4ed8 100%)', backgroundSize: '200% 100%' }}
                   >
                     <div className="relative flex items-center justify-center gap-2">
                       {isSubmitting ? (
@@ -722,10 +705,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                           <span>Submitting...</span>
                         </>
                       ) : (
-                        <>
-                          <span>💌</span>
-                          <span>SUBMIT SALE</span>
-                        </>
+                        <span>SUBMIT SALE</span>
                       )}
                     </div>
                   </button>
@@ -737,7 +717,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
         </div>
       </main>
 
-      <ValentineFooter />
+      <SECFooter />
 
       {/* Success Modal with incentive breakdown */}
       <ValentineSuccessModal
@@ -831,7 +811,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               <button
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:bg-rose-400 transition-colors font-medium text-sm"
+                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors font-medium text-sm"
               >
                 {isSubmitting ? 'Submitting...' : 'Confirm & Submit'}
               </button>

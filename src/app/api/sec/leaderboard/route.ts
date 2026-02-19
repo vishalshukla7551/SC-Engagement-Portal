@@ -1,101 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthenticatedUserFromCookies } from '@/lib/auth';
+
+const RELIANCE_STORE_PREFIX = 'Reliance Digital';
+const RELIANCE_CAMPAIGN_START = new Date('2026-02-19T00:00:00+05:30');
 
 /**
- * GET /api/leaderboard
- * Get leaderboard data for active campaigns showing:
- * - Top performing stores
- * - Top performing devices (Samsung SKUs)
- * - Top performing plans
- * - Based on sales reports linked to active campaigns only
- * 
- * Query params:
- * - period: 'week' | 'month' | 'all' (default: 'month')
- * - limit: number (default: 10)
+ * GET /api/sec/leaderboard
+ * Reliance Digital campaign leaderboard — stores ranked by total incentive earned.
+ * Only accessible by SECs from Reliance Digital stores.
  */
 export async function GET(req: NextRequest) {
   try {
+    const cookies = await (await import('next/headers')).cookies();
+    const authUser = await getAuthenticatedUserFromCookies(cookies as any);
+
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
-    const period = searchParams.get('period') || 'month';
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '20');
 
-    // Calculate date range based on period
-    const now = new Date();
-    let startDate: Date;
-
-    switch (period) {
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'all':
-      default:
-        startDate = new Date(0); // Beginning of time
-        break;
-    }
-
-    // Get all active campaigns
-    const activeCampaigns = await prisma.spotIncentiveCampaign.findMany({
+    // Fetch all Reliance campaign reports (campaign = RELIANCE_DIGITAL_2026)
+    const reports: any[] = await prisma.spotIncentiveReport.findMany({
       where: {
-        active: true,
-        startDate: { lte: now },
-        endDate: { gte: now },
-      },
-      select: {
-        id: true,
-        storeId: true,
-        samsungSKUId: true,
-        planId: true,
-      },
-    });
-
-    if (activeCampaigns.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          stores: [],
-          devices: [],
-          plans: [],
-          period,
-          activeCampaignsCount: 0,
+        Date_of_sale: { gte: RELIANCE_CAMPAIGN_START },
+        store: {
+          name: { startsWith: RELIANCE_STORE_PREFIX },
         },
-      });
-    }
-
-    const campaignIds = activeCampaigns.map((c) => c.id);
-
-    // Get sales reports for active campaigns within the period
-    // Filter by isCompaignActive = true
-    const salesReports: any = await prisma.spotIncentiveReport.findMany({
-      where: {
-        isCompaignActive: true,
-        Date_of_sale: { gte: startDate },
       },
       include: {
         store: {
-          select: {
-            id: true,
-            name: true,
-            city: true,
-          },
-        },
-        samsungSKU: {
-          select: {
-            id: true,
-            ModelName: true,
-            Category: true,
-          },
+          select: { id: true, name: true, city: true },
         },
         plan: {
-          select: {
-            id: true,
-            planType: true,
-            price: true,
-          },
+          select: { id: true, planType: true, price: true },
         },
       },
+      orderBy: { createdAt: 'asc' },
     });
 
     // Aggregate by store
@@ -107,141 +50,63 @@ export async function GET(req: NextRequest) {
       totalIncentive: number;
       adldUnits: number;
       comboUnits: number;
-      adldRevenue: number;
-      comboRevenue: number;
     }>();
 
-    // Aggregate by device (Samsung SKU)
-    const deviceMap = new Map<string, {
-      deviceId: string;
-      deviceName: string;
-      category: string;
-      totalSales: number;
-      totalIncentive: number;
-    }>();
-
-    // Aggregate by plan
-    const planMap = new Map<string, {
-      planId: string;
-      planType: string;
-      planPrice: number;
-      totalSales: number;
-      totalIncentive: number;
-    }>();
-
-    salesReports.forEach((report: any) => {
-      // Determine if this is ADLD or Combo based on plan type
+    reports.forEach((report: any) => {
       const isADLD = report.plan.planType === 'ADLD_1_YR';
       const isCombo = report.plan.planType === 'COMBO_2_YRS';
-      
-      // Store aggregation
-      const storeKey = report.storeId;
-      if (storeMap.has(storeKey)) {
-        const existing = storeMap.get(storeKey)!;
-        existing.totalSales += 1;
-        existing.totalIncentive += report.spotincentiveEarned;
-        
-        if (isADLD) {
-          existing.adldUnits += 1;
-          existing.adldRevenue += 200; // ADLD price ₹200
-        } else if (isCombo) {
-          existing.comboUnits += 1;
-          existing.comboRevenue += 300; // Combo price ₹300
-        }
+      const key = report.storeId;
+
+      if (storeMap.has(key)) {
+        const s = storeMap.get(key)!;
+        s.totalSales += 1;
+        s.totalIncentive += report.spotincentiveEarned || 0;
+        if (isADLD) s.adldUnits += 1;
+        if (isCombo) s.comboUnits += 1;
       } else {
-        storeMap.set(storeKey, {
+        storeMap.set(key, {
           storeId: report.store.id,
           storeName: report.store.name,
           city: report.store.city,
           totalSales: 1,
-          totalIncentive: report.spotincentiveEarned,
+          totalIncentive: report.spotincentiveEarned || 0,
           adldUnits: isADLD ? 1 : 0,
           comboUnits: isCombo ? 1 : 0,
-          adldRevenue: isADLD ? 200 : 0,
-          comboRevenue: isCombo ? 300 : 0,
-        });
-      }
-
-      // Device aggregation
-      const deviceKey = report.samsungSKUId;
-      if (deviceMap.has(deviceKey)) {
-        const existing = deviceMap.get(deviceKey)!;
-        existing.totalSales += 1;
-        existing.totalIncentive += report.spotincentiveEarned;
-      } else {
-        deviceMap.set(deviceKey, {
-          deviceId: report.samsungSKU.id,
-          deviceName: report.samsungSKU.ModelName,
-          category: report.samsungSKU.Category,
-          totalSales: 1,
-          totalIncentive: report.spotincentiveEarned,
-        });
-      }
-
-      // Plan aggregation
-      const planKey = report.planId;
-      if (planMap.has(planKey)) {
-        const existing = planMap.get(planKey)!;
-        existing.totalSales += 1;
-        existing.totalIncentive += report.spotincentiveEarned;
-      } else {
-        planMap.set(planKey, {
-          planId: report.plan.id,
-          planType: report.plan.planType,
-          planPrice: report.plan.price,
-          totalSales: 1,
-          totalIncentive: report.spotincentiveEarned,
         });
       }
     });
 
-    // Convert to arrays and sort by total incentive earned (descending)
     const topStores = Array.from(storeMap.values())
       .sort((a, b) => b.totalIncentive - a.totalIncentive)
       .slice(0, limit)
       .map((store, index) => ({
         rank: index + 1,
-        ...store,
-        totalIncentive: store.totalIncentive > 0 ? `₹${store.totalIncentive.toLocaleString('en-IN')}` : '-',
-        adldRevenue: store.adldRevenue > 0 ? `₹${store.adldRevenue.toLocaleString('en-IN')}` : '-',
-        comboRevenue: store.comboRevenue > 0 ? `₹${store.comboRevenue.toLocaleString('en-IN')}` : '-',
-      }));
-
-    const topDevices = Array.from(deviceMap.values())
-      .sort((a, b) => b.totalIncentive - a.totalIncentive)
-      .slice(0, limit)
-      .map((device, index) => ({
-        rank: index + 1,
-        ...device,
-        totalIncentive: device.totalIncentive > 0 ? `₹${device.totalIncentive.toLocaleString('en-IN')}` : '-',
-      }));
-
-    const topPlans = Array.from(planMap.values())
-      .sort((a, b) => b.totalIncentive - a.totalIncentive)
-      .slice(0, limit)
-      .map((plan, index) => ({
-        rank: index + 1,
-        ...plan,
-        planPrice: plan.planPrice > 0 ? `₹${plan.planPrice.toLocaleString('en-IN')}` : '-',
-        totalIncentive: plan.totalIncentive > 0 ? `₹${plan.totalIncentive.toLocaleString('en-IN')}` : '-',
+        storeId: store.storeId,
+        storeName: store.storeName,
+        city: store.city,
+        totalSales: store.totalSales,
+        totalIncentive: store.totalIncentive > 0
+          ? `₹${store.totalIncentive.toLocaleString('en-IN')}`
+          : '₹0',
+        adldUnits: store.adldUnits,
+        comboUnits: store.comboUnits,
+        adldRevenue: '-',
+        comboRevenue: '-',
       }));
 
     return NextResponse.json({
       success: true,
       data: {
         stores: topStores,
-        devices: topDevices,
-        plans: topPlans,
-        period,
-        activeCampaignsCount: activeCampaigns.length,
-        totalSalesReports: salesReports.length,
+        devices: [],
+        plans: [],
+        period: 'campaign',
+        activeCampaignsCount: topStores.length > 0 ? 1 : 0,
+        totalSalesReports: reports.length,
       },
     });
   } catch (error) {
-    console.error('Error in GET /api/leaderboard', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Error in GET /api/sec/leaderboard', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
