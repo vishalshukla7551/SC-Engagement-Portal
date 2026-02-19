@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ValentineHeader from '@/components/ValentineHeader';
+// import ValentineHeader from '@/components/ValentineHeader';
+// import RepublicHeader from '@/components/RepublicHeader';
+// import FestiveHeader from '@/components/FestiveHeader';
+import SECHeader from '@/app/SEC/SECHeader';
 import { Toaster, toast } from 'react-hot-toast';
 
 interface Message {
@@ -278,13 +281,17 @@ export default function SupportPage() {
         }
     };
 
-    if (isLoading) return <div className="min-h-screen bg-rose-50 flex items-center justify-center p-4">Loading...</div>;
+    if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">Loading...</div>;
 
     // Check if user has secId (valid session for support)
     if (user && !user.secId) {
         return (
-            <div className="min-h-screen bg-rose-50 font-sans pb-20">
-                <ValentineHeader userName={user?.fullName || 'User'} />
+            <div className="min-h-screen bg-gray-50 font-sans pb-20">
+                {/* <ValentineHeader userName={user?.fullName || 'User'} /> */}
+                {/* <ValentineHeader userName={user?.fullName || 'User'} /> */}
+                {/* <FestiveHeader userName={user?.fullName || 'User'} /> */}
+                {/* <RepublicHeader userName={user?.fullName || 'User'} /> */}
+                <SECHeader />
                 <Toaster position="top-right" />
                 <main className="max-w-4xl mx-auto px-4 -mt-6 relative z-40">
                     <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-12 text-center border border-white/50">
@@ -298,7 +305,7 @@ export default function SupportPage() {
                                 localStorage.removeItem('authUser');
                                 window.location.href = '/login/sec';
                             }}
-                            className="px-8 py-3 bg-rose-500 text-white rounded-xl font-bold shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition-all transform hover:-translate-y-1"
+                            className="px-8 py-3 bg-black text-white rounded-xl font-bold shadow-lg shadow-black/30 hover:bg-gray-800 transition-all transform hover:-translate-y-1"
                         >
                             Log Out & Update
                         </button>
@@ -309,8 +316,11 @@ export default function SupportPage() {
     }
 
     return (
-        <div className="min-h-screen bg-rose-50 font-sans pb-20">
-            <ValentineHeader userName={user?.fullName || 'User'} />
+        <div className="min-h-screen bg-gray-50 font-sans pb-20">
+            {/* <ValentineHeader userName={user?.fullName || 'User'} /> */}
+            {/* <FestiveHeader userName={user?.fullName || 'User'} /> */}
+            {/* <RepublicHeader userName={user?.fullName || 'User'} /> */}
+            <SECHeader />
             <Toaster position="top-right" />
 
             <main className="max-w-4xl mx-auto px-4 -mt-6 relative z-40">
@@ -333,7 +343,7 @@ export default function SupportPage() {
                                             <select
                                                 value={selectedCategory}
                                                 onChange={(e) => setSelectedCategory(e.target.value)}
-                                                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all appearance-none"
+                                                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all appearance-none"
                                             >
                                                 <option value="">Select an issue...</option>
                                                 {CATEGORIES.map(cat => (
@@ -351,14 +361,14 @@ export default function SupportPage() {
                                             onChange={(e) => setDescription(e.target.value)}
                                             rows={5}
                                             placeholder="Please describe your problem in detail..."
-                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all resize-none"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all resize-none"
                                         />
                                     </div>
 
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 transform hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                        className="w-full py-4 bg-black text-white rounded-xl font-bold text-lg shadow-lg shadow-black/30 hover:shadow-black/50 transform hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? 'Submitting...' : 'Submit Ticket'}
                                     </button>
@@ -372,7 +382,7 @@ export default function SupportPage() {
                             <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white">
                                 <div>
                                     <div className="flex items-center gap-3 mb-1">
-                                        <span className="px-3 py-1 bg-rose-100 text-rose-600 rounded-full text-xs font-bold tracking-wider">
+                                        <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold tracking-wider">
                                             {activeQuery.queryNumber}
                                         </span>
                                         <span className="text-sm text-gray-500 font-medium">
@@ -395,7 +405,7 @@ export default function SupportPage() {
                             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/50">
                                 {/* Original Description as First Message */}
                                 <div className="flex justify-end">
-                                    <div className="max-w-[80%] bg-rose-500 text-white rounded-2xl rounded-tr-sm p-4 shadow-md">
+                                    <div className="max-w-[80%] bg-black text-white rounded-2xl rounded-tr-sm p-4 shadow-md">
                                         <p className="text-sm">{activeQuery.description}</p>
                                         <p className="text-[10px] text-white/70 mt-2 text-right">
                                             {new Date(activeQuery.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -412,10 +422,10 @@ export default function SupportPage() {
                                     >
                                         <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm ${msg.isFromAdmin
                                             ? 'bg-white text-gray-800 rounded-tl-sm border border-gray-100'
-                                            : 'bg-rose-500 text-white rounded-tr-sm'
+                                            : 'bg-black text-white rounded-tr-sm'
                                             }`}>
                                             {msg.isFromAdmin && (
-                                                <p className="text-xs font-bold text-rose-500 mb-1">
+                                                <p className="text-xs font-bold text-gray-600 mb-1">
                                                     Support Team
                                                 </p>
                                             )}
@@ -443,12 +453,12 @@ export default function SupportPage() {
                                         }}
                                         placeholder="Type your reply..."
                                         rows={1}
-                                        className="flex-1 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all resize-none"
+                                        className="flex-1 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all resize-none"
                                     />
                                     <button
                                         onClick={handleSendMessage}
                                         disabled={isSending || !newMessage.trim()}
-                                        className="px-6 bg-rose-500 text-white rounded-xl font-bold shadow-lg shadow-rose-500/30 hover:bg-rose-600 transform active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
+                                        className="px-6 bg-black text-white rounded-xl font-bold shadow-lg shadow-black/30 hover:bg-gray-800 transform active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
                                     >
                                         {isSending ? (
                                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -472,11 +482,11 @@ export default function SupportPage() {
                                     key={query.id}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:border-rose-200 hover:shadow-md transition-all"
+                                    className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:border-gray-400 hover:shadow-md transition-all"
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center gap-3">
-                                            <span className="px-3 py-1 bg-rose-100 text-rose-600 rounded-full text-xs font-bold tracking-wider">
+                                            <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold tracking-wider">
                                                 {query.queryNumber}
                                             </span>
                                             <span className="text-sm text-gray-500 font-medium">

@@ -2,35 +2,56 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import ValentineHeader from '@/components/ValentineHeader';
-import ValentineFooter from '@/components/ValentineFooter';
+// import ValentineHeader from '@/components/ValentineHeader';
+// import ValentineFooter from '@/components/ValentineFooter';
+// import FestiveHeader from '@/components/FestiveHeader';
+// import FestiveFooter from '@/components/FestiveFooter';
+// import RepublicHeader from '@/components/RepublicHeader';
+// import RepublicFooter from '@/components/RepublicFooter';
+import SECHeader from '@/app/SEC/SECHeader';
+import SECFooter from '@/app/SEC/SECFooter';
 
 
 export default function LandingPage({ userName = '' }) {
   const [activeSlide, setActiveSlide] = useState(0);
 
   // Republican Day Banner data
-  // Valentine Day Banner data
   const banners = [
     {
       id: 101,
-      title: 'VALENTINE SPECIAL',
-      isImageBanner: true,
-      imageSrc: '/images/val1.jpeg',
-      imageAlt: 'Valentine Banner 1',
-      link: '/SEC/valentine-day',
-      showLiveBadge: true,
-    },
-    {
-      id: 102,
-      title: 'VALENTINE CONTEST',
-      isImageBanner: true,
-      imageSrc: '/images/val2.jpeg',
-      imageAlt: 'Valentine Banner 2',
-      link: '/SEC/romance-merit-board',
+      title: 'REPUBLIC DAY SPECIAL',
+      isImageBanner: false,
+      gradient: 'from-[#FF9933] via-white to-[#138808]',
+      textColor: 'text-slate-800',
+      subtitle: 'SALES DOST HERO',
+      description: 'Celebrate the spirit of India with special rewards!',
+      highlights: ['Double Points', 'Special Badge'],
+      validity: 'Valid till 30th Jan',
+      link: '/SEC/past-campaigns/protectmax-yoddha',
       showLiveBadge: false,
-    },
+    }
   ];
+  // Valentine Day Banner data
+  // const banners = [
+  //   {
+  //     id: 101,
+  //     title: 'VALENTINE SPECIAL',
+  //     isImageBanner: true,
+  //     imageSrc: '/images/val1.jpeg',
+  //     imageAlt: 'Valentine Banner 1',
+  //     link: '/SEC/valentine-day',
+  //     showLiveBadge: true,
+  //   },
+  //   {
+  //     id: 102,
+  //     title: 'VALENTINE CONTEST',
+  //     isImageBanner: true,
+  //     imageSrc: '/images/val2.jpeg',
+  //     imageAlt: 'Valentine Banner 2',
+  //     link: '/SEC/romance-merit-board',
+  //     showLiveBadge: false,
+  //   },
+  // ];
 
   // Auto-scroll banner every 3 seconds
   useEffect(() => {
@@ -48,37 +69,37 @@ export default function LandingPage({ userName = '' }) {
       title: 'Sales Submission Form',
       description: 'Submit your sales IMEI wise',
       icon: '📝',
-      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
+      bgGradient: 'from-blue-500 via-blue-600 to-indigo-600',
       iconBg: 'bg-white/20',
       link: '/SEC/incentive-form',
       badge: 'SUBMIT ⚡'
     },
-    {
-      id: 'customer-love-index',
-      title: 'Customer Love Index',
-      description: 'View Your Love Score',
-      icon: '❤️',
-      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
-      iconBg: 'bg-white/20',
-      link: '/SEC/romance-merit-board',
-      badge: 'HOT 🔥'
-    },
-    {
-      id: 'customer-honour',
-      title: 'Customer Obsession',
-      description: 'View Your Rewards',
-      icon: '🎖️',
-      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
-      iconBg: 'bg-white/20',
-      link: '/SEC/valentine-day',
-      badge: 'REWARDS 🎁'
-    },
+    // {
+    //   id: 'customer-love-index',
+    //   title: 'Customer Love Index',
+    //   description: 'View Your Love Score',
+    //   icon: '❤️',
+    //   bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
+    //   iconBg: 'bg-white/20',
+    //   link: '/SEC/romance-merit-board',
+    //   badge: 'HOT 🔥'
+    // },
+    // {
+    //   id: 'customer-honour',
+    //   title: 'Customer Obsession',
+    //   description: 'View Your Rewards',
+    //   icon: '🎖️',
+    //   bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
+    //   iconBg: 'bg-white/20',
+    //   link: '/SEC/valentine-day',
+    //   badge: 'REWARDS 🎁'
+    // },
     {
       id: 'assessment',
       title: 'Assessment',
       description: 'Test Your Knowledge',
       icon: '🧠',
-      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
+      bgGradient: 'from-purple-500 via-violet-600 to-purple-700',
       iconBg: 'bg-white/20',
       link: '/SEC/training',
       badge: 'TRAINING 📚'
@@ -88,7 +109,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'Past Campaigns',
       description: 'View Past Contests',
       icon: '🏆',
-      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
+      bgGradient: 'from-orange-400 via-amber-500 to-orange-600',
       iconBg: 'bg-white/20',
       link: '/SEC/past-campaigns',
       badge: 'NEW 🆕'
@@ -98,7 +119,7 @@ export default function LandingPage({ userName = '' }) {
       title: 'SC+ Claim Raise Procedure',
       description: 'Learn More',
       icon: '📢',
-      bgGradient: 'from-[#dc2626] via-[#ef4444] to-[#f87171]',
+      bgGradient: 'from-emerald-500 via-teal-500 to-emerald-600',
       iconBg: 'bg-white/20',
       link: 'https://www.samsung.com/in/offer/samsung-care-plus/login/?usertype=customer',
       badge: 'GUIDE 📘'
@@ -111,7 +132,11 @@ export default function LandingPage({ userName = '' }) {
 
   return (
     <div className="min-h-screen md:h-auto h-screen bg-gray-50 flex flex-col md:overflow-visible overflow-hidden">
-      <ValentineHeader userName={userName || 'Guest'} />
+      {/* <ValentineHeader userName={userName || 'Guest'} /> */}
+      {/* <ValentineHeader userName={userName || 'Guest'} /> */}
+      {/* <FestiveHeader userName={userName || 'Guest'} /> */}
+      {/* <RepublicHeader userName={userName || 'Guest'} /> */}
+      <SECHeader />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
@@ -283,7 +308,11 @@ export default function LandingPage({ userName = '' }) {
         </div>
       </main>
 
-      <ValentineFooter />
+      {/* <ValentineFooter /> */}
+      {/* <ValentineFooter /> */}
+      {/* <FestiveFooter /> */}
+      {/* <RepublicFooter /> */}
+      <SECFooter />
     </div>
   );
 }
