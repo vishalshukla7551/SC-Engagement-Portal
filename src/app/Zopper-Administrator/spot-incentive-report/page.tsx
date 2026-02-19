@@ -16,6 +16,9 @@ interface SpotIncentiveReport {
   paidAt?: string;
   voucherCode: string;
   isCompaignActive: boolean;
+  selfieUrl?: string | null;
+  isFlagship?: boolean | null;
+  boosterApplied?: boolean;
   secUser: {
     secId: string;
     phone: string;
@@ -98,6 +101,7 @@ export default function SpotIncentiveReport() {
   const [planFilter, setPlanFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
   const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
@@ -114,6 +118,9 @@ export default function SpotIncentiveReport() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
+
+  // Selfie lightbox
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const toggleSelectAll = () => {
     // Only select unpaid reports
@@ -265,10 +272,8 @@ export default function SpotIncentiveReport() {
       if (storeFilter) params.append('storeId', storeFilter);
       if (planFilter) params.append('planType', planFilter);
       if (paymentFilter !== 'all') params.append('paymentStatus', paymentFilter);
-      if (startDate) {
-        params.append('startDate', startDate);
-        params.append('endDate', startDate);
-      }
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
 
       const response = await fetch(`/api/zopper-administrator/spot-incentive-report?${params}`);
 
@@ -295,13 +300,13 @@ export default function SpotIncentiveReport() {
   // Fetch data on component mount and when filters change
   useEffect(() => {
     fetchData();
-  }, [page, query, storeFilter, planFilter, paymentFilter, startDate]);
+  }, [page, query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
 
   // Reset page and selection when filters change
   useEffect(() => {
     setPage(1);
     setSelectedIds(new Set());
-  }, [query, storeFilter, planFilter, paymentFilter, startDate]);
+  }, [query, storeFilter, planFilter, paymentFilter, startDate, endDate]);
 
   const reports = data?.reports || [];
   const pagination = data?.pagination || { page: 1, totalPages: 1, hasNext: false, hasPrev: false };
@@ -323,10 +328,8 @@ export default function SpotIncentiveReport() {
       if (storeFilter) params.append('storeId', storeFilter);
       if (planFilter) params.append('planType', planFilter);
       if (paymentFilter !== 'all') params.append('paymentStatus', paymentFilter);
-      if (startDate) {
-        params.append('startDate', startDate);
-        params.append('endDate', startDate);
-      }
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
 
       // Fetch all data
       const response = await fetch(`/api/zopper-administrator/spot-incentive-report?${params}`);
@@ -472,13 +475,22 @@ export default function SpotIncentiveReport() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <input
-            type="date"
-            className="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
-            placeholder="Date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
+          <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-700 rounded-lg px-2">
+            <span className="text-xs text-neutral-500 font-medium uppercase">From</span>
+            <input
+              type="date"
+              className="bg-transparent py-2 text-sm text-white focus:outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:invert"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <span className="text-xs text-neutral-500 font-medium uppercase">To</span>
+            <input
+              type="date"
+              className="bg-transparent py-2 text-sm text-white focus:outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:invert"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
           <select
             className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
             value={storeFilter}
@@ -614,6 +626,9 @@ export default function SpotIncentiveReport() {
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[80px]">
                     Status
                   </th>
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[80px]">
+                    Selfie
+                  </th>
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                     Actions
                   </th>
@@ -698,6 +713,33 @@ export default function SpotIncentiveReport() {
                         >
                           {r.isPaid ? 'Paid' : 'Pending'}
                         </span>
+                      </td>
+                      {/* Selfie thumbnail */}
+                      <td className="p-2 md:p-3">
+                        {r.selfieUrl ? (
+                          <button
+                            onClick={() => setLightboxUrl(r.selfieUrl!)}
+                            className="block group relative w-14 h-14 rounded-lg overflow-hidden border-2 border-rose-200 hover:border-rose-500 transition-all shadow-sm"
+                            title="View POSM selfie"
+                          >
+                            <img
+                              src={r.selfieUrl}
+                              alt="POSM Selfie"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                            {r.boosterApplied && (
+                              <span className="absolute top-0 right-0 bg-amber-400 text-amber-900 text-[8px] font-black px-0.5 rounded-bl">🚀</span>
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-neutral-300 text-xs">—</span>
+                        )}
+                        {r.isFlagship !== null && r.isFlagship !== undefined && (
+                          <span className={`mt-1 block text-center text-[9px] font-bold px-1 py-0.5 rounded ${r.isFlagship ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                            {r.isFlagship ? '⭐ Flag' : 'Std'}
+                          </span>
+                        )}
                       </td>
                       <td className="p-2 md:p-3">
                         <div className="flex flex-col gap-1">
@@ -816,10 +858,10 @@ export default function SpotIncentiveReport() {
                                       <td className="p-3 text-sm text-neutral-900 font-mono">{detail.reportId}</td>
                                       <td className="p-3">
                                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${detail.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                                            detail.status === 'deleted' ? 'bg-purple-100 text-purple-700' :
-                                              detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
-                                                detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
-                                                  'bg-red-100 text-red-700'
+                                          detail.status === 'deleted' ? 'bg-purple-100 text-purple-700' :
+                                            detail.status === 'skipped' ? 'bg-amber-100 text-amber-700' :
+                                              detail.status === 'not_found' ? 'bg-orange-100 text-orange-700' :
+                                                'bg-red-100 text-red-700'
                                           }`}>
                                           {detail.status.replace('_', ' ')}
                                         </span>
@@ -858,6 +900,33 @@ export default function SpotIncentiveReport() {
           </div>
         )}
       </div>
+
+      {/* Selfie Lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <div className="relative max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxUrl(null)}
+              className="absolute -top-3 -right-3 z-10 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg text-neutral-700 hover:text-red-600 font-bold text-lg"
+            >
+              ✕
+            </button>
+            <div className="rounded-2xl overflow-hidden shadow-2xl bg-white">
+              <div className="bg-rose-600 px-4 py-2 flex items-center gap-2">
+                <span className="text-white font-bold text-sm">📸 Selfie with Samsung ProtectMax POSM</span>
+              </div>
+              <img
+                src={lightboxUrl}
+                alt="POSM Selfie"
+                className="w-full object-contain max-h-[70vh]"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

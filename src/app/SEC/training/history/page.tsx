@@ -5,8 +5,14 @@ import { useRouter } from 'next/navigation';
 import { History, ArrowLeft, Eye, Award } from 'lucide-react';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
-import ValentineHeader from '@/components/ValentineHeader';
-import ValentineFooter from '@/components/ValentineFooter';
+// import FestiveHeader from '@/components/FestiveHeader';
+// import FestiveFooter from '@/components/FestiveFooter';
+// import ValentineHeader from '@/components/ValentineHeader';
+// import ValentineFooter from '@/components/ValentineFooter';
+// import RepublicHeader from '@/components/RepublicHeader';
+// import RepublicFooter from '@/components/RepublicFooter';
+import SECHeader from '@/app/SEC/SECHeader';
+import SECFooter from '@/app/SEC/SECFooter';
 
 interface TestHistory {
   id: string;
@@ -71,7 +77,11 @@ export default function TestHistoryPage() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 flex flex-col overflow-hidden">
-      <ValentineHeader hideGreeting />
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <FestiveHeader hideGreeting /> */}
+      {/* <RepublicHeader hideGreeting /> */}
+      <SECHeader />
       <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <button onClick={() => router.push('/SEC/training')} className="flex items-center gap-2 text-blue-600 mb-4">
@@ -121,7 +131,11 @@ export default function TestHistoryPage() {
           )}
         </div>
       </main>
-      <ValentineFooter />
+      {/* <ValentineFooter /> */}
+      {/* <ValentineFooter /> */}
+      {/* <FestiveFooter /> */}
+      {/* <RepublicFooter /> */}
+      <SECFooter />
     </div>
   );
 }

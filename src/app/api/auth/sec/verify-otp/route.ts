@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Only check expiration if the OTP code is correct
     const now = new Date();
     const isExpired = record.expiresAt.getTime() < now.getTime();
-    
+
     if (isExpired) {
       return NextResponse.json({ error: 'OTP has expired. Please request a new OTP.' }, { status: 401 });
     }
@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
       success: true,
       needsName: needsName || needsStore || needsEmployeeId,
       user: {
+        id: secRecord.id, // Added ID here
         role: 'SEC',
         phone: normalized,
         fullName: secRecord.fullName ?? null,

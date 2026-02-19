@@ -3,19 +3,77 @@ import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
 /**
+ * Flagship device model names for the Reliance Digital 2026 campaign.
+ * These devices receive higher incentives (ADLD: ₹200, COMBO: ₹400).
+ * All other devices are Non-Flagship (ADLD: ₹100, COMBO: ₹200).
+ */
+const FLAGSHIP_MODEL_KEYWORDS = [
+  'z flip 6', 'z flip6',
+  'z flip 7', 'z flip7',
+  'z fold 6', 'z fold6',
+  'z fold 7', 'z fold7',
+  's24 ultra', 's24ultra',
+  's24+',
+  's24 plus',
+  's24',
+  's25 ultra', 's25ultra',
+  's25+',
+  's25 plus',
+  's25 edge',
+  's25',
+];
+
+/**
+ * Campaign configuration for Reliance Digital 2026
+ */
+const RELIANCE_CAMPAIGN = {
+  startDate: new Date('2026-02-19T00:00:00.000+05:30'),
+  storePrefix: 'Reliance Digital',
+  boosterThreshold: 75000,      // ₹75,000 cumulative plan sales
+  boosterAmount: 1000,           // ₹1,000 one-time booster
+  incentives: {
+    flagship: {
+      ADLD_1_YR: 200,
+      COMBO_2_YRS: 400,
+    },
+    nonFlagship: {
+      ADLD_1_YR: 100,
+      COMBO_2_YRS: 200,
+    },
+  },
+};
+
+/**
+ * Check if a device is a flagship based on its model name.
+ * Checks both Category and ModelName fields.
+ */
+function isFlagshipDevice(category: string, modelName: string): boolean {
+  const combined = `${category} ${modelName}`.toLowerCase();
+  return FLAGSHIP_MODEL_KEYWORDS.some(keyword => combined.includes(keyword.toLowerCase()));
+}
+
+/**
+ * Calculate spot incentive for this submission based on device type and plan type.
+ */
+function calculateBaseIncentive(isFlagship: boolean, planType: string): number {
+  const tier = isFlagship ? RELIANCE_CAMPAIGN.incentives.flagship : RELIANCE_CAMPAIGN.incentives.nonFlagship;
+
+  if (planType === 'ADLD_1_YR') return tier.ADLD_1_YR;
+  if (planType === 'COMBO_2_YRS') return tier.COMBO_2_YRS;
+
+  // Screen Protect, Extended Warranty, etc. → no spot incentive in this campaign
+  return 0;
+}
+
+/**
  * POST /api/sec/incentive-form/submit
- * Submit a spot incentive sales report
- * 
- * RESTRICTED: Only saves to SpotIncentiveReport (not DailyIncentiveReport)
- * SECURITY: secPhone and storeId are fetched from authenticated user's profile (server-side)
- * 
- * Body:
- * {
- *   deviceId: string,
- *   planId: string,
- *   imei: string,
- *   dateOfSale?: string (optional, defaults to now)
- * }
+ *
+ * RELIANCE DIGITAL CAMPAIGN 2026
+ * - Only Reliance Digital store SECs can submit
+ * - Profile must be complete (photo, DOB, marital status)
+ * - Flagship vs Non-Flagship tiered incentives
+ * - One-time ₹1,000 booster when cumulative plan sales ≥ ₹75,000
+ * - Selfie with POSM image URL stored in metadata
  */
 export async function POST(req: NextRequest) {
   try {
@@ -27,12 +85,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { deviceId, planId, imei, dateOfSale, clientSecPhone, clientStoreId } = body;
+    const { deviceId, planId, imei, dateOfSale, clientSecPhone, clientStoreId, selfieUrl } = body;
 
-    // Get SEC phone from authenticated user (server-side, cannot be manipulated)
+    // ─── Auth: Get SEC phone from server (cannot be manipulated) ───────────────
     const secPhone = authUser.username;
 
-    // SECURITY CHECK: Detect if client is trying to submit with fake data
     if (clientSecPhone && clientSecPhone !== secPhone) {
       return NextResponse.json(
         { error: 'Security violation: SEC phone mismatch detected. Please logout and login again.' },
@@ -40,14 +97,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find SEC user by authenticated phone
+    // ─── Fetch SEC user ────────────────────────────────────────────────────────
     const secUser = await prisma.sEC.findUnique({
       where: { phone: secPhone },
-      select: {
-        id: true,
-        phone: true,
-        fullName: true,
-        storeId: true,
+      include: {
+        store: {
+          select: { id: true, name: true, city: true },
+        },
       },
     });
 
@@ -58,17 +114,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get storeId from SEC profile (server-side, cannot be manipulated)
     const storeId = secUser.storeId;
 
-    if (!storeId) {
+    if (!storeId || !secUser.store) {
       return NextResponse.json(
         { error: 'No store assigned to your profile. Please complete onboarding.' },
         { status: 400 }
       );
     }
 
-    // SECURITY CHECK: Detect if client is trying to submit with fake store
     if (clientStoreId && clientStoreId !== storeId) {
       return NextResponse.json(
         { error: 'Security violation: Store ID mismatch detected. Please logout and login again.' },
@@ -76,7 +130,51 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate required fields
+    // ─── CHECK 1: Reliance Digital Store Only ─────────────────────────────────
+    const storeName = secUser.store.name || '';
+    const isRelianceStore = storeName.startsWith(RELIANCE_CAMPAIGN.storePrefix);
+
+    if (!isRelianceStore) {
+      return NextResponse.json(
+        {
+          error: 'Sales submissions are currently closed.',
+          code: 'SUBMISSIONS_CLOSED',
+        },
+        { status: 403 }
+      );
+    }
+
+    // ─── CHECK 2: Profile Completeness ────────────────────────────────────────
+    const otherProfile = secUser.otherProfileInfo as any;
+    const hasPhoto = !!(otherProfile?.photoUrl);
+    const hasDOB = !!(otherProfile?.birthday);
+    const hasMaritalStatus = otherProfile?.maritalStatus !== undefined && otherProfile?.maritalStatus !== null;
+
+    if (!hasPhoto || !hasDOB || !hasMaritalStatus) {
+      const missing = [];
+      if (!hasPhoto) missing.push('Profile Photo');
+      if (!hasDOB) missing.push('Date of Birth');
+      if (!hasMaritalStatus) missing.push('Marital Status');
+
+      return NextResponse.json(
+        {
+          error: `Please complete your profile to submit: ${missing.join(', ')} missing.`,
+          code: 'PROFILE_INCOMPLETE',
+          missingFields: missing,
+        },
+        { status: 403 }
+      );
+    }
+
+    // ─── CHECK 3: Selfie with POSM is mandatory ───────────────────────────────
+    if (!selfieUrl || typeof selfieUrl !== 'string' || !selfieUrl.startsWith('http')) {
+      return NextResponse.json(
+        { error: 'Selfie with Samsung ProtectMax POSM is mandatory. Please upload your selfie.' },
+        { status: 400 }
+      );
+    }
+
+    // ─── CHECK 4: Required fields ─────────────────────────────────────────────
     if (!deviceId || !planId || !imei) {
       return NextResponse.json(
         { error: 'All fields are required: deviceId, planId, imei' },
@@ -84,7 +182,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate IMEI format (15 digits)
+    // ─── CHECK 5: IMEI format ─────────────────────────────────────────────────
     const imeiRegex = /^\d{15}$/;
     if (!imeiRegex.test(imei)) {
       return NextResponse.json(
@@ -93,7 +191,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if IMEI already exists in SpotIncentiveReport ONLY
+    // ─── CHECK 6: IMEI duplicate ──────────────────────────────────────────────
     const existingSpotReport = await prisma.spotIncentiveReport.findUnique({
       where: { imei },
     });
@@ -105,43 +203,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify store exists
-    const store = await prisma.store.findUnique({
-      where: { id: storeId },
-    });
-
-    if (!store) {
-      return NextResponse.json(
-        { error: 'Store not found' },
-        { status: 404 }
-      );
-    }
-
-    // Verify device exists
+    // ─── Validate device ──────────────────────────────────────────────────────
     const device = await prisma.samsungSKU.findUnique({
       where: { id: deviceId },
     });
 
     if (!device) {
-      return NextResponse.json(
-        { error: 'Device not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Device not found' }, { status: 404 });
     }
 
-    // Verify plan exists and get price
+    // ─── Validate plan ────────────────────────────────────────────────────────
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
     });
 
     if (!plan) {
-      return NextResponse.json(
-        { error: 'Plan not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    // Verify plan belongs to the selected device
     if (plan.samsungSKUId !== deviceId) {
       return NextResponse.json(
         { error: 'Selected plan does not belong to the selected device' },
@@ -149,55 +228,82 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Spot incentive is no longer calculated based on store name
-    let spotincentiveEarned = 0;
-    const isCampaignActive = false;
+    // ─── INCENTIVE CALCULATION ────────────────────────────────────────────────
 
-    // Use provided dateOfSale or default to now
+    // Step 1: Flagship check
+    const flagship = isFlagshipDevice(device.Category, device.ModelName);
+
+    // Step 2: Base incentive
+    const baseIncentive = calculateBaseIncentive(flagship, plan.planType);
+
+    // Step 3: Booster check
+    // Fetch all previous submissions by this SEC in the campaign period
+    const previousReports = await prisma.spotIncentiveReport.findMany({
+      where: {
+        secId: secUser.id,
+        Date_of_sale: { gte: RELIANCE_CAMPAIGN.startDate },
+      },
+      include: {
+        plan: { select: { price: true } },
+      },
+    });
+
+    // Sum of all previous plan sales values
+    const previousCumulativeSales = previousReports.reduce(
+      (sum, report) => sum + (report.plan?.price || 0),
+      0
+    );
+
+    // New cumulative total including this submission
+    const newCumulativeSales = previousCumulativeSales + plan.price;
+
+    // Check if booster was already given in any previous submission
+    const boosterAlreadyGiven = previousReports.some(
+      (report) => (report.metadata as any)?.boosterApplied === true
+    );
+
+    // Apply booster if threshold crossed for the first time
+    let boosterAmount = 0;
+    let boosterTriggered = false;
+
+    if (!boosterAlreadyGiven && newCumulativeSales >= RELIANCE_CAMPAIGN.boosterThreshold) {
+      boosterAmount = RELIANCE_CAMPAIGN.boosterAmount;
+      boosterTriggered = true;
+    }
+
+    const totalIncentive = baseIncentive + boosterAmount;
+
+    // ─── Sale date ────────────────────────────────────────────────────────────
     const now = new Date();
     const saleDate = dateOfSale ? new Date(dateOfSale) : now;
 
-    // Create the spot incentive report (RESTRICTED TO SPOT INCENTIVE ONLY)
+    // ─── Create SpotIncentiveReport ───────────────────────────────────────────
     const spotReport = await prisma.spotIncentiveReport.create({
       data: {
         secId: secUser.id,
-        storeId: store.id,
+        storeId: secUser.store.id,
         samsungSKUId: device.id,
         planId: plan.id,
         imei,
-        spotincentiveEarned,
-        isCompaignActive: isCampaignActive,
+        spotincentiveEarned: totalIncentive,
+        isCompaignActive: true,
         Date_of_sale: saleDate,
+        metadata: {
+          campaign: 'RELIANCE_DIGITAL_2026',
+          isFlagship: flagship,
+          baseIncentive,
+          boosterApplied: boosterTriggered,
+          boosterAmount,
+          selfieUrl,
+          totalCumulativeSales: newCumulativeSales,
+          storeName,
+        },
       },
       include: {
-        secUser: {
-          select: {
-            id: true,
-            phone: true,
-            fullName: true,
-          },
-        },
-        store: {
-          select: {
-            id: true,
-            name: true,
-            city: true,
-          },
-        },
-        samsungSKU: {
-          select: {
-            id: true,
-            Category: true,
-            ModelName: true,
-          },
-        },
-        plan: {
-          select: {
-            id: true,
-            planType: true,
-            price: true,
-          },
-        },
+        secUser: { select: { id: true, phone: true, fullName: true } },
+        store: { select: { id: true, name: true, city: true } },
+        samsungSKU: { select: { id: true, Category: true, ModelName: true } },
+        plan: { select: { id: true, planType: true, price: true } },
       },
     });
 
@@ -215,13 +321,23 @@ export async function POST(req: NextRequest) {
           device: spotReport.samsungSKU,
           plan: spotReport.plan,
         },
+        incentiveBreakdown: {
+          isFlagship: flagship,
+          baseIncentive,
+          boosterApplied: boosterTriggered,
+          boosterAmount,
+          totalIncentive,
+          cumulativePlanSales: newCumulativeSales,
+          remainingToBooster: boosterAlreadyGiven
+            ? 0
+            : Math.max(0, RELIANCE_CAMPAIGN.boosterThreshold - newCumulativeSales),
+        },
       },
       { status: 201 }
     );
   } catch (error) {
     console.error('Error in POST /api/sec/incentive-form/submit', error);
-    
-    // Handle Prisma unique constraint violation (duplicate IMEI)
+
     if (error instanceof Error && error.message.includes('Unique constraint')) {
       return NextResponse.json(
         { error: 'This IMEI has already been submitted' },
@@ -229,10 +345,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

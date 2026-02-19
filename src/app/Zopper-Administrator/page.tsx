@@ -236,7 +236,7 @@ export default function ZopperAdministratorPage() {
                 </p>
                 <div className="space-y-3">
                   <Link
-                    href="/Zopper-Administrator/help-requests"
+                    href="/Zopper-Administrator/support"
                     className="flex items-center justify-between rounded-full bg-gradient-to-r from-rose-500 to-orange-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm shadow-rose-900/60 transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <span>Help Requests</span>

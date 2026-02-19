@@ -8,6 +8,15 @@ import Image from 'next/image';
 
 const CAMPAIGNS = [
     {
+        id: 'dil-se-protection',
+        title: 'Dil Se Protection',
+        description: 'Customer Obsession & Rewards',
+        icon: '❤️',
+        bgGradient: 'from-pink-500 via-red-500 to-rose-500',
+        link: '/SEC/past-campaigns/dil-se-protection',
+        badge: 'LIVE'
+    },
+    {
         id: 'protectmax-yoddha',
         title: 'ProtectMax Yoddha',
         description: 'Republic Day Special Contest',

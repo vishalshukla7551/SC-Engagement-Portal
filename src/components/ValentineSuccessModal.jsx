@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Confetti from 'react-confetti';
 
 export default function ValentineSuccessModal({
@@ -9,6 +10,7 @@ export default function ValentineSuccessModal({
     onClose
 }) {
     const [showConfetti, setShowConfetti] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         if (isOpen) {
@@ -25,118 +27,89 @@ export default function ValentineSuccessModal({
     const handleButtonClick = () => {
         setShowConfetti(false);
         onClose();
+        router.push('/SEC/passbook');
     };
 
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            {/* Valentine Confetti Animation */}
+            {/* Confetti */}
             {showConfetti && (
                 <Confetti
                     width={typeof window !== 'undefined' ? window.innerWidth : 300}
                     height={typeof window !== 'undefined' ? window.innerHeight : 200}
                     numberOfPieces={300}
                     recycle={false}
-                    colors={['#FF0000', '#FF69B4', '#FFFFFF', '#8B0000']} // Red, Pink, White, Dark Red
+                    colors={['#1d4ed8', '#3b82f6', '#93c5fd', '#ffffff', '#e2e8f0']}
                 />
             )}
 
             {/* Modal Card */}
             <div
-                className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full relative overflow-hidden ring-4 ring-pink-100"
-                style={{
-                    animation: 'valentineModalIn 0.4s ease-out',
-                    boxShadow: '0 0 50px rgba(255, 105, 180, 0.3), 0 0 90px rgba(220, 20, 60, 0.2)',
-                }}
+                className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full relative overflow-hidden ring-2 ring-blue-100"
+                style={{ animation: 'modalIn 0.4s ease-out' }}
             >
-                {/* Decorative top border (Valentine Gradient) */}
-                <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-pink-500 via-red-500 to-rose-600" />
+                {/* Top accent bar */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 to-blue-400" />
 
-                {/* Heart / Cupid Illustration */}
-                <div className="mb-5 relative flex justify-center items-center">
-                    {/* Beating Heart */}
-                    <div
-                        className="text-6xl relative z-10 animate-pulse"
-                    >
-                        💖
-                    </div>
-                    {/* Floating Hearts */}
-                    <div className="absolute top-0 flex justify-between w-32">
-                        <span className="text-3xl transform -rotate-12 animate-bounce" style={{ animationDelay: '0.1s' }}>🌹</span>
-                        <span className="text-3xl transform rotate-12 animate-bounce" style={{ animationDelay: '0.2s' }}>💌</span>
+                {/* Icon */}
+                <div className="mb-5 flex justify-center">
+                    <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center">
+                        <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     </div>
                 </div>
 
-                {/* Heading with Valentine Gradient */}
-                <h2
-                    className="text-2xl font-black mb-1 uppercase tracking-wider"
-                    style={{
-                        background: 'linear-gradient(90deg, #ec255a 0%, #ff7a9a 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                    }}
-                >
-                    LOVE SENT!
+                {/* Heading */}
+                <h2 className="text-2xl font-black mb-1 uppercase tracking-wider text-blue-600">
+                    Sale Submitted!
                 </h2>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                <h3 className="text-lg font-bold text-slate-700 mb-4">
                     Submission Successful
                 </h3>
 
-                {/* Subtext */}
-                <p className="text-gray-600 text-sm font-medium mb-1 uppercase tracking-wide">
-                    Hearts Earned
+                {/* Incentive amount */}
+                <p className="text-slate-500 text-xs font-semibold mb-1 uppercase tracking-widest">
+                    Incentive Earned
+                </p>
+                <p className="text-5xl font-black text-blue-600 mb-1 drop-shadow-sm">
+                    ₹{earnedIncentive}
+                </p>
+                <p className="text-slate-400 text-xs mb-6 italic">
+                    Great work! Keep selling. 🎯
                 </p>
 
-                {/* Amount */}
-                <p
-                    className="text-5xl font-black mb-3 drop-shadow-sm"
-                    style={{
-                        color: '#ec255a' /* Valentine Red/Pink */
-                    }}
-                >
-                    {earnedIncentive}
-                </p>
-
-                <p className="text-gray-500 text-xs mb-6 italic">
-                    Spreading love and joy! ❤️
-                </p>
-
-                {/* Festive decorations row */}
-                <div className="flex justify-center gap-4 mb-6 text-xl">
-                    <div className="h-1 w-12 bg-pink-400 rounded-full"></div>
-                    <div className="h-1 w-12 bg-red-500 rounded-full"></div>
-                    <div className="h-1 w-12 bg-rose-600 rounded-full"></div>
+                {/* Divider */}
+                <div className="flex justify-center gap-3 mb-6">
+                    <div className="h-1 w-12 bg-blue-200 rounded-full" />
+                    <div className="h-1 w-12 bg-blue-400 rounded-full" />
+                    <div className="h-1 w-12 bg-blue-600 rounded-full" />
                 </div>
 
-                {/* Button */}
+                {/* CTA Button */}
                 <button
                     onClick={handleButtonClick}
-                    className="w-full py-3.5 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wide shadow-lg"
-                    style={{
-                        background: 'linear-gradient(90deg, #FF69B4 0%, #DC143C 100%)', // Pink to Crimson
-                        boxShadow: '0 4px 15px rgba(220, 20, 60, 0.3)',
-                    }}
+                    className="w-full py-3.5 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wide shadow-lg bg-blue-600 hover:bg-blue-700"
                 >
-                    View Love Board 💘
+                    View Incentive Passbook 📒
                 </button>
 
-                <p className="mt-3 text-[10px] text-gray-400 font-medium">
-                    *Points will reflect after admin review
+                <p className="mt-3 text-[10px] text-slate-400 font-medium">
+                    *Incentive will reflect in your passbook shortly
                 </p>
 
-                {/* Bottom decorative border */}
-                <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-rose-600 via-red-500 to-pink-500" />
+                {/* Bottom accent bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 to-blue-600" />
             </div>
 
-            {/* CSS Animations */}
             <style jsx global>{`
-        @keyframes valentineModalIn {
-          0% { opacity: 0; transform: scale(0.9) translateY(20px); }
-          100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-      `}</style>
+                @keyframes modalIn {
+                    0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+                    100% { opacity: 1; transform: scale(1) translateY(0); }
+                }
+            `}</style>
         </div>
     );
 }

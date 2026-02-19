@@ -75,7 +75,7 @@ export default function SECHeader() {
 
         {/* User Profile Button */}
         <div className="relative" ref={menuRef}>
-          <button 
+          <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="relative hover:opacity-80 transition-opacity"
           >
@@ -85,7 +85,7 @@ export default function SECHeader() {
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
             </div>
           </button>
@@ -116,6 +116,33 @@ export default function SECHeader() {
                   />
                 </svg>
                 <span className="text-sm font-medium">My Account</span>
+              </button>
+
+              {/* Support & Help */}
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  window.location.href = '/SEC/support';
+                }}
+                className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors"
+                style={{
+                  animation: 'softPulse 2s infinite',
+                }}
+              >
+                <svg
+                  className="w-4 h-4 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Support & Help</span>
               </button>
 
               {/* Divider */}
@@ -151,4 +178,3 @@ export default function SECHeader() {
     </header>
   );
 }
-g

@@ -192,7 +192,11 @@ export async function GET(req: NextRequest) {
         id: report.plan.id,
         planType: report.plan.planType,
         price: report.plan.price
-      }
+      },
+      metadata: report.metadata || null,
+      selfieUrl: (report.metadata as any)?.selfieUrl || null,
+      isFlagship: (report.metadata as any)?.isFlagship ?? null,
+      boosterApplied: (report.metadata as any)?.boosterApplied ?? false,
     }));
 
     // Calculate summary statistics from ALL reports (not just current page)
