@@ -16,6 +16,9 @@ interface SpotIncentiveReport {
   paidAt?: string;
   voucherCode: string;
   isCompaignActive: boolean;
+  selfieUrl?: string | null;
+  isFlagship?: boolean | null;
+  boosterApplied?: boolean;
   secUser: {
     secId: string;
     phone: string;
@@ -115,6 +118,9 @@ export default function SpotIncentiveReport() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
+
+  // Selfie lightbox
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const toggleSelectAll = () => {
     // Only select unpaid reports
@@ -620,6 +626,9 @@ export default function SpotIncentiveReport() {
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[80px]">
                     Status
                   </th>
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[80px]">
+                    Selfie
+                  </th>
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                     Actions
                   </th>
@@ -704,6 +713,33 @@ export default function SpotIncentiveReport() {
                         >
                           {r.isPaid ? 'Paid' : 'Pending'}
                         </span>
+                      </td>
+                      {/* Selfie thumbnail */}
+                      <td className="p-2 md:p-3">
+                        {r.selfieUrl ? (
+                          <button
+                            onClick={() => setLightboxUrl(r.selfieUrl!)}
+                            className="block group relative w-14 h-14 rounded-lg overflow-hidden border-2 border-rose-200 hover:border-rose-500 transition-all shadow-sm"
+                            title="View POSM selfie"
+                          >
+                            <img
+                              src={r.selfieUrl}
+                              alt="POSM Selfie"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                            {r.boosterApplied && (
+                              <span className="absolute top-0 right-0 bg-amber-400 text-amber-900 text-[8px] font-black px-0.5 rounded-bl">🚀</span>
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-neutral-300 text-xs">—</span>
+                        )}
+                        {r.isFlagship !== null && r.isFlagship !== undefined && (
+                          <span className={`mt-1 block text-center text-[9px] font-bold px-1 py-0.5 rounded ${r.isFlagship ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                            {r.isFlagship ? '⭐ Flag' : 'Std'}
+                          </span>
+                        )}
                       </td>
                       <td className="p-2 md:p-3">
                         <div className="flex flex-col gap-1">
@@ -864,6 +900,33 @@ export default function SpotIncentiveReport() {
           </div>
         )}
       </div>
+
+      {/* Selfie Lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <div className="relative max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxUrl(null)}
+              className="absolute -top-3 -right-3 z-10 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg text-neutral-700 hover:text-red-600 font-bold text-lg"
+            >
+              ✕
+            </button>
+            <div className="rounded-2xl overflow-hidden shadow-2xl bg-white">
+              <div className="bg-rose-600 px-4 py-2 flex items-center gap-2">
+                <span className="text-white font-bold text-sm">📸 Selfie with Samsung ProtectMax POSM</span>
+              </div>
+              <img
+                src={lightboxUrl}
+                alt="POSM Selfie"
+                className="w-full object-contain max-h-[70vh]"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
