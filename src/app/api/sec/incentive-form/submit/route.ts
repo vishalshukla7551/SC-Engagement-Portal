@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error('Error in POST /api/sec/incentive-form/submit', error);
-    
+
     // Handle Prisma unique constraint violation (duplicate IMEI)
     if (error instanceof Error && error.message.includes('Unique constraint')) {
       return NextResponse.json(
