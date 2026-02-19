@@ -4,13 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 // OLD CONFETTI IMPORT - Uncomment after Christmas
-// import Confetti from 'react-confetti';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
 // import RepublicHeader from '@/components/RepublicHeader';
 // import RepublicFooter from '@/components/RepublicFooter';
-import ValentineHeader from '@/components/ValentineHeader';
-import ValentineFooter from '@/components/ValentineFooter';
+// import ValentineHeader from '@/components/ValentineHeader';
+// import ValentineFooter from '@/components/ValentineFooter';
+import SECHeader from '@/app/SEC/SECHeader';
+import SECFooter from '@/app/SEC/SECFooter';
 import ValentineSuccessModal from '@/components/ValentineSuccessModal';
 
 
@@ -460,38 +461,27 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-b from-pink-50 via-white to-rose-50 flex flex-col overflow-hidden font-sans relative">
+    <div className="h-screen bg-slate-50 flex flex-col overflow-hidden font-sans relative">
+      {/* Background Floating Hearts - Valentine Theme (Commented Out) */}
+      {/* <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+         ... hearts code ...
+      </div> */
+      /* No floating hearts for default theme */}
       {/* Background Floating Hearts */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+      <div className="hidden">
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute text-pink-200/60"
-            initial={{ opacity: 0, y: '100vh', scale: 0.5 }}
-            animate={{
-              opacity: [0, 0.8, 0],
-              y: '-10vh',
-              x: [0, Math.sin(i) * 50, 0],
-              rotate: [0, 20, -20, 0]
-            }}
-            transition={{
-              duration: 10 + Math.random() * 5,
-              repeat: Infinity,
-              delay: i * 2,
-              ease: "linear"
-            }}
-            style={{
-              left: `${10 + (i * 15)}%`,
-              fontSize: `${20 + Math.random() * 20}px`
-            }}
-          >
-            {['❤️', '💖', '💌', '💕'][i % 4]}
-          </motion.div>
+            className="hidden"
+          />
         ))}
       </div>
 
-      <ValentineHeader hideGreeting />
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <FestiveHeader hideGreeting /> */}
       {/* <RepublicHeader hideGreeting /> */}
+      <SECHeader />
       {/* <FestiveHeader hideGreeting /> */}
 
       {/* Main Content */}
@@ -519,20 +509,20 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
 
           {/* Page Heading - Valentine Theme */}
+          {/* Page Heading - Standard Theme */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="mb-8 relative pl-3 z-10"
           >
-            <div className="absolute left-0 top-1 bottom-1 w-1 rounded-full bg-gradient-to-b from-rose-400 via-red-500 to-pink-600 shadow-sm"></div>
+            <div className="absolute left-0 top-1 bottom-1 w-1 rounded-full bg-blue-600 shadow-sm"></div>
             <div className="flex items-center gap-2 mb-0.5">
-              <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-red-600 tracking-tight uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase" style={{ fontFamily: 'Poppins, sans-serif' }}>
                 Sales Submission
               </h1>
-              <span className="text-2xl">💘</span>
             </div>
-            <p className="text-xs font-bold text-rose-500 uppercase tracking-wider">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Submit your plan sales below
             </p>
           </motion.div>
@@ -547,7 +537,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
           >
             {/* SEC ID - Disabled */}
             <div>
-              <label htmlFor="secId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
+              <label htmlFor="secId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 SEC ID
               </label>
               <div className="relative">
@@ -585,7 +575,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
             {/* Date of Sale */}
             <div>
-              <label htmlFor="dateOfSale" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
+              <label htmlFor="dateOfSale" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Date of Sale
               </label>
               <div className="relative">
@@ -597,7 +587,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   onChange={(e) => setDateOfSale(e.target.value)}
                   onClick={() => dateInputRef.current?.showPicker()}
                   disabled={false}
-                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+                  className="w-full pl-4 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
                   placeholder="dd/mm/yyyy"
                 />
                 <div
@@ -623,7 +613,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
             {/* Store Name - Always disabled, loaded from authUser */}
             <div>
-              <label htmlFor="storeId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
+              <label htmlFor="storeId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Store Name
               </label>
               <input
@@ -660,7 +650,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
             {/* Device Name */}
             <div>
-              <label htmlFor="deviceId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
+              <label htmlFor="deviceId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Device Name
               </label>
               <div className="relative">
@@ -672,7 +662,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                     setPlanId(''); // Reset plan when device changes
                   }}
                   disabled={loadingDevices}
-                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
+                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
                 >
                   <option value="">{loadingDevices ? 'Loading devices...' : 'Select Device'}</option>
                   {devices.map((device) => (
@@ -689,7 +679,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
             {/* Plan Type */}
             <div>
-              <label htmlFor="planId" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
+              <label htmlFor="planId" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Plan Type
               </label>
               <div className="relative">
@@ -698,7 +688,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   value={planId}
                   onChange={(e) => setPlanId(e.target.value)}
                   disabled={!deviceId || loadingPlans}
-                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
+                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none disabled:opacity-50 shadow-sm transition-all"
                 >
                   <option value="">
                     {!deviceId ? 'Select device first' : loadingPlans ? 'Loading plans...' : 'Select Plan'}
@@ -717,7 +707,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
             {/* IMEI Number */}
             <div>
-              <label htmlFor="imeiNumber" className="block text-xs font-bold text-rose-800 uppercase tracking-wider mb-1.5">
+              <label htmlFor="imeiNumber" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 IMEI Number
               </label>
               <div className="relative">
@@ -731,14 +721,14 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                   maxLength="15"
                   className={`w-full pl-4 pr-24 py-3.5 bg-white border rounded-xl text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 placeholder:text-slate-400 shadow-sm transition-all ${imeiError || duplicateError || imeiExists
                     ? 'border-red-500 focus:ring-red-500'
-                    : 'border-slate-200 focus:ring-rose-500 focus:border-rose-500'
+                    : 'border-slate-200 focus:ring-blue-500 focus:border-blue-500'
                     }`}
                 />
                 <button
                   type="button"
                   onClick={handleScan}
                   disabled={isScanning}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -778,10 +768,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
               <button
                 type="submit"
                 disabled={isSubmitting || imeiError || duplicateError || !dateOfSale || !deviceId || !planId || !imeiNumber}
-                className="w-full text-white font-bold py-4 rounded-xl transition-all text-base shadow-lg relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  background: isSubmitting ? 'linear-gradient(90deg, #999 0%, #666 50%, #999 100%)' : 'linear-gradient(90deg, #e11d48 0%, #be123c 50%, #e11d48 100%)',
-                }}
+                className="w-full text-white font-bold py-4 rounded-xl transition-all text-base shadow-lg relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed bg-black hover:bg-gray-900"
               >
                 <div className="relative flex items-center justify-center gap-2">
                   {isSubmitting ? (
@@ -793,8 +780,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                     </>
                   ) : (
                     <>
-                      <span>💘</span>
-                      <span>SUBMIT SALE</span>
+                      <span>Submit Sales</span>
                     </>
                   )}
                 </div>
@@ -806,9 +792,10 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
 
 
 
-      <ValentineFooter />
-      {/* <RepublicFooter /> */}
+      {/* <ValentineFooter /> */}
       {/* <FestiveFooter /> */}
+      {/* <RepublicFooter /> */}
+      <SECFooter />
 
       {/* Republic Day Success Modal */}
       <ValentineSuccessModal

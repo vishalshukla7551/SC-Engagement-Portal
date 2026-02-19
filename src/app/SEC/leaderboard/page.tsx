@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// import FestiveHeader from '@/components/FestiveHeader';
-// import FestiveFooter from '@/components/FestiveFooter';
-import RepublicHeader from '@/components/RepublicHeader';
-import RepublicFooter from '@/components/RepublicFooter';
+import SECHeader from '@/app/SEC/SECHeader';
+import SECFooter from '@/app/SEC/SECFooter';
 
 const MONTHS = [
   'January',
@@ -124,7 +122,7 @@ export default function SalesChampionLeaderboardPage() {
 
   return (
     <div className="h-screen bg-[#020617] flex flex-col overflow-hidden">
-      <RepublicHeader hideGreeting />
+      <SECHeader />
 
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-4 pt-4 pb-6">
@@ -342,7 +340,7 @@ export default function SalesChampionLeaderboardPage() {
         </div>
       </main>
 
-      <RepublicFooter />
+      <SECFooter />
     </div>
   );
 }

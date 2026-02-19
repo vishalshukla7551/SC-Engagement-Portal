@@ -5,8 +5,14 @@ import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
-import ValentineHeader from '@/components/ValentineHeader';
-import ValentineFooter from '@/components/ValentineFooter';
+// import FestiveHeader from '@/components/FestiveHeader';
+// import FestiveFooter from '@/components/FestiveFooter';
+// import ValentineHeader from '@/components/ValentineHeader';
+// import ValentineFooter from '@/components/ValentineFooter';
+// import RepublicHeader from '@/components/RepublicHeader';
+// import RepublicFooter from '@/components/RepublicFooter';
+import SECHeader from '@/app/SEC/SECHeader';
+import SECFooter from '@/app/SEC/SECFooter';
 import AchievementsView from './AchievementsView';
 
 interface StoreInfo {
@@ -578,7 +584,11 @@ export default function ProfilePage() {
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
-      <ValentineHeader hideGreeting />
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <FestiveHeader hideGreeting /> */}
+      {/* <RepublicHeader hideGreeting /> */}
+      <SECHeader />
 
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-4 pt-4 pb-6 max-w-5xl mx-auto">
@@ -914,13 +924,8 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={submittingPersonalInfo}
-                    className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
-                      boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
-                    }}
+                    className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed bg-black hover:bg-gray-900"
                   >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                     <div className="relative flex items-center justify-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -1034,13 +1039,8 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={verifyingPan}
-                      className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{
-                        background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
-                        boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
-                      }}
+                      className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed bg-black hover:bg-gray-900"
                     >
-                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                       <div className="relative flex items-center justify-center gap-2">
                         {verifyingPan ? (
                           <>
@@ -1184,13 +1184,8 @@ export default function ProfilePage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group"
-                    style={{
-                      background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
-                      boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
-                    }}
+                    className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group bg-black hover:bg-gray-900"
                   >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                     <div className="relative flex items-center justify-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -1205,7 +1200,11 @@ export default function ProfilePage() {
         </div>
       </main >
 
-      <ValentineFooter />
+      {/* <ValentineFooter /> */}
+      {/* <ValentineFooter /> */}
+      {/* <FestiveFooter /> */}
+      {/* <RepublicFooter /> */}
+      <SECFooter />
 
       {/* Store Change Request Modal */}
       {
@@ -1350,13 +1349,8 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSubmitStoreChangeRequest}
                   disabled={submittingRequest || !selectedStoreId || selectedStoreId === currentStore?.id}
-                  className="px-4 py-2 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
-                  style={{
-                    background: 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
-                    boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
-                  }}
+                  className="px-4 py-2 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold bg-black hover:bg-gray-900"
                 >
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                   <span className="relative">{submittingRequest ? 'Submitting...' : 'Submit Request'}</span>
                 </button>
               </div>
@@ -1423,11 +1417,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleCropSave}
                   disabled={submittingPersonalInfo}
-                  className="px-5 py-2.5 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  style={{
-                    background: submittingPersonalInfo ? '#9ca3af' : 'linear-gradient(90deg, #E11D48 0%, #DB2777 50%, #E11D48 100%)',
-                    boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)'
-                  }}
+                  className="px-5 py-2.5 text-white rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-black hover:bg-gray-900"
                 >
                   {submittingPersonalInfo && (
                     <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

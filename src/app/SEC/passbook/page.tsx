@@ -3,8 +3,12 @@
 import { useState, useEffect } from 'react';
 // import FestiveHeader from '@/components/FestiveHeader';
 // import FestiveFooter from '@/components/FestiveFooter';
-import ValentineHeader from '@/components/ValentineHeader';
-import ValentineFooter from '@/components/ValentineFooter';
+// import ValentineHeader from '@/components/ValentineHeader';
+// import ValentineFooter from '@/components/ValentineFooter';
+// import RepublicHeader from '@/components/RepublicHeader';
+// import RepublicFooter from '@/components/RepublicFooter';
+import SECHeader from '@/app/SEC/SECHeader';
+import SECFooter from '@/app/SEC/SECFooter';
 import { downloadReport } from './downloadReport';
 
 // Filter options
@@ -254,14 +258,20 @@ export default function IncentivePassbookPage() {
   if (loading) {
     return (
       <div className="h-screen bg-white flex flex-col overflow-hidden">
-        <ValentineHeader hideGreeting />
+        {/* <ValentineHeader hideGreeting /> */}
+        {/* <ValentineHeader hideGreeting /> */}
+        <SECHeader />
+        {/* <RepublicHeader hideGreeting /> */}
         <main className="flex-1 overflow-y-auto pb-32 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading passbook data...</p>
           </div>
         </main>
-        <ValentineFooter />
+        {/* <ValentineFooter /> */}
+        {/* <ValentineFooter /> */}
+        <SECFooter />
+        {/* <RepublicFooter /> */}
       </div>
     );
   }
@@ -269,7 +279,10 @@ export default function IncentivePassbookPage() {
   if (error) {
     return (
       <div className="h-screen bg-white flex flex-col overflow-hidden">
-        <ValentineHeader hideGreeting />
+        {/* <ValentineHeader hideGreeting /> */}
+        {/* <ValentineHeader hideGreeting /> */}
+        <SECHeader />
+        {/* <RepublicHeader hideGreeting /> */}
         <main className="flex-1 overflow-y-auto pb-32 flex items-center justify-center">
           <div className="text-center px-4">
             <p className="text-red-600 mb-4">{error}</p>
@@ -281,14 +294,21 @@ export default function IncentivePassbookPage() {
             </button>
           </div>
         </main>
-        <ValentineFooter />
+        {/* <ValentineFooter /> */}
+        {/* <ValentineFooter /> */}
+        <SECFooter />
+        {/* <RepublicFooter /> */}
       </div>
     );
   }
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
-      <ValentineHeader hideGreeting />
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <ValentineHeader hideGreeting /> */}
+      {/* <FestiveHeader hideGreeting /> */}
+      {/* <RepublicHeader hideGreeting /> */}
+      <SECHeader />
 
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-4 pt-4">
@@ -457,7 +477,11 @@ export default function IncentivePassbookPage() {
         </div>
       </main>
 
-      <ValentineFooter />
+      {/* <ValentineFooter /> */}
+      {/* <ValentineFooter /> */}
+      {/* <FestiveFooter /> */}
+      {/* <RepublicFooter /> */}
+      <SECFooter />
 
       {/* Incentive Details Modal */}
       {showIncentiveModal && selectedIncentiveData && (
