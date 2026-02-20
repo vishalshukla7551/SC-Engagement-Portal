@@ -3,25 +3,20 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { clientLogout } from '@/lib/clientLogout';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ASEPage() {
+  const { user } = useAuth();
   const [userName, setUserName] = useState('User');
 
   useEffect(() => {
-    // Get user's first name from localStorage
-    const authUser = localStorage.getItem('authUser');
-    if (authUser) {
-      try {
-        const user = JSON.parse(authUser);
-        const fullName = user.fullName || user.name || 'User';
-        const firstName = fullName.split(' ')[0];
-        const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-        setUserName(formattedName);
-      } catch (error) {
-        console.error('Error parsing authUser:', error);
-      }
+    if (user) {
+      const fullName = user.fullName || user.name || 'User';
+      const firstName = fullName.split(' ')[0];
+      const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+      setUserName(formattedName);
     }
-  }, []);
+  }, [user]);
 
   return (
     <div className="flex-1 relative overflow-hidden bg-gray-900">

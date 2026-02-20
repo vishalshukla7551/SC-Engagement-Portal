@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
 import { getHomePathForRole } from '@/lib/roleHomePath';
 import ButtonLoader from '@/components/ButtonLoader';
 import { useAuth } from '@/context/AuthContext';
@@ -24,14 +23,6 @@ export default function SECLogin() {
   const [isValidNumber, setIsValidNumber] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user && user.role) {
-      const homePath = getHomePathForRole(user.role);
-      router.push(homePath);
-    }
-  }, [user, router]);
 
   // Shared input styles – keep consistent with Phone Number field
   const inputBaseClasses =
@@ -152,6 +143,7 @@ export default function SECLogin() {
 
       if (!res.ok || !data?.success) {
         setError(data?.error || 'Invalid OTP');
+        setLoading(false);
         return;
       }
 
@@ -163,8 +155,7 @@ export default function SECLogin() {
       // If this SEC user has not yet provided their name, send them to the
       // one-time name capture screen before landing on the home dashboard.
       if (data.needsName) {
-        // Use window.location.href to ensure localStorage is fully written before redirect
-        window.location.href = '/SEC/onboarding';
+        router.push('/SEC/onboarding');
         return;
       }
 
@@ -174,12 +165,10 @@ export default function SECLogin() {
       // CAMPAIGN: Redirect to Valentine's Day Page
       // const target = '/SEC/valentine-day'; // Reverted to default
 
-      // Use window.location.href to ensure localStorage is fully written before redirect
-      window.location.href = target;
+      router.push(target);
     } catch (err) {
       console.error('Error verifying OTP', err);
       setError('Failed to verify OTP. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

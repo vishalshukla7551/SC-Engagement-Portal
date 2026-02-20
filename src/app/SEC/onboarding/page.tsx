@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { clientLogout } from '@/lib/clientLogout';
+import { useAuthRefresh } from '@/context/AuthContext';
 
 export default function SECOnboardingPage() {
   const router = useRouter();
+  const refreshAuth = useAuthRefresh();
   const [fullName, setFullName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [stores, setStores] = useState<
@@ -135,6 +137,7 @@ export default function SECOnboardingPage() {
 
       const responseData = await res.json();
 
+      // Update localStorage with new data
       if (typeof window !== 'undefined') {
         try {
           const raw = window.localStorage.getItem('authUser');
@@ -149,14 +152,17 @@ export default function SECOnboardingPage() {
               employeeId: responseData.employeeId || trimmedEmployeeId,
             };
             window.localStorage.setItem('authUser', JSON.stringify(updated));
-            window.location.href = '/SEC/home';
           }
         } catch {
-          router.replace('/SEC/home');
+          // ignore
         }
-      } else {
-        router.replace('/SEC/home');
       }
+
+      // Refresh auth context with latest data
+      await refreshAuth();
+
+      // Redirect to home after successful submission
+      router.push('/SEC/home');
     } catch (err: any) {
       setError(err.message || 'Failed to save your details');
     } finally {

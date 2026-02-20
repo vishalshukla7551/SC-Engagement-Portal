@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function ZSMLayout({
   children,
@@ -13,6 +14,7 @@ export default function ZSMLayout({
   const { loading } = useAuth();
 
   if (loading) {
+    return <LoadingScreen />;
     return null; // or a loading spinner
   }
 

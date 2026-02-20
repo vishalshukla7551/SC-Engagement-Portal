@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function ZopperAdministratorLayout({
   children,
@@ -30,7 +31,7 @@ export default function ZopperAdministratorLayout({
   }, [sidebarOpen]);
 
   if (loading) {
-    return null; // or a loading spinner
+    return <LoadingScreen />;
   }
 
   const isActive = (path: string) => pathname === path;

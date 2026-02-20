@@ -9,7 +9,8 @@ export default function SECHeader() {
 
   const handleLogout = () => {
     // Use shared clientLogout helper so logout behavior is consistent
-    clientLogout('/login/sec');
+    // Pass false to hide toast for manual logout
+    clientLogout('/login/sec', false);
   };
 
   // Close menu when clicking outside

@@ -3,6 +3,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function SECLayout({
   children,
@@ -15,6 +16,12 @@ export default function SECLayout({
   const [checkingProfile, setCheckingProfile] = useState(true);
 
   useEffect(() => {
+    // If loading is done but no user, stop checking profile
+    if (!loading && !user) {
+      setCheckingProfile(false);
+      return;
+    }
+
     if (loading || !user) return;
 
     // Skip profile check if already on the onboarding page
@@ -39,7 +46,7 @@ export default function SECLayout({
   }, [loading, user, pathname, router]);
 
   if (loading || checkingProfile) {
-    return null; // or a loading spinner
+    return <LoadingScreen />;
   }
 
   return <>{children}</>;

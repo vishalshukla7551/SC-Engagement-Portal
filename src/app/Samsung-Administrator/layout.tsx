@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function SamsungAdministratorLayout({
   children,
@@ -10,7 +11,7 @@ export default function SamsungAdministratorLayout({
   const { loading } = useAuth();
 
   if (loading) {
-    return null; // or a loading spinner
+    return <LoadingScreen />;
   }
 
   return <>{children}</>;

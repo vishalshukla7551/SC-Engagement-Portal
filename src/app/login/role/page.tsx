@@ -15,14 +15,6 @@ export default function RoleLogin() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { user } = useAuth();
-  console.log("user",user);
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user && user.role) {
-      const homePath = getHomePathForRole(user.role);
-      router.push(homePath);
-    }
-  }, [user, router]);
 
   // Reuse SEC login phone field typography & input styles
   const inputBaseClasses =

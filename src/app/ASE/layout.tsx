@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function ASELayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { loading } = useAuth();
 
   if (loading) {
-    return null; // or a loading spinner
+    return <LoadingScreen />;
   }
 
   return (

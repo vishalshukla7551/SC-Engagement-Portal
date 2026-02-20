@@ -23,7 +23,7 @@ export function LogoutToast({ isVisible, onComplete }: LogoutToastProps) {
           onComplete?.();
           return 100;
         }
-        return prev + 3.33; // 100/30 = 3.33% per 100ms = 3 seconds total
+        return prev + 6.67; // 100/15 = 6.67% per 100ms = 1.5 seconds total
       });
     }, 100);
 
