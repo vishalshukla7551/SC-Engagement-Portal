@@ -14,9 +14,32 @@ import SECFooter from '@/app/SEC/SECFooter';
 
 export default function LandingPage({ userName = '' }) {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isRelianceStore, setIsRelianceStore] = useState(false);
+
+  // Detect Reliance Digital store from localStorage
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem('authUser');
+      if (raw) {
+        const auth = JSON.parse(raw);
+        const storeName = auth?.store?.name || '';
+        setIsRelianceStore(storeName.startsWith('Reliance Digital'));
+      }
+    } catch { }
+  }, []);
+
+  // Reliance Digital Campaign Banner (only shown to Reliance store SECs)
+  const relianceBanner = {
+    id: 200,
+    isImageBanner: true,
+    imageSrc: '/images/PHOTO-2026-02-20-01-03-43.jpg',
+    imageAlt: 'ProtectMax Dhan-Dhana-Dhan Spot Incentive',
+    link: '/SEC/incentive-form',
+    showLiveBadge: true,
+  };
 
   // Republican Day Banner data
-  const banners = [
+  const staticBanners = [
     {
       id: 101,
       title: 'REPUBLIC DAY SPECIAL',
@@ -31,6 +54,10 @@ export default function LandingPage({ userName = '' }) {
       showLiveBadge: false,
     }
   ];
+
+  // Build final banners list — prepend Reliance banner if applicable
+  const banners = isRelianceStore ? [relianceBanner, ...staticBanners] : staticBanners;
+
   // Valentine Day Banner data
   // const banners = [
   //   {
@@ -258,9 +285,7 @@ export default function LandingPage({ userName = '' }) {
                   : 'w-1.5 sm:w-2 md:w-2.5 bg-gray-300'
                   }`}
                 style={{
-                  backgroundColor: activeSlide === index
-                    ? (index === 0 ? '#FF9933' : index === 1 ? '#000080' : '#FFD700')
-                    : undefined
+                  backgroundColor: activeSlide === index ? '#1d4ed8' : undefined
                 }}
                 aria-label={`Go to slide ${index + 1}`}
               />

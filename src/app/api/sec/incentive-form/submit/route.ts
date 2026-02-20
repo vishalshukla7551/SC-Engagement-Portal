@@ -166,8 +166,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ─── CHECK 3: Selfie with POSM is mandatory ───────────────────────────────
-    if (!selfieUrl || typeof selfieUrl !== 'string' || !selfieUrl.startsWith('http')) {
+    // ─── CHECK 3: Selfie with POSM — one-time activity ───────────────────────
+    // First, try to find a previously uploaded selfie for this SEC in this campaign
+    const priorSubmission = await prisma.spotIncentiveReport.findFirst({
+      where: {
+        secId: secUser.id,
+        Date_of_sale: { gte: RELIANCE_CAMPAIGN.startDate },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const priorSelfieUrl = (priorSubmission?.metadata as any)?.selfieUrl ?? null;
+
+    // Use the prior selfie if available; otherwise require one from the body
+    const resolvedSelfieUrl: string | null = priorSelfieUrl ?? selfieUrl ?? null;
+
+    if (!resolvedSelfieUrl || typeof resolvedSelfieUrl !== 'string' || !resolvedSelfieUrl.startsWith('http')) {
       return NextResponse.json(
         { error: 'Selfie with Samsung ProtectMax POSM is mandatory. Please upload your selfie.' },
         { status: 400 }
@@ -224,6 +238,15 @@ export async function POST(req: NextRequest) {
     if (plan.samsungSKUId !== deviceId) {
       return NextResponse.json(
         { error: 'Selected plan does not belong to the selected device' },
+        { status: 400 }
+      );
+    }
+
+    // ─── CHECK: Plan ineligible for this campaign ─────────────────────────────
+    const EXCLUDED_PLAN_TYPES = ['SCREEN_PROTECT_1_YR', 'SCREEN_PROTECT_2_YR', 'EXTENDED_WARRANTY_1_YR'];
+    if (EXCLUDED_PLAN_TYPES.includes(plan.planType)) {
+      return NextResponse.json(
+        { error: 'This plan type is not eligible for the Reliance Digital 2026 campaign. Please select ADLD 1 Yr or Combo 2 Yrs.' },
         { status: 400 }
       );
     }
@@ -294,7 +317,7 @@ export async function POST(req: NextRequest) {
           baseIncentive,
           boosterApplied: boosterTriggered,
           boosterAmount,
-          selfieUrl,
+          selfieUrl: resolvedSelfieUrl,
           totalCumulativeSales: newCumulativeSales,
           storeName,
         },

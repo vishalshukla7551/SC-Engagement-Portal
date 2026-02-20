@@ -43,6 +43,11 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
   const [isUploadingSelfie, setIsUploadingSelfie] = useState(false);
   const selfieInputRef = useRef(null);
 
+  // One-time selfie — check if already uploaded this campaign
+  const [hasPriorSelfie, setHasPriorSelfie] = useState(false);
+  const [priorSelfieUrl, setPriorSelfieUrl] = useState('');
+  const [loadingSelfieStatus, setLoadingSelfieStatus] = useState(false);
+
   // IMEI state
   const [imeiError, setImeiError] = useState('');
   const [duplicateError, setDuplicateError] = useState('');
@@ -109,6 +114,29 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       }
     }
     checkProfile();
+  }, [isRelianceStore, secPhone]);
+
+  // ─── Check if selfie already uploaded this campaign ────────────────────────
+  useEffect(() => {
+    if (!isRelianceStore || !secPhone) return;
+
+    async function checkSelfieStatus() {
+      try {
+        setLoadingSelfieStatus(true);
+        const res = await fetch('/api/sec/incentive-form/selfie-status');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.hasSelfie && data.selfieUrl) {
+          setHasPriorSelfie(true);
+          setPriorSelfieUrl(data.selfieUrl);
+        }
+      } catch (e) {
+        console.error('Selfie status check failed', e);
+      } finally {
+        setLoadingSelfieStatus(false);
+      }
+    }
+    checkSelfieStatus();
   }, [isRelianceStore, secPhone]);
 
   // ─── Fetch devices ──────────────────────────────────────────────────────────
@@ -273,7 +301,13 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
     if (!planId) { alert('⚠️ Please select a plan'); return; }
     if (imeiError || duplicateError) { alert('⚠️ Please fix the IMEI issues before submitting'); return; }
     if (!imeiNumber || imeiNumber.length !== 15) { setImeiError('Invalid IMEI.'); alert('⚠️ Please enter a valid 15-digit IMEI number'); return; }
-    if (!selfieFile && !selfieUrl) { setSelfieError('Please upload your selfie with the Samsung ProtectMax POSM.'); alert('📸 Selfie with Samsung ProtectMax POSM is mandatory'); return; }
+
+    // Selfie is only required on first submission
+    if (!hasPriorSelfie && !selfieFile && !selfieUrl) {
+      setSelfieError('Please upload your selfie with the Samsung ProtectMax POSM.');
+      alert('📸 Selfie with Samsung ProtectMax POSM is mandatory');
+      return;
+    }
 
     setShowConfirmModal(true);
   };
@@ -284,7 +318,7 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
       setShowConfirmModal(false);
 
       // Upload selfie if not already uploaded
-      let finalSelfieUrl = selfieUrl;
+      let finalSelfieUrl = hasPriorSelfie ? priorSelfieUrl : selfieUrl;
       if (!finalSelfieUrl && selfiePreview) {
         try {
           finalSelfieUrl = await uploadSelfie(selfiePreview);
@@ -640,52 +674,66 @@ export default function SecIncentiveForm({ initialSecId = '' }) {
                 </div>
 
                 {/* ─── SELFIE WITH POSM ─────────────────────────────────────────── */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    📸 Selfie with Samsung ProtectMax POSM <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-[11px] text-slate-500 mb-2 font-medium">
-                    Take a selfie at the Samsung counter with the ProtectMax banner/display POSM. This is mandatory.
-                  </p>
+                {hasPriorSelfie ? (
+                  // ── Already submitted: show confirmation badge ──
+                  <div className="flex items-center gap-3 rounded-xl bg-green-50 border border-green-200 px-4 py-3">
+                    <span className="text-2xl">✅</span>
+                    <div>
+                      <p className="text-sm font-bold text-green-800">POSM selfie already submitted</p>
+                      <p className="text-[11px] text-green-600 font-medium">
+                        Your selfie will be reused automatically — no need to upload again.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  // ── First time: show upload UI ──
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      📸 Selfie with Samsung ProtectMax POSM <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-[11px] text-slate-500 mb-2 font-medium">
+                      Take a selfie at the Samsung counter with the ProtectMax banner/display POSM. This is mandatory.
+                    </p>
 
-                  {/* Preview area */}
-                  {selfiePreview ? (
-                    <div className="relative rounded-xl overflow-hidden border-2 border-blue-200 shadow-md mb-2">
-                      <img src={selfiePreview} alt="Selfie Preview" className="w-full h-48 object-cover" />
+                    {/* Preview area */}
+                    {selfiePreview ? (
+                      <div className="relative rounded-xl overflow-hidden border-2 border-blue-200 shadow-md mb-2">
+                        <img src={selfiePreview} alt="Selfie Preview" className="w-full h-48 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => { setSelfieFile(null); setSelfiePreview(''); setSelfieUrl(''); setSelfieError(''); }}
+                          className="absolute top-2 right-2 bg-red-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md hover:bg-red-700 transition-all"
+                        >
+                          ✕
+                        </button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
+                          <p className="text-white text-xs font-medium">✅ Selfie captured</p>
+                        </div>
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        onClick={() => { setSelfieFile(null); setSelfiePreview(''); setSelfieUrl(''); setSelfieError(''); }}
-                        className="absolute top-2 right-2 bg-red-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md hover:bg-red-700 transition-all"
+                        onClick={() => selfieInputRef.current?.click()}
+                        className="w-full border-2 border-dashed border-slate-200 rounded-xl py-6 flex flex-col items-center gap-2 hover:border-blue-400 hover:bg-blue-50/50 transition-all active:scale-[0.98]"
                       >
-                        ✕
+                        <span className="text-3xl">📷</span>
+                        <span className="text-sm font-bold text-blue-600">Tap to take / upload selfie</span>
+                        <span className="text-xs text-slate-400">JPG, PNG up to 10MB</span>
                       </button>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
-                        <p className="text-white text-xs font-medium">✅ Selfie captured</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => selfieInputRef.current?.click()}
-                      className="w-full border-2 border-dashed border-slate-200 rounded-xl py-6 flex flex-col items-center gap-2 hover:border-blue-400 hover:bg-blue-50/50 transition-all active:scale-[0.98]"
-                    >
-                      <span className="text-3xl">📷</span>
-                      <span className="text-sm font-bold text-blue-600">Tap to take / upload selfie</span>
-                      <span className="text-xs text-slate-400">JPG, PNG up to 10MB</span>
-                    </button>
-                  )}
+                    )}
 
-                  <input
-                    ref={selfieInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                    onChange={handleSelfieChange}
-                  />
+                    <input
+                      ref={selfieInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={handleSelfieChange}
+                    />
 
-                  {selfieError && <p className="mt-2 text-xs text-red-600 font-medium">⚠️ {selfieError}</p>}
-                </div>
+                    {selfieError && <p className="mt-2 text-xs text-red-600 font-medium">⚠️ {selfieError}</p>}
+                  </div>
+                )}
 
                 {/* Submit Button */}
                 <div className="pt-4 pb-6">
