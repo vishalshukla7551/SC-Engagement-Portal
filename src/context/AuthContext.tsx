@@ -84,6 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     // If already authenticated, don't verify again
+    
     // if (user) {
     //   setLoading(false);
     //   return;
