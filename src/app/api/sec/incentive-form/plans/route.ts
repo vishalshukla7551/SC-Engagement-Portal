@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PlanType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,10 +32,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get all plans for this device
+    /**
+     * Plan types excluded from the Reliance Digital 2026 campaign.
+     * These plans earn ₹0 incentive and should not be shown to SECs.
+     */
+    const EXCLUDED_PLAN_TYPES = [
+      'SCREEN_PROTECT_1_YR',
+      'SCREEN_PROTECT_2_YR',
+      'EXTENDED_WARRANTY_1_YR',
+    ] as PlanType[];
+
+
+    // Get all eligible plans for this device (excludes campaign-ineligible types)
     const plans = await prisma.plan.findMany({
       where: {
         samsungSKUId: deviceId,
+        planType: { notIn: EXCLUDED_PLAN_TYPES },
       },
       orderBy: {
         price: 'asc',
