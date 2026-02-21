@@ -119,7 +119,10 @@ export async function GET(req: NextRequest) {
     if (paymentStatus === 'paid') {
       where.spotincentivepaidAt = { not: null };
     } else if (paymentStatus === 'unpaid') {
-      where.spotincentivepaidAt = null;
+      // In Prisma + MongoDB, optional DateTime fields that were never set
+      // are stored as missing keys (not explicit nulls) in the document.
+      // { isSet: false } correctly catches both: missing field OR explicit null.
+      where.spotincentivepaidAt = { isSet: false };
     }
 
     // Date range filter

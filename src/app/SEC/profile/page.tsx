@@ -1064,137 +1064,139 @@ export default function ProfilePage() {
                 </form>
               </section>
 
-              {/* SECTION 3: Banking Info */}
-              <section className="mb-5 bg-white rounded-2xl shadow-md border border-gray-100 p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                  <h2 className="text-base font-semibold text-gray-900">Banking Info</h2>
-                </div>
-
-                {/* Note */}
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-                  <p className="text-xs text-gray-700">
-                    <span className="font-semibold">Note:</span> These details will be used for incentive payout to your account.
-                  </p>
-                </div>
-
-                <form onSubmit={handleBankingSubmit}>
-                  {/* Bank Name */}
-                  <div className="mb-4">
-                    <label htmlFor="bankName" className="block text-xs text-gray-600 mb-1">Bank Name</label>
-                    <select
-                      id="bankName"
-                      value={bankName}
-                      onChange={(e) => setBankName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 1rem center',
-                        backgroundSize: '1.25rem',
-                      }}
-                    >
-                      <option value="">Select Bank</option>
-                      <option value="hdfc">HDFC Bank</option>
-                      <option value="icici">ICICI Bank</option>
-                      <option value="sbi">State Bank of India</option>
-                      <option value="axis">Axis Bank</option>
-                      <option value="kotak">Kotak Mahindra Bank</option>
-                    </select>
+              {/* SECTION 3: Banking Info — hidden for now, will be enabled later */}
+              {false && (
+                <section className="mb-5 bg-white rounded-2xl shadow-md border border-gray-100 p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <h2 className="text-base font-semibold text-gray-900">Banking Info</h2>
                   </div>
 
-                  {/* Account Holder Name */}
-                  <div className="mb-4">
-                    <label htmlFor="accountHolderName" className="block text-xs text-gray-600 mb-1">Account Holder Name</label>
-                    <input
-                      type="text"
-                      id="accountHolderName"
-                      value={accountHolderName}
-                      onChange={(e) => setAccountHolderName(e.target.value)}
-                      placeholder="Enter Account Holder Name"
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                  {/* Note */}
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <p className="text-xs text-gray-700">
+                      <span className="font-semibold">Note:</span> These details will be used for incentive payout to your account.
+                    </p>
                   </div>
 
-                  {/* Account Number */}
-                  <div className="mb-4">
-                    <label htmlFor="accountNumber" className="block text-xs text-gray-600 mb-1">Account Number</label>
-                    <input
-                      type="text"
-                      id="accountNumber"
-                      value={accountNumber}
-                      onChange={(e) => setAccountNumber(e.target.value)}
-                      placeholder="Enter Account Number"
-                      inputMode="numeric"
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Confirm Account Number */}
-                  <div className="mb-4">
-                    <label htmlFor="confirmAccountNumber" className="block text-xs text-gray-600 mb-1">Confirm Account Number</label>
-                    <input
-                      type="text"
-                      id="confirmAccountNumber"
-                      value={confirmAccountNumber}
-                      onChange={(e) => setConfirmAccountNumber(e.target.value)}
-                      placeholder="Re-enter Account Number"
-                      inputMode="numeric"
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* IFSC Code */}
-                  <div className="mb-4">
-                    <label htmlFor="ifscCode" className="block text-xs text-gray-600 mb-1">IFSC Code</label>
-                    <input
-                      type="text"
-                      id="ifscCode"
-                      value={ifscCode}
-                      onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
-                      placeholder="Enter IFSC Code"
-                      maxLength={11}
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Upload Cancelled Cheque */}
-                  <div className="mb-4">
-                    <label className="block text-xs text-gray-600 mb-1">Upload Cancelled Cheque / Passbook</label>
-                    <label
-                      htmlFor="chequeUpload"
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      {chequeFile ? chequeFile.name : 'Choose File'}
-                    </label>
-                    <input
-                      type="file"
-                      id="chequeUpload"
-                      accept="image/*,.pdf"
-                      onChange={(e) => setChequeFile(e.target.files?.[0] || null)}
-                      className="hidden"
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group bg-black hover:bg-gray-900"
-                  >
-                    <div className="relative flex items-center justify-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Submit
+                  <form onSubmit={handleBankingSubmit}>
+                    {/* Bank Name */}
+                    <div className="mb-4">
+                      <label htmlFor="bankName" className="block text-xs text-gray-600 mb-1">Bank Name</label>
+                      <select
+                        id="bankName"
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                        style={{
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'right 1rem center',
+                          backgroundSize: '1.25rem',
+                        }}
+                      >
+                        <option value="">Select Bank</option>
+                        <option value="hdfc">HDFC Bank</option>
+                        <option value="icici">ICICI Bank</option>
+                        <option value="sbi">State Bank of India</option>
+                        <option value="axis">Axis Bank</option>
+                        <option value="kotak">Kotak Mahindra Bank</option>
+                      </select>
                     </div>
-                  </button>
-                </form>
-              </section>
+
+                    {/* Account Holder Name */}
+                    <div className="mb-4">
+                      <label htmlFor="accountHolderName" className="block text-xs text-gray-600 mb-1">Account Holder Name</label>
+                      <input
+                        type="text"
+                        id="accountHolderName"
+                        value={accountHolderName}
+                        onChange={(e) => setAccountHolderName(e.target.value)}
+                        placeholder="Enter Account Holder Name"
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    {/* Account Number */}
+                    <div className="mb-4">
+                      <label htmlFor="accountNumber" className="block text-xs text-gray-600 mb-1">Account Number</label>
+                      <input
+                        type="text"
+                        id="accountNumber"
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                        placeholder="Enter Account Number"
+                        inputMode="numeric"
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    {/* Confirm Account Number */}
+                    <div className="mb-4">
+                      <label htmlFor="confirmAccountNumber" className="block text-xs text-gray-600 mb-1">Confirm Account Number</label>
+                      <input
+                        type="text"
+                        id="confirmAccountNumber"
+                        value={confirmAccountNumber}
+                        onChange={(e) => setConfirmAccountNumber(e.target.value)}
+                        placeholder="Re-enter Account Number"
+                        inputMode="numeric"
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    {/* IFSC Code */}
+                    <div className="mb-4">
+                      <label htmlFor="ifscCode" className="block text-xs text-gray-600 mb-1">IFSC Code</label>
+                      <input
+                        type="text"
+                        id="ifscCode"
+                        value={ifscCode}
+                        onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                        placeholder="Enter IFSC Code"
+                        maxLength={11}
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    {/* Upload Cancelled Cheque */}
+                    <div className="mb-4">
+                      <label className="block text-xs text-gray-600 mb-1">Upload Cancelled Cheque / Passbook</label>
+                      <label
+                        htmlFor="chequeUpload"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        {chequeFile?.name ?? 'Choose File'}
+                      </label>
+                      <input
+                        type="file"
+                        id="chequeUpload"
+                        accept="image/*,.pdf"
+                        onChange={(e) => setChequeFile(e.target.files?.[0] || null)}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      className="w-full text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] relative overflow-hidden group bg-black hover:bg-gray-900"
+                    >
+                      <div className="relative flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Submit
+                      </div>
+                    </button>
+                  </form>
+                </section>
+              )}
             </div>
           )}
         </div>
