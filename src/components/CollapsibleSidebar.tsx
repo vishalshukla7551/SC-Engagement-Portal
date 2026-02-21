@@ -94,7 +94,7 @@ export function CollapsibleSidebar({
           flex flex-col
           transition-all duration-300 ease-in-out
           z-40
-          ${isOpen ? 'w-72' : 'w-0 md:w-20'}
+          ${isOpen ? 'w-64' : 'w-0 md:w-20'}
           ${isMobile ? 'shadow-lg' : ''}
         `}
       >
@@ -147,7 +147,7 @@ export function CollapsibleSidebar({
                 </span>
                 <span
                   className={`
-                    text-sm font-medium
+                    text-xs font-medium
                     transition-opacity duration-300
                     ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}
                   `}

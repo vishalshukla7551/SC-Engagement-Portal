@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CollapsibleSidebar } from '@/components/CollapsibleSidebar';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { isUatUser } from '@/lib/uatRestriction';
 
 // SVG Icons
@@ -129,7 +129,7 @@ const ZopperLogo = () => (
     />
     
     <div 
-      className="absolute flex items-center justify-center h-[26px] top-[21px] left-[23px] text-white font-bold text-[28px] leading-[26px] whitespace-nowrap z-[1]"
+      className="absolute flex items-center justify-center h-[26px] top-[21px] left-[23px] text-white font-bold text-[20px] leading-[26px] whitespace-nowrap z-[1]"
       style={{ 
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         width: '36px'
@@ -139,7 +139,7 @@ const ZopperLogo = () => (
     </div>
     
     <div 
-      className="absolute flex items-start justify-start h-[31px] top-[7px] left-[87.938px] font-bold text-[26px] leading-[31px] whitespace-nowrap z-[3]"
+      className="absolute flex items-start justify-start h-[31px] top-[10px] left-[75px] font-bold text-[18px] leading-[31px] whitespace-nowrap z-[3]"
       style={{
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         color: 'rgba(0, 0, 0, 0)',
@@ -153,7 +153,7 @@ const ZopperLogo = () => (
     </div>
     
     <div 
-      className="absolute flex items-start justify-start h-[25px] top-[38px] left-[92.938px] text-white font-medium text-[16px] leading-[25px] whitespace-nowrap z-[2]"
+      className="absolute flex items-start justify-start h-[25px] top-[32px] left-[75px] text-white font-medium text-[11px] leading-[25px] whitespace-nowrap z-[2]"
       style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
     >
       Safalta ka Sathi
@@ -176,6 +176,7 @@ const RESTRICTED_ROUTES = [
   '/Zopper-Administrator/import-daily-reports',
   '/Zopper-Administrator/process-invalid-imeis',
   '/Zopper-Administrator/test',
+  '/Zopper-Administrator/referrals',
 ];
 
 export default function ZopperAdministratorLayout({
@@ -185,19 +186,22 @@ export default function ZopperAdministratorLayout({
 }) {
   const { loading, user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const uatUserFlag = isUatUser(user);
 
-  // Redirect UAT users to spot-incentive-report
+  // Redirect UAT users to spot-incentive-report on any restricted route
   useEffect(() => {
-    if (!loading && uatUserFlag) {
-      const currentPath = window.location.pathname;
-      if (RESTRICTED_ROUTES.includes(currentPath)) {
-        router.push('/Zopper-Administrator/spot-incentive-report');
-      }
+    if (!loading && uatUserFlag && RESTRICTED_ROUTES.includes(pathname)) {
+      router.replace('/Zopper-Administrator/spot-incentive-report');
     }
-  }, [loading, uatUserFlag, router]);
+  }, [loading, uatUserFlag, pathname, router]);
 
   if (loading) {
+    return <LoadingScreen />;
+  }
+
+  // Show loading screen while redirecting UAT users from restricted routes
+  if (uatUserFlag && RESTRICTED_ROUTES.includes(pathname)) {
     return <LoadingScreen />;
   }
 

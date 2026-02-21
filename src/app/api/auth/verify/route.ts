@@ -32,6 +32,7 @@ export async function GET(req: Request) {
       role: user.role,
       username: user.username,
       validation: user.validation,
+      metadata: user.metadata, // Include metadata with isUatUser flag
     };
 
     // For SEC users, include flattened profile fields for easier access

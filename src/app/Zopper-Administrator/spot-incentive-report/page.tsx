@@ -87,10 +87,10 @@ function StatCard({ title, value }: { title: string; value: string }) {
 
   return (
     <div
-      className={`bg-gradient-to-br ${gradient} rounded-2xl p-5 md:p-6 text-white transition-transform hover:translate-y-[-1px]`}
+      className={`bg-gradient-to-br ${gradient} rounded-2xl p-3 md:p-4 text-white transition-transform hover:translate-y-[-1px]`}
     >
       <div className="text-xs md:text-sm text-slate-100/80 mb-1">{title}</div>
-      <div className="text-2xl md:text-3xl font-bold leading-tight">{value}</div>
+      <div className="text-xl md:text-2xl font-bold leading-tight">{value}</div>
     </div>
   );
 }
@@ -429,11 +429,11 @@ export default function SpotIncentiveReport() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 md:p-10">
-      <div className="w-full space-y-8">
+      <div className="w-full space-y-4">
         {/* Header */}
         <header className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-white mb-3">Spot Incentive Report</h1>
+            <h1 className="text-3xl font-bold text-white mb-3">Spot Incentive Report</h1>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <p className="text-sm text-neutral-400">
                 Paid: {reports.filter(r => r.isPaid).length} | Unpaid: {
@@ -451,7 +451,7 @@ export default function SpotIncentiveReport() {
 
           <button
             onClick={() => clientLogout('/login/role', false)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-lg"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-colors shadow-lg"
           >
             <FaSignOutAlt size={12} />
             Logout
@@ -468,81 +468,136 @@ export default function SpotIncentiveReport() {
         </section>
 
         {/* Filters */}
-        <section className="flex flex-wrap items-center gap-3">
-          <input
-            className="flex-1 min-w-[220px] px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Search SEC / Store / Device / IMEI"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-700 rounded-lg px-2">
-            <span className="text-xs text-neutral-500 font-medium uppercase">From</span>
-            <input
-              type="date"
-              className="bg-transparent py-2 text-sm text-white focus:outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:invert"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <span className="text-xs text-neutral-500 font-medium uppercase">To</span>
-            <input
-              type="date"
-              className="bg-transparent py-2 text-sm text-white focus:outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:invert"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
+        <section className="space-y-2">
+          {/* Search Row with Date Filters */}
+          <div className="flex flex-col lg:flex-row gap-3">
+            <div className="lg:w-96 flex flex-col gap-0">
+              <span className="text-xs text-neutral-300 mb-1">Search</span>
+              <input
+                className="px-3 py-1 rounded-lg bg-neutral-900 border border-neutral-700 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Canvasser / Store / Device / Serial Number"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-0">
+              <span className="text-xs text-neutral-300 mb-1">From Date</span>
+              <input
+                type="date"
+                className="bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 [&::-webkit-calendar-picker-indicator]:invert"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-0">
+              <span className="text-xs text-neutral-300 mb-1">To Date</span>
+              <input
+                type="date"
+                className="bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 [&::-webkit-calendar-picker-indicator]:invert"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
           </div>
-          <select
-            className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
-            value={storeFilter}
-            onChange={(e) => setStoreFilter(e.target.value)}
-          >
-            <option value="">All Stores</option>
-            {filters.stores.map((store) => (
-              <option key={store.id} value={store.id}>
-                {store.name} - {store.city}
-              </option>
-            ))}
-          </select>
-          <select
-            className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
-            value={planFilter}
-            onChange={(e) => setPlanFilter(e.target.value)}
-          >
-            <option value="">All Plans</option>
-            {filters.planTypes.map((planType) => (
-              <option key={planType} value={planType}>
-                {planType.replace(/_/g, ' ')}
-              </option>
-            ))}
-          </select>
-          <select
-            className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
-            value={paymentFilter}
-            onChange={(e) =>
-              setPaymentFilter(e.target.value as 'all' | 'paid' | 'unpaid')
-            }
-          >
-            <option value="all">All</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-          </select>
-          <button
-            onClick={exportExcel}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-[0_10px_30px_rgba(16,185,129,0.4)]"
-          >
-            <FaDownload size={14} />
-            Export
-          </button>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-[0_10px_30px_rgba(37,99,235,0.4)] cursor-pointer">
-            <FaUpload size={14} />
-            Import
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleImportFile}
-              className="hidden"
-            />
-          </label>
+
+          {/* Filters Row - All in one line */}
+          <div className="flex flex-col lg:flex-row gap-3">
+            <div className="flex-1 flex flex-col gap-0">
+              <span className="text-xs text-neutral-300 mb-1">Store</span>
+              <select
+                className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
+                value={storeFilter}
+                onChange={(e) => setStoreFilter(e.target.value)}
+              >
+                <option value="">All Stores</option>
+                {filters.stores.map((store) => (
+                  <option key={store.id} value={store.id}>
+                    {store.name} - {store.city}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-1 flex flex-col gap-0">
+              <span className="text-xs text-neutral-300 mb-1">Plan Type</span>
+              <select
+                className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
+                value={planFilter}
+                onChange={(e) => setPlanFilter(e.target.value)}
+              >
+                <option value="">All Plans</option>
+                {filters.planTypes.map((planType) => (
+                  <option key={planType} value={planType}>
+                    {planType.replace(/_/g, ' ')}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-1 flex flex-col gap-0">
+              <span className="text-xs text-neutral-300 mb-1">Payment Status</span>
+              <select
+                className="appearance-none bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-neutral-800"
+                value={paymentFilter}
+                onChange={(e) =>
+                  setPaymentFilter(e.target.value as 'all' | 'paid' | 'unpaid')
+                }
+              >
+                <option value="all">All</option>
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Action Buttons Row */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={exportExcel}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(16,185,129,0.4)]"
+            >
+              <FaDownload size={14} />
+              Export All
+            </button>
+            <label className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(37,99,235,0.4)] cursor-pointer">
+              <FaUpload size={14} />
+              Import
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImportFile}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={() => {
+                const selectedReports = Array.from(selectedIds);
+                if (selectedReports.length === 0) {
+                  alert('Please select at least one report to send rewards');
+                  return;
+                }
+                // TODO: Implement send rewards logic
+                alert(`Send rewards for ${selectedReports.length} selected reports`);
+              }}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(79,70,229,0.4)]"
+            >
+              <FaCheckDouble size={14} />
+              Send Rewards
+            </button>
+            <button
+              onClick={() => {
+                if (selectedIds.size === 0) {
+                  alert('Please select at least one report to discard');
+                  return;
+                }
+                handleBulkAction('discard');
+              }}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(220,38,38,0.4)]"
+            >
+              <FaTrashAlt size={14} />
+              Discard
+            </button>
+          </div>
         </section>
 
         {/* Bulk Actions Bar - Only visible when items selected */}
@@ -796,7 +851,7 @@ export default function SpotIncentiveReport() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-neutral-200 p-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-neutral-900">Import Results</h2>
+                <h2 className="text-lg font-bold text-neutral-900">Import Results</h2>
                 <button
                   onClick={() => setImportModalOpen(false)}
                   className="text-neutral-400 hover:text-neutral-600 transition-colors"
