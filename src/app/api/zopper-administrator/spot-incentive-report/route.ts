@@ -241,6 +241,9 @@ export async function GET(req: NextRequest) {
       paidAt: report.spotincentivepaidAt ? formatDate(report.spotincentivepaidAt) : null,
       voucherCode: report.voucherCode || '',
       isCompaignActive: report.isCompaignActive,
+      transactionId: report.transactionId || null,
+      transactionMetadata: report.transactionMetadata || null,
+      spotincentivepaidAt: report.spotincentivepaidAt || null,
       secUser: {
         secId: report.secUser.employeeId || 'Unknown',
         phone: report.secUser.phone,

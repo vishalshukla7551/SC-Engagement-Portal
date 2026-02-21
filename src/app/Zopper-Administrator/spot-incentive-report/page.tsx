@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { FaDownload, FaSignOutAlt, FaSpinner, FaCheckDouble, FaTrashAlt, FaCheckSquare, FaSquare, FaUpload, FaTimes } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import { clientLogout } from '@/lib/clientLogout';
+import { useAuth } from '@/context/AuthContext';
+import { isUatUser } from '@/lib/uatRestriction';
 
 interface SpotIncentiveReport {
   id: string;
@@ -19,6 +21,9 @@ interface SpotIncentiveReport {
   selfieUrl?: string | null;
   isFlagship?: boolean | null;
   boosterApplied?: boolean;
+  transactionId?: string | null;
+  transactionMetadata?: any;
+  spotincentivepaidAt?: string | null;
   secUser: {
     secId: string;
     phone: string;
@@ -96,6 +101,7 @@ function StatCard({ title, value }: { title: string; value: string }) {
 }
 
 export default function SpotIncentiveReport() {
+  const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [storeFilter, setStoreFilter] = useState('');
   const [planFilter, setPlanFilter] = useState('');
@@ -113,23 +119,35 @@ export default function SpotIncentiveReport() {
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [showCheckboxes, setShowCheckboxes] = useState(false);
+  const [activeButton, setActiveButton] = useState<'send' | 'discard' | null>(null);
 
   // Import State
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
 
+  // OTP Modal State
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [adminPhone, setAdminPhone] = useState('');
+
   // Selfie lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
-  const toggleSelectAll = () => {
-    // Only select unpaid reports
-    const unpaidReports = reports.filter(r => !r.isPaid);
+  // Check if user is UAT admin
+  const isUatAdmin = isUatUser(user);
 
-    if (selectedIds.size === unpaidReports.length && unpaidReports.length > 0) {
+  const toggleSelectAll = () => {
+    // Only select reports that are not paid and not transaction pending
+    const selectableReports = reports.filter(r => !r.isPaid && r.transactionMetadata?.status !== 'PENDING_BALANCE');
+
+    if (selectedIds.size === selectableReports.length && selectableReports.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(unpaidReports.map(r => r.id)));
+      setSelectedIds(new Set(selectableReports.map(r => r.id)));
     }
   };
 
@@ -217,45 +235,144 @@ export default function SpotIncentiveReport() {
     }
   };
 
-  // Handle Mark Paid action
-  const handleMarkPaid = async (reportId: string) => {
+  // Handle showing checkboxes when Send Reward or Discard is clicked
+  const handleShowCheckboxes = (action: 'send' | 'discard') => {
+    setShowCheckboxes(true);
+    setActiveButton(action);
+  };
+
+  // Handle hiding checkboxes
+  const handleHideSelection = () => {
+    setShowCheckboxes(false);
+    setActiveButton(null);
+    setSelectedIds(new Set()); // Clear any selections
+  };
+
+  // Handle Send OTP
+  const handleSendOtp = async () => {
     try {
-      const response = await fetch(`/api/zopper-administrator/spot-incentive-report/${reportId}/mark-paid`, {
+      setSendingOtp(true);
+      const response = await fetch('/api/zopper-administrator/spot-incentive-report/send-reward-otp/send', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
       });
 
-      if (response.ok) {
-        // Refresh data after successful action
-        fetchData();
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setAdminPhone(result.data.phone);
+        // OTP sent successfully - no alert needed, modal shows the phone number
       } else {
-        alert('Failed to mark as paid');
+        alert(result.error || 'Failed to send OTP');
       }
     } catch (error) {
-      console.error('Error marking as paid:', error);
-      alert('Error marking as paid');
+      console.error('Error sending OTP:', error);
+      alert('Error sending OTP');
+    } finally {
+      setSendingOtp(false);
     }
   };
 
-  // Handle Discard action
-  const handleDiscard = async (reportId: string) => {
-    if (confirm('Are you sure you want to discard this report?')) {
-      try {
-        const response = await fetch(`/api/zopper-administrator/spot-incentive-report/${reportId}/discard`, {
-          method: 'POST',
+  // Handle Send Rewards with OTP verification
+  const handleSendRewards = async () => {
+    if (selectedIds.size === 0) {
+      alert('Please select at least one report to send rewards');
+      return;
+    }
+
+    try {
+      setOtpLoading(true);
+      const response = await fetch('/api/zopper-administrator/spot-incentive-report/send-reward', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportIds: Array.from(selectedIds),
+          otp: otp
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Close OTP modal first
+        setOtpModalOpen(false);
+        setOtp('');
+        setSelectedIds(new Set()); // Clear selection
+
+        // Show detailed result modal using SweetAlert
+        const Swal = (await import('sweetalert2')).default;
+        
+        const amounts = result.data?.amounts || {};
+        const processed = result.data?.processed || 0;
+        const pending = result.data?.pending || 0;
+        const failed = result.data?.failed || 0;
+
+        await Swal.fire({
+          title: 'Rewards Sent',
+          html: `
+            <div style="text-align: left; padding: 20px;">
+              <!-- Amount Summary -->
+              <div style="background: #f1f5f9; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="color: #3b82f6; font-size: 16px; font-weight: 600; margin-bottom: 15px;">Amount Summary</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                  <span style="color: #3b82f6;">Total Requested Amount:</span>
+                  <span style="color: #3b82f6; font-weight: bold;">₹${(amounts.totalRequested || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                  <span style="color: #059669;">Processed Amount:</span>
+                  <span style="color: #059669; font-weight: bold;">₹${(amounts.processedAmount || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: #ea580c;">Pending to Process:</span>
+                  <span style="color: #ea580c; font-weight: bold;">₹${(amounts.pendingAmount || 0).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <!-- Report Counts -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; text-align: center;">
+                  <div style="color: #059669; font-size: 32px; font-weight: bold; margin-bottom: 5px;">${processed}</div>
+                  <div style="color: #059669; font-size: 14px; font-weight: 600;">Processed<br>Reports</div>
+                </div>
+                <div style="background: #fefce8; padding: 20px; border-radius: 12px; text-align: center;">
+                  <div style="color: #ea580c; font-size: 32px; font-weight: bold; margin-bottom: 5px;">${pending}</div>
+                  <div style="color: #ea580c; font-size: 14px; font-weight: 600;">Pending Reports</div>
+                </div>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center;">
+                  <div style="color: #64748b; font-size: 32px; font-weight: bold; margin-bottom: 5px;">${failed}</div>
+                  <div style="color: #64748b; font-size: 14px; font-weight: 600;">Failed Reports</div>
+                </div>
+              </div>
+
+              <!-- Success Message -->
+              <div style="background: #f0fdf4; padding: 15px; border-radius: 12px; text-align: center;">
+                <div style="color: #059669; font-weight: 600;">${result.message}</div>
+              </div>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonText: 'Done',
+          confirmButtonColor: '#3b82f6',
+          customClass: {
+            popup: 'swal-wide'
+          },
+          width: '600px'
         });
 
-        if (response.ok) {
-          // Refresh data after successful action
-          fetchData();
-        } else {
-          alert('Failed to discard report');
-        }
-      } catch (error) {
-        console.error('Error discarding report:', error);
-        alert('Error discarding report');
+        fetchData(); // Refresh data
+      } else {
+        alert(result.error || 'Failed to send rewards');
       }
+    } catch (error) {
+      console.error('Error sending rewards:', error);
+      alert('Error sending rewards');
+    } finally {
+      setOtpLoading(false);
     }
   };
+
+  // Handle Mark Paid action - REMOVED
+  // Handle Discard action - REMOVED
 
   // Fetch data from API
   const fetchData = async () => {
@@ -360,7 +477,7 @@ export default function SpotIncentiveReport() {
         'Plan Price': `₹${report.planPrice}`,
         'IMEI': report.imei,
         'Incentive Earned': `₹${report.incentiveEarned}`,
-        'Payment Status': report.isPaid ? 'Paid' : 'Pending',
+        'Payment Status': report.transactionMetadata?.status === 'PENDING_BALANCE' ? 'Transaction Pending' : report.isPaid ? 'Paid' : 'Not Paid',
         'Submitted Date': formatDateWithTime(report.submittedAt).date,
         'Submitted Time': formatDateWithTime(report.submittedAt).time,
         'Voucher Code': report.voucherCode || '',
@@ -569,68 +686,103 @@ export default function SpotIncentiveReport() {
                 className="hidden"
               />
             </label>
+            {isUatAdmin && (
+              <button
+                onClick={async () => {
+                  if (!showCheckboxes) {
+                    handleShowCheckboxes('send');
+                  } else {
+                    const selectedReports = Array.from(selectedIds);
+                    if (selectedReports.length === 0) {
+                      alert('Please select at least one report to send rewards');
+                      return;
+                    }
+
+                    // Calculate total amount
+                    const totalAmount = reports
+                      .filter(r => selectedIds.has(r.id))
+                      .reduce((sum, r) => sum + r.incentiveEarned, 0);
+
+                    // Show SweetAlert confirmation
+                    const Swal = (await import('sweetalert2')).default;
+                    const result = await Swal.fire({
+                      title: 'Confirm Reward Distribution',
+                      html: `
+                        <div style="text-align: left; padding: 20px;">
+                          <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="color: #6b7280; font-size: 14px; margin-bottom: 5px;">Reports Ready to Process</div>
+                            <div style="color: #1f2937; font-size: 24px; font-weight: bold;">${selectedReports.length}</div>
+                          </div>
+                          <div style="background: #f0fdf4; padding: 15px; border-radius: 8px;">
+                            <div style="color: #6b7280; font-size: 14px; margin-bottom: 5px;">Total Amount to Distribute</div>
+                            <div style="color: #059669; font-size: 24px; font-weight: bold;">₹${totalAmount.toLocaleString('en-IN')}</div>
+                          </div>
+                        </div>
+                      `,
+                      icon: 'info',
+                      showCancelButton: true,
+                      confirmButtonText: 'Proceed',
+                      cancelButtonText: 'Cancel',
+                      confirmButtonColor: '#059669',
+                      cancelButtonColor: '#dc2626',
+                      customClass: {
+                        popup: 'swal-wide'
+                      }
+                    });
+
+                    if (result.isConfirmed) {
+                      // Open OTP modal and send OTP
+                      setOtpModalOpen(true);
+                      handleSendOtp();
+                    }
+                  }
+                }}
+                disabled={activeButton === 'discard'}
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(79,70,229,0.4)] transition-all ${
+                  activeButton === 'discard' 
+                    ? 'bg-gray-400 cursor-not-allowed opacity-50' 
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                }`}
+              >
+                <FaCheckDouble size={14} />
+                {activeButton === 'send' ? `Send (${selectedIds.size})` : 'Send Rewards'}
+              </button>
+            )}
             <button
               onClick={() => {
-                const selectedReports = Array.from(selectedIds);
-                if (selectedReports.length === 0) {
-                  alert('Please select at least one report to send rewards');
-                  return;
+                if (!showCheckboxes) {
+                  handleShowCheckboxes('discard');
+                } else {
+                  if (selectedIds.size === 0) {
+                    alert('Please select at least one report to discard');
+                    return;
+                  }
+                  handleBulkAction('discard');
                 }
-                // TODO: Implement send rewards logic
-                alert(`Send rewards for ${selectedReports.length} selected reports`);
               }}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(79,70,229,0.4)]"
-            >
-              <FaCheckDouble size={14} />
-              Send Rewards
-            </button>
-            <button
-              onClick={() => {
-                if (selectedIds.size === 0) {
-                  alert('Please select at least one report to discard');
-                  return;
-                }
-                handleBulkAction('discard');
-              }}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(220,38,38,0.4)]"
+              disabled={activeButton === 'send'}
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(220,38,38,0.4)] transition-all ${
+                activeButton === 'send' 
+                  ? 'bg-gray-400 cursor-not-allowed opacity-50' 
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
             >
               <FaTrashAlt size={14} />
-              Discard
+              {activeButton === 'discard' ? `Discard (${selectedIds.size})` : 'Discard'}
             </button>
+            {showCheckboxes && (
+              <button
+                onClick={handleHideSelection}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg shadow-[0_10px_30px_rgba(75,85,99,0.4)]"
+              >
+                <FaTimes size={14} />
+                Hide Selection
+              </button>
+            )}
           </div>
         </section>
 
-        {/* Bulk Actions Bar - Only visible when items selected */}
-        {selectedIds.size > 0 && (
-          <div className="bg-indigo-900/40 border border-indigo-500/30 rounded-lg p-3 flex items-center justify-between mb-4 animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center gap-3">
-              <span className="bg-indigo-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                {selectedIds.size} Selected
-              </span>
-              <span className="text-sm text-indigo-200">
-                rows selected
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleBulkAction('approve')}
-                disabled={bulkActionLoading}
-                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold rounded-md transition-colors"
-              >
-                {bulkActionLoading ? <FaSpinner className="animate-spin" /> : <FaCheckDouble />}
-                Approve Selected
-              </button>
-              <button
-                onClick={() => handleBulkAction('discard')}
-                disabled={bulkActionLoading}
-                className="flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-semibold rounded-md transition-colors"
-              >
-                {bulkActionLoading ? <FaSpinner className="animate-spin" /> : <FaTrashAlt />}
-                Discard Selected
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Bulk Actions Bar - REMOVED */}
 
         {/* Table */}
         <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -638,97 +790,104 @@ export default function SpotIncentiveReport() {
             <table className="w-full table-auto">
               <thead className="bg-neutral-50 border-b border-neutral-200">
                 <tr className="text-left">
-                  <th className="p-2 md:p-3 w-[40px]">
-                    <button
-                      onClick={toggleSelectAll}
-                      className="text-neutral-500 hover:text-indigo-600 transition-colors"
-                      title={
-                        reports.filter(r => !r.isPaid).length === 0
-                          ? "No unpaid reports to select"
-                          : selectedIds.size === reports.filter(r => !r.isPaid).length
-                            ? "Deselect All Unpaid"
-                            : "Select All Unpaid"
-                      }
-                    >
-                      {reports.filter(r => !r.isPaid).length > 0 && selectedIds.size === reports.filter(r => !r.isPaid).length ? (
-                        <FaCheckSquare size={16} className="text-indigo-600" />
-                      ) : (
-                        <FaSquare size={16} />
-                      )}
-                    </button>
-                  </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
+                  {showCheckboxes && (
+                    <th className="p-2 md:p-3 w-[40px]">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="text-neutral-500 hover:text-indigo-600 transition-colors"
+                        title={
+                          reports.filter(r => !r.isPaid && r.transactionMetadata?.status !== 'PENDING_BALANCE').length === 0
+                            ? "No selectable reports available"
+                            : selectedIds.size === reports.filter(r => !r.isPaid && r.transactionMetadata?.status !== 'PENDING_BALANCE').length
+                              ? "Deselect All Selectable"
+                              : "Select All Selectable"
+                        }
+                      >
+                        {reports.filter(r => !r.isPaid && r.transactionMetadata?.status !== 'PENDING_BALANCE').length > 0 && selectedIds.size === reports.filter(r => !r.isPaid && r.transactionMetadata?.status !== 'PENDING_BALANCE').length ? (
+                          <FaCheckSquare size={16} className="text-indigo-600" />
+                        ) : (
+                          <FaSquare size={16} />
+                        )}
+                      </button>
+                    </th>
+                  )}
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[110px]">
                     Timestamp
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[160px]">
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[110px]">
                     Date of Sale
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[100px]">
-                    SEC Name
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[140px]">
+                    SEC INFO
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider">
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[180px]">
                     Device Name
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[100px]">
                     Plan Type
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[140px]">
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[130px]">
                     IMEI
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[100px]">
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[90px]">
                     Incentive
                   </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[80px]">
+                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
                     Status
                   </th>
                   <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[80px]">
                     Selfie
-                  </th>
-                  <th className="p-2 md:p-3 text-neutral-600 text-xs font-medium uppercase tracking-wider w-[120px]">
-                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={11} className="p-8 text-center text-neutral-500">
+                    <td colSpan={showCheckboxes ? 10 : 9} className="p-8 text-center text-neutral-500">
                       <FaSpinner className="animate-spin mx-auto mb-2" size={20} />
                       Loading reports...
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={11} className="p-8 text-center text-red-500">
+                    <td colSpan={showCheckboxes ? 10 : 9} className="p-8 text-center text-red-500">
                       {error}
                     </td>
                   </tr>
                 ) : reports.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="p-8 text-center text-neutral-500">
+                    <td colSpan={showCheckboxes ? 10 : 9} className="p-8 text-center text-neutral-500">
                       No reports found
                     </td>
                   </tr>
                 ) : (
                   reports.map((r: SpotIncentiveReport) => (
                     <tr key={r.id} className="hover:bg-neutral-50 transition">
-                      <td className="p-2 md:p-3">
-                        <button
-                          onClick={() => toggleSelectRow(r.id)}
-                          disabled={r.isPaid}
-                          className={`transition-colors block ${r.isPaid
-                            ? 'text-neutral-300 cursor-not-allowed'
-                            : 'text-neutral-400 hover:text-indigo-600'
-                            }`}
-                          title={r.isPaid ? 'Already approved - cannot select' : 'Select this report'}
-                        >
-                          {selectedIds.has(r.id) ? (
-                            <FaCheckSquare size={16} className="text-indigo-600" />
-                          ) : (
-                            <FaSquare size={16} />
-                          )}
-                        </button>
-                      </td>
+                      {showCheckboxes && (
+                        <td className="p-2 md:p-3">
+                          <button
+                            onClick={() => toggleSelectRow(r.id)}
+                            disabled={r.isPaid || r.transactionMetadata?.status === 'PENDING_BALANCE'}
+                            className={`transition-colors block ${r.isPaid || r.transactionMetadata?.status === 'PENDING_BALANCE'
+                              ? 'text-neutral-300 cursor-not-allowed'
+                              : 'text-neutral-400 hover:text-indigo-600'
+                              }`}
+                            title={
+                              r.isPaid 
+                                ? 'Already approved - cannot select' 
+                                : r.transactionMetadata?.status === 'PENDING_BALANCE'
+                                ? 'Transaction pending - cannot select'
+                                : 'Select this report'
+                            }
+                          >
+                            {selectedIds.has(r.id) ? (
+                              <FaCheckSquare size={16} className="text-indigo-600" />
+                            ) : (
+                              <FaSquare size={16} />
+                            )}
+                          </button>
+                        </td>
+                      )}
                       <td className="p-2 md:p-3 text-neutral-900 text-sm">
                         <div className="text-xs">{formatDateWithTime(r.createdAt).date}</div>
                         <div className="text-neutral-500 text-xs">
@@ -761,12 +920,19 @@ export default function SpotIncentiveReport() {
                       </td>
                       <td className="p-2 md:p-3">
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${r.isPaid
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-amber-50 text-amber-700'
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            r.transactionMetadata?.status === 'PENDING_BALANCE'
+                              ? 'bg-yellow-50 text-yellow-700'
+                              : r.isPaid
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : 'bg-amber-50 text-amber-700'
                             }`}
                         >
-                          {r.isPaid ? 'Paid' : 'Pending'}
+                          {r.transactionMetadata?.status === 'PENDING_BALANCE' 
+                            ? 'Transaction Pending' 
+                            : r.isPaid 
+                            ? 'Paid' 
+                            : 'Not Paid'}
                         </span>
                       </td>
                       {/* Selfie thumbnail */}
@@ -795,26 +961,6 @@ export default function SpotIncentiveReport() {
                             {r.isFlagship ? '⭐ Flag' : 'Std'}
                           </span>
                         )}
-                      </td>
-                      <td className="p-2 md:p-3">
-                        <div className="flex flex-col gap-1">
-                          <button
-                            onClick={() => handleMarkPaid(r.id)}
-                            disabled={r.isPaid}
-                            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${r.isPaid
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-blue-500 hover:bg-blue-600 text-white'
-                              }`}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleDiscard(r.id)}
-                            className="px-2 py-1 rounded text-xs font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
-                          >
-                            Remove
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   ))
@@ -955,6 +1101,90 @@ export default function SpotIncentiveReport() {
           </div>
         )}
       </div>
+
+      {/* OTP Verification Modal */}
+      {otpModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-2xl p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  🔒
+                </div>
+                <h2 className="text-lg font-bold">Verify OTP</h2>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Phone Display */}
+              {adminPhone && (
+                <div className="bg-indigo-50 rounded-lg p-4 mb-6">
+                  <div className="text-sm text-indigo-600 font-medium mb-1">OTP sent to:</div>
+                  <div className="text-lg font-bold text-indigo-900">
+                    {adminPhone.replace(/(\d{2})(\d{2})(\d{2})(\d{4})/, '$1*$2*$3*$4')}
+                  </div>
+                </div>
+              )}
+
+              {/* OTP Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Enter 6-digit OTP
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="000000"
+                  disabled={otpLoading}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setOtpModalOpen(false);
+                    setOtp('');
+                  }}
+                  disabled={otpLoading}
+                  className="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendRewards}
+                  disabled={otpLoading || otp.length !== 6}
+                  className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {otpLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <FaSpinner className="animate-spin" size={16} />
+                      Verifying...
+                    </div>
+                  ) : (
+                    'Verify OTP'
+                  )}
+                </button>
+              </div>
+
+              {/* Resend OTP */}
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handleSendOtp}
+                  disabled={sendingOtp}
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium disabled:opacity-50"
+                >
+                  {sendingOtp ? 'Sending...' : 'Resend OTP'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Selfie Lightbox */}
       {lightboxUrl && (
