@@ -6,6 +6,7 @@ import { Role } from '@prisma/client';
 export const dynamic = 'force-dynamic';
 
 const BONUS_PHONE_NUMBERS = (process.env.REPUBLIC_DAY_BONUS_PHONES || '').split(',').filter(Boolean);
+const UAT_SEC_PHONES = (process.env.UAT_SEC_PHONES || '').split(',').filter(Boolean);
 
 // RANKS Updated to match Republic Day Hero Page thresholds
 // Sales General removed - will be assigned manually later
@@ -97,6 +98,11 @@ export async function GET(req: NextRequest) {
         reports.forEach(report => {
             if (!report.secUser) return;
 
+            // Exclude UAT SEC users from leaderboard
+            if (UAT_SEC_PHONES.includes(report.secUser.phone || '')) {
+                return;
+            }
+
             const { secId } = report;
             const sales = report.plan?.price || 0;
 
@@ -155,6 +161,11 @@ export async function GET(req: NextRequest) {
         // Add bonus to all bonus users (whether they have sales or not)
         // Bonus users ALWAYS get +21000, no matter their sales
         bonusUsersData.forEach(secUser => {
+            // Exclude UAT SEC users
+            if (UAT_SEC_PHONES.includes(secUser.phone || '')) {
+                return;
+            }
+
             const trimmedPhone = (secUser.phone || '').trim();
             const existingUserIndex = allUsers.findIndex(u => u.phone === trimmedPhone);
 
@@ -218,6 +229,11 @@ export async function GET(req: NextRequest) {
         });
 
         protectMaxBonusUsers.forEach(secUser => {
+            // Exclude UAT SEC users
+            if (UAT_SEC_PHONES.includes(secUser.phone || '')) {
+                return;
+            }
+
             const trimmedPhone = (secUser.phone || '').trim();
             const existingUserIndex = allUsers.findIndex(u => u.phone === trimmedPhone);
 

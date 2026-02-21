@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthenticatedUserFromCookies } from '@/lib/auth';
+import { checkUatRestriction } from '@/lib/uatRestriction';
 
 // GET /api/zopper-administrator/store-requests
 // Test endpoint to check store change requests
+// UAT users: Cannot access this endpoint
 export async function GET(req: NextRequest) {
   try {
+    const cookies = await (await import('next/headers')).cookies();
+    const authUser = await getAuthenticatedUserFromCookies(cookies as any);
+
+    // Check UAT restriction
+    const uatRestrictionError = checkUatRestriction(authUser, false);
+    if (uatRestrictionError) {
+      return uatRestrictionError;
+    }
+
     // Find all ASE users and their metadata
     const users = await (prisma as any).user.findMany({
       where: {

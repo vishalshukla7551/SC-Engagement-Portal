@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedUserFromCookies } from '@/lib/auth';
+import { isUatUser, getUatSecPhones } from '@/lib/uatRestriction';
 
 /**
  * GET /api/zopper-administrator/spot-incentive-report
  * Get all spot incentive reports for Zopper Administrator
+ * 
+ * UAT users: Only see reports for their assigned SEC
+ * Real admins: See all reports except UAT SEC's reports
  * 
  * Query Parameters:
  * - storeId?: string (filter by store)
@@ -35,8 +39,69 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
 
+    // Check if user is UAT user
+    const uatUserFlag = isUatUser(authUser);
+    let uatSecIds: string[] = [];
+
+    // If UAT user, get their assigned SECs (multiple support)
+    if (uatUserFlag) {
+      const uatSecPhones = getUatSecPhones();
+      if (uatSecPhones.length === 0) {
+        return NextResponse.json(
+          { error: 'UAT SEC phones not configured' },
+          { status: 500 }
+        );
+      }
+
+      const uatSecs = await prisma.sEC.findMany({
+        where: {
+          phone: {
+            in: uatSecPhones
+          }
+        },
+        select: { id: true }
+      });
+
+      if (uatSecs.length === 0) {
+        return NextResponse.json(
+          { error: 'UAT SECs not found' },
+          { status: 404 }
+        );
+      }
+
+      uatSecIds = uatSecs.map(sec => sec.id);
+    }
+
     // Build where clause
     const where: any = {};
+
+    // UAT filtering
+    if (uatUserFlag && uatSecIds.length > 0) {
+      // UAT user: only their SECs' reports (multiple canvassers support)
+      where.secId = {
+        in: uatSecIds
+      };
+    } else if (!uatUserFlag) {
+      // Real admin: exclude all UAT SECs' reports
+      const uatSecPhones = getUatSecPhones();
+      if (uatSecPhones.length > 0) {
+        const uatSecs = await prisma.sEC.findMany({
+          where: {
+            phone: {
+              in: uatSecPhones
+            }
+          },
+          select: { id: true }
+        });
+
+        if (uatSecs.length > 0) {
+          const uatSecIdList = uatSecs.map(sec => sec.id);
+          where.secId = { 
+            notIn: uatSecIdList 
+          };
+        }
+      }
+    }
 
     // Store filter
     if (storeId) {
@@ -244,6 +309,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      isUatAdmin: uatUserFlag,
       data: {
         reports: transformedReports,
         pagination: {
@@ -284,3 +350,4 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+

@@ -4,6 +4,7 @@ import { getAuthenticatedUserFromCookies } from '@/lib/auth';
 
 const RELIANCE_STORE_PREFIX = 'Reliance Digital';
 const RELIANCE_CAMPAIGN_START = new Date('2026-02-19T00:00:00+05:30');
+const UAT_SEC_PHONES = (process.env.UAT_SEC_PHONES || '').split(',').filter(Boolean);
 
 /**
  * GET /api/sec/leaderboard
@@ -29,6 +30,12 @@ export async function GET(req: NextRequest) {
         store: {
           name: { startsWith: RELIANCE_STORE_PREFIX },
         },
+        // Exclude UAT SEC users
+        secUser: {
+          phone: {
+            notIn: UAT_SEC_PHONES
+          }
+        }
       },
       include: {
         store: {
