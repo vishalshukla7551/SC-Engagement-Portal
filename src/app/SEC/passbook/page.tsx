@@ -43,6 +43,10 @@ type SpotVoucher = {
   voucherCode: string;
   isPaid?: boolean;
   imei?: string;
+  transactionId?: string | null;
+  transactionMetadata?: any;
+  spotincentivepaidAt?: string | null;
+  paidAt?: string | null;
 };
 
 type FYStats = Record<string, {
@@ -119,6 +123,10 @@ export default function IncentivePassbookPage() {
   const [selectedIncentiveData, setSelectedIncentiveData] = useState<any>(null);
   const [loadingIncentiveDetails, setLoadingIncentiveDetails] = useState<string | null>(null); // Track which month is loading
   const [numberOfSECs, setNumberOfSECs] = useState<number>(3);
+
+  // Payment Details Modal state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPaymentData, setSelectedPaymentData] = useState<any>(null);
 
   // Fetch passbook data from API
   useEffect(() => {
@@ -470,6 +478,8 @@ export default function IncentivePassbookPage() {
               setSelectedFY={setSelectedFY}
               allFYs={allFYs}
               spotIncentiveData={spotIncentiveData}
+              setSelectedPaymentData={setSelectedPaymentData}
+              setShowPaymentModal={setShowPaymentModal}
             />
           )}
 
@@ -780,6 +790,111 @@ export default function IncentivePassbookPage() {
           </div>
         </div>
       )}
+
+      {/* Payment Details Modal */}
+      {showPaymentModal && selectedPaymentData && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto"
+          style={{ zIndex: 9999 }}
+          onClick={() => setShowPaymentModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col my-8 mx-auto relative shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Payment Details</h2>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {/* Paid Status */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-green-800">Paid Status</h3>
+                    <p className="text-sm text-green-600 font-semibold">✓ Payment Released</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Date */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Payment Date</h3>
+                <p className="text-lg font-bold text-gray-900">{selectedPaymentData?.paidAt || 'N/A'}</p>
+              </div>
+
+              {/* Incentive Amount */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Incentive Amount</h3>
+                <p className="text-2xl font-bold text-purple-600">{selectedPaymentData?.incentive || '₹0'}</p>
+              </div>
+
+              {/* Transaction Status */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Transaction Status</h3>
+                
+                {selectedPaymentData?.paymentType === 'voucher' ? (
+                  // Voucher Code Message
+                  <>
+                    <p className="text-sm text-green-600 mb-2">
+                      <span className="font-semibold">{selectedPaymentData?.incentive || '₹0'}</span> worth voucher code
+                    </p>
+                    <p className="text-xs text-gray-600 mb-3">
+                      Log in to <a href="https://www.benepikplus.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Benepik</a> using the same mobile number as registered on SalesMitr to redeem this voucher.
+                    </p>
+                  </>
+                ) : (
+                  // Transaction ID Message
+                  <>
+                    <p className="text-sm text-green-600 mb-2">
+                      <span className="font-semibold">{selectedPaymentData?.incentive || '₹0'}</span> added to your wallet.{' '}
+                      <a href="https://www.benepikplus.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Check</a>
+                    </p>
+                    <p className="text-xs text-gray-600 mb-3">
+                      <strong>Note:</strong> Log in to <a href="https://www.benepikplus.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Benepik</a> using the same mobile number as registered on SalesMitr to claim your reward.
+                    </p>
+                  </>
+                )}
+                
+                {/* Payment ID Section */}
+                <div className="mt-3">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    {selectedPaymentData?.paymentType === 'voucher' ? 'Voucher Code' : 'Transaction ID'}
+                  </h4>
+                  <p className="text-sm font-mono text-green-600 bg-white p-2 rounded border break-all">
+                    {selectedPaymentData?.paymentId || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -983,6 +1098,8 @@ function SpotIncentiveSection({
   setSelectedFY,
   allFYs,
   spotIncentiveData,
+  setSelectedPaymentData,
+  setShowPaymentModal,
 }: {
   rows: MonthlySale[];
   transactions: SpotVoucher[];
@@ -993,6 +1110,8 @@ function SpotIncentiveSection({
   setSelectedFY: (fy: string) => void;
   allFYs: string[];
   spotIncentiveData: any;
+  setSelectedPaymentData: (data: any) => void;
+  setShowPaymentModal: (show: boolean) => void;
 }) {
   // Helper function to check if a date falls within a financial year
   const isDateInFY = (dateStr: string, fy: string) => {
@@ -1184,7 +1303,7 @@ function SpotIncentiveSection({
             <span className="text-center">Device</span>
             <span className="text-center">Incentive</span>
             <span className="text-center">IMEI</span>
-            <span className="text-center">Voucher Code</span>
+            <span className="text-center">Payment</span>
           </div>
           {filteredTransactions.length === 0 ? (
             <div className="px-3 py-4 text-center text-gray-500 text-xs">
@@ -1203,8 +1322,20 @@ function SpotIncentiveSection({
                   {row.imei ? `...${row.imei.slice(-4)}` : 'N/A'}
                 </span>
                 <span className="text-center text-[10px]">
-                  {row.voucherCode && row.voucherCode.trim() && row.voucherCode !== 'N/A' ? (
-                    <span className="font-mono text-blue-600">{row.voucherCode}</span>
+                  {row.isPaid ? (
+                    <button
+                      onClick={() => {
+                        setSelectedPaymentData({
+                          ...row,
+                          paymentType: row.voucherCode && row.voucherCode.trim() && row.voucherCode !== 'N/A' ? 'voucher' : 'transaction',
+                          paymentId: row.voucherCode && row.voucherCode.trim() && row.voucherCode !== 'N/A' ? row.voucherCode : row.transactionId
+                        });
+                        setShowPaymentModal(true);
+                      }}
+                      className="text-blue-600 hover:text-blue-800 font-medium underline"
+                    >
+                      View
+                    </button>
                   ) : (
                     <span className="text-orange-600 font-normal">Not Released</span>
                   )}

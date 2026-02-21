@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
         date: formatDate(report.Date_of_sale),
         deviceName: report.samsungSKU.ModelName || report.samsungSKU.Category,
         planName: planName,
-        incentive: report.spotincentiveEarned > 0 ? `₹${report.spotincentiveEarned.toLocaleString('en-IN')}` : '-',
+        incentive: `₹${report.spotincentiveEarned.toLocaleString('en-IN')}`,
         incentiveAmount: report.spotincentiveEarned,
         voucherCode: report.voucherCode || 'N/A',
         isPaid: !!report.spotincentivepaidAt,
@@ -95,6 +95,10 @@ export async function GET(req: NextRequest) {
         storeName: report.store.name,
         storeCity: report.store.city,
         imei: report.imei,
+        // Add missing fields for payment modal
+        transactionId: report.transactionId || null,
+        transactionMetadata: report.transactionMetadata || null,
+        spotincentivepaidAt: report.spotincentivepaidAt || null,
       };
     });
 
